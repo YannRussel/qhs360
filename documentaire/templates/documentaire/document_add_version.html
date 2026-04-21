@@ -1,0 +1,177 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow: var(--shadow-soft);
+    padding: 14px;
+  }
+  .top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .top h2{
+    margin:0;
+    font-weight:1000;
+    letter-spacing:-.2px;
+  }
+  .sub{
+    color:var(--muted);
+    font-weight:800;
+    margin-top:4px;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-weight:1000;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media(max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+
+  label{
+    font-size:12px;
+    font-weight:1000;
+    color: var(--muted);
+    display:block;
+    margin-bottom:6px;
+  }
+  .control{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding: 10px;
+    background:#fff;
+    outline:none;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:800;
+    margin-top:6px;
+  }
+  .row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-end;
+    margin-top: 12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:10px 12px;
+    border-radius:14px;
+    font-weight: 900;
+    cursor:pointer;
+    text-decoration:none;
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-primary{
+    background: var(--brand);
+    color:#fff;
+    border-color: rgba(11,58,106,.2);
+  }
+  .btn-danger{
+    background:#ef4444;
+    color:#fff;
+    border-color: rgba(239,68,68,.25);
+  }
+
+  .doc-mini{
+    border:1px dashed var(--border);
+    border-radius:18px;
+    padding:12px;
+    background: linear-gradient(180deg, rgba(11,58,106,.06), rgba(11,58,106,0));
+  }
+  .doc-mini .code{
+    font-weight:1000;
+    letter-spacing:.2px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="top">
+    <div>
+      <h2>Ajouter une version</h2>
+      <div class="sub">Document : <span class="code" style="font-weight:1000;">{{ doc.code }}</span> — {{ doc.titre }}</div>
+    </div>
+    <div class="badge">
+      <span style="width:8px;height:8px;border-radius:999px;background:var(--brand);display:inline-block;"></span>
+      Version courante :
+      <strong>
+        {% if doc.version_courante %}{{ doc.version_courante.version }}{% else %}-{% endif %}
+      </strong>
+    </div>
+  </div>
+
+  <div class="doc-mini">
+    <div class="grid" style="margin:0;">
+      <div>
+        <label>Type</label>
+        <div class="control" style="display:flex;align-items:center;background:#f7f9fc;">
+          {{ doc.type_document.nom }}
+        </div>
+      </div>
+      <div>
+        <label>Processus</label>
+        <div class="control" style="display:flex;align-items:center;background:#f7f9fc;">
+          {% if doc.processus %}{{ doc.processus.nom }}{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+    {% csrf_token %}
+
+    <div class="grid">
+      <div>
+        <label>Version *</label>
+        <input class="control" name="version" value="1.1" required placeholder="Ex: 1.1">
+        <div class="hint">Ex : 1.1, 1.2, 2.0… (évolution selon tes règles internes)</div>
+      </div>
+
+      <div>
+        <label>Fichier *</label>
+        <input class="control" type="file" name="fichier" required>
+        <div class="hint">Téléverse la nouvelle version du document.</div>
+      </div>
+
+      <div style="grid-column:1 / -1;">
+        <label>Commentaire</label>
+        <textarea class="control" name="commentaire" rows="4" placeholder="Note de version / modifications..."></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <a class="btn" href="{% url 'documentaire:detail' doc.pk %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">✅ Ajouter la version</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

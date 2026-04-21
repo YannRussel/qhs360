@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .grid2{ display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; }
+  @media(max-width:1000px){ .grid2{ grid-template-columns:1fr; } }
+  .listbox{
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:var(--shadow-soft);
+  }
+  .lb-head{
+    padding:12px 14px;
+    background:linear-gradient(180deg,#fff,#f6f8fc);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .lb-body{ padding:12px 14px; }
+  .agent-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    padding:10px 10px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    margin-bottom:10px;
+  }
+  .agent-left{ min-width:0; }
+  .agent-name{ font-weight:900; }
+  .agent-sub{ font-size:12.5px; color:var(--muted); font-weight:700; margin-top:2px; }
+  .agent-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  .tick{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    border:1px solid var(--border);
+    background:#f8fafc;
+    padding:8px 10px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12.5px;
+  }
+  .note{
+    width:160px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 10px;
+    font-weight:800;
+    outline:none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+    <div>
+      <h2 style="margin:0; font-weight:900;">👥 {{ titre }}</h2>
+      <div class="help">
+        Session : <b>{{ session }}</b>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-soft" href="{% url 'permis:session_detail' session.id %}">↩ Retour session</a>
+      <a class="btn btn-ghost" href="{% url 'permis:session_liste' %}">📘 Registre sessions</a>
+    </div>
+  </div>
+</div>
+
+<form method="post" style="margin-top:14px;">
+  {% csrf_token %}
+
+  <div class="grid2">
+
+    <!-- gauche : sélectionner participants -->
+    <div class="listbox">
+      <div class="lb-head">
+        <div style="font-weight:900;">✅ Choisir les participants</div>
+        <div class="help">Coche les agents qui suivent cette session.</div>
+      </div>
+      <div class="lb-body">
+        {% for a in agents %}
+          <label class="agent-row">
+            <div class="agent-left">
+              <div class="agent-name">{{ a }}</div>
+              <div class="agent-sub">Prestataire : {{ a.prestataire }}</div>
+            </div>
+
+            <div class="agent-actions">
+              <span class="tick">
+                <input type="checkbox" name="participants_ids" value="{{ a.id }}"
+                  {% if a.id in current_ids %}checked{% endif %}>
+                Participant
+              </span>
+            </div>
+          </label>
+        {% empty %}
+          <div class="notice">Aucun agent prestataire disponible.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- droite : présence/validation/note (uniquement si participant) -->
+    <div class="listbox">
+      <div class="lb-head">
+        <div style="font-weight:900;">🎯 Présence / Validation</div>
+        <div class="help">Ces champs servent à générer les habilitations.</div>
+      </div>
+
+      <div class="lb-body">
+        {% if current_ids %}
+          {% for aid, p in existing_by_agent.items %}
+            <div class="agent-row">
+              <div class="agent-left">
+                <div class="agent-name">{{ p.agent }}</div>
+                <div class="agent-sub">ID agent : {{ p.agent_id }}</div>
+              </div>
+
+              <div class="agent-actions">
+                <span class="tick">
+                  <input type="checkbox" name="present_{{ p.agent_id }}" {% if p.present %}checked{% endif %}>
+                  Présent
+                </span>
+                <span class="tick">
+                  <input type="checkbox" name="valide_{{ p.agent_id }}" {% if p.valide %}checked{% endif %}>
+                  Validé
+                </span>
+                <input class="note" name="note_{{ p.agent_id }}" value="{{ p.note }}" placeholder="Note / mention">
+              </div>
+            </div>
+          {% endfor %}
+          <div class="help">
+            ✅ Quand tu cliques “Terminer”, seuls les agents <b>Validés</b> reçoivent les habilitations liées à la formation.
+          </div>
+        {% else %}
+          <div class="notice">
+            Sélectionne d’abord des participants à gauche, puis enregistre.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="panel" style="margin-top:14px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="{% url 'permis:session_detail' session.id %}">Annuler</a>
+    <button class="btn btn-primary" type="submit">✅ Enregistrer participants</button>
+  </div>
+</form>
+{% endblock %}

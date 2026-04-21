@@ -1,0 +1,460 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Événements — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+
+    --bg:#f4f6fb;
+    --card:#ffffff;
+    --border:#e7edf6;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --radius:18px;
+    --shadow:0 14px 34px rgba(2,6,23,.08);
+    --shadow2:0 10px 22px rgba(2,6,23,.05);
+
+    --blue:#3b82f6;
+    --teal:#14b8a6;
+    --amber:#f59e0b;
+    --rose:#fb7185;
+    --violet:#8b5cf6;
+    --emerald:#22c55e;
+
+    --soft-blue: rgba(59,130,246,.12);
+    --soft-teal: rgba(20,184,166,.12);
+    --soft-amber: rgba(245,158,11,.14);
+    --soft-rose: rgba(251,113,133,.12);
+    --soft-violet: rgba(139,92,246,.12);
+    --soft-emerald: rgba(34,197,94,.12);
+    --soft-slate: rgba(148,163,184,.18);
+  }
+
+  *{ box-sizing:border-box; }
+  body{ background: var(--bg); }
+
+  .wrap{
+    max-width:1500px; margin:0 auto; padding:22px;
+    font-family:Poppins,system-ui; color: var(--text);
+  }
+
+  /* Header (comme stats) */
+  .head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(11,58,106,.08), rgba(31,106,165,.03));
+    border: 1px solid var(--border);
+  }
+  .title{
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .title h1{
+    margin:0;
+    font-size: 30px;
+    letter-spacing: -0.3px;
+    font-weight: 900;
+    color: var(--brand);
+    display:flex; align-items:center; gap:10px;
+  }
+  .crumbs{ color: var(--muted); font-weight: 700; font-size: 13px; }
+  .meta{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow: var(--shadow2);
+  }
+
+  .head-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border:1px solid var(--border);
+    background:#fff;
+    text-decoration:none;
+    color: var(--text);
+    font-weight: 900;
+    box-shadow: var(--shadow2);
+    transition:.15s ease;
+    cursor:pointer;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-primary{
+    border:none;
+    color:#fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+  }
+  .btn-ghost{
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+  }
+  .btn-soft{
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(6px);
+  }
+
+  /* KPI cards (comme stats) */
+  .kpi-row{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 14px;
+  }
+  .kpi{
+    position:relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+    overflow:hidden;
+  }
+  .kpi:before{
+    content:"";
+    position:absolute; left:0; top:0; right:0;
+    height:4px;
+    background: linear-gradient(90deg, var(--brand), var(--blue), var(--brand2));
+  }
+  .kpi .rowk{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .kpi .n{ font-size: 30px; font-weight: 900; letter-spacing: -0.4px; }
+  .kpi .l{ color: var(--muted); font-weight: 800; margin-top: 2px; }
+  .badge{
+    width:44px; height:44px;
+    border-radius: 14px;
+    border:1px solid var(--border);
+    display:grid; place-items:center;
+    background: #fff;
+    box-shadow: var(--shadow2);
+    color: var(--brand);
+  }
+
+  /* Filters card (comme stats) */
+  .filters{
+    margin-top: 14px;
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow2);
+    padding: 12px;
+  }
+  .filters .row{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap:10px;
+  }
+  input, select{
+    width:100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    outline:none;
+    background:#fff;
+    font-family: inherit;
+    transition:border-color .12s ease, box-shadow .12s ease;
+  }
+  input:focus, select:focus{
+    border-color: rgba(59,130,246,.55);
+    box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+  }
+
+  /* Table (comme stats: plus clean) */
+  .table-wrap{
+    margin-top: 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  thead th{
+    background: linear-gradient(180deg, var(--soft-slate), rgba(248,250,252,1));
+    text-align:left;
+    color: var(--text);
+    font-weight: 900;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    position:sticky; top:0; z-index:1;
+  }
+  tbody td{
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr{ transition: background .12s ease; }
+  tbody tr:hover{ background: #f8fbff; }
+  tbody tr:last-child td{ border-bottom:none; }
+
+  .muted{ color: var(--muted); font-weight: 700; }
+
+  /* Pills */
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-weight: 900;
+    border:1px solid var(--border);
+    background:#fff;
+    box-shadow: var(--shadow2);
+    white-space: nowrap;
+  }
+  .pill-success{
+    border-color: rgba(34,197,94,.25);
+    background: var(--soft-emerald);
+    color: #0b5a27;
+  }
+  .pill-open{
+    border-color: rgba(245,158,11,.30);
+    background: var(--soft-amber);
+    color: #7a4a00;
+  }
+  .pill-type{
+    border-color: rgba(59,130,246,.25);
+    background: var(--soft-blue);
+    color: #1e40af;
+  }
+
+  /* Action icons */
+  .actions-inline{ display:flex; gap:8px; flex-wrap:wrap; }
+  .iconbtn{
+    width:42px; height:42px;
+    padding:0;
+    justify-content:center;
+    border-radius: 14px;
+  }
+  .iconbtn i{ font-size: 14px; }
+
+  @media (max-width: 1200px){
+    .kpi-row{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .filters .row{ grid-template-columns: 1fr 1fr; }
+    .filters .row button{ grid-column: 1/-1; justify-content:center; }
+  }
+  @media (max-width: 640px){
+    .kpi-row{ grid-template-columns: 1fr; }
+    .wrap{ padding: 16px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <!-- HEADER version "statistiques" -->
+  <div class="head">
+    <div class="title">
+      <div class="crumbs">
+        QHS360 <i class="fa-solid fa-angle-right"></i>
+        Accidents du Travail & Incidents <i class="fa-solid fa-angle-right"></i>
+        <b>Événements</b>
+      </div>
+
+      <h1><i class="fa-solid fa-triangle-exclamation"></i> Événements</h1>
+
+      <div class="meta">
+        <span class="chip"><i class="fa-solid fa-folder-open"></i> Total : <b>{{ kpi_total }}</b></span>
+        <span class="chip"><i class="fa-solid fa-user-injured"></i> Accidents : <b>{{ kpi_accidents }}</b></span>
+        <span class="chip"><i class="fa-solid fa-bolt"></i> Incidents : <b>{{ kpi_incidents }}</b></span>
+        <span class="chip"><i class="fa-solid fa-list-check"></i> Actions : <b>{{ kpi_actions }}</b></span>
+      </div>
+    </div>
+
+    <div class="head-actions">
+      <a class="btn btn-ghost" href="{% url 'evenements:stats_auto' %}">
+        <i class="fa-solid fa-chart-simple"></i> Statistiques
+      </a>
+
+      <a class="btn btn-soft" href="{% url 'evenements:actions_suivi' %}">
+        <i class="fa-solid fa-list-check"></i> Suivi des actions
+      </a>
+
+      <a class="btn btn-primary" href="{% url 'evenements:evenement_create' %}">
+        <i class="fa-solid fa-plus"></i> Nouveau
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI row (style stats) -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="rowk">
+        <div>
+          <div class="n">{{ kpi_total }}</div>
+          <div class="l">Total dossiers</div>
+        </div>
+        <div class="badge"><i class="fa-solid fa-folder-open"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="rowk">
+        <div>
+          <div class="n">{{ kpi_accidents }}</div>
+          <div class="l">Accidents</div>
+        </div>
+        <div class="badge"><i class="fa-solid fa-user-injured"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="rowk">
+        <div>
+          <div class="n">{{ kpi_incidents }}</div>
+          <div class="l">Incidents</div>
+        </div>
+        <div class="badge"><i class="fa-solid fa-bolt"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="rowk">
+        <div>
+          <div class="n">{{ kpi_actions }}</div>
+          <div class="l">Actions CAPA</div>
+        </div>
+        <div class="badge"><i class="fa-solid fa-list-check"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- filters -->
+  <form class="filters" method="get">
+    <div class="row">
+      <input name="q" value="{{ filters.q }}" placeholder="Recherche (réf, lieu, service, texte…)" />
+
+      <select name="type">
+        <option value="">Type (tous)</option>
+        <option value="accident" {% if filters.type == "accident" %}selected{% endif %}>Accident</option>
+        <option value="incident" {% if filters.type == "incident" %}selected{% endif %}>Incident</option>
+        <option value="presquaccident" {% if filters.type == "presquaccident" %}selected{% endif %}>Presqu’accident</option>
+        <option value="audit" {% if filters.type == "audit" %}selected{% endif %}>Audit</option>
+        <option value="inspection" {% if filters.type == "inspection" %}selected{% endif %}>Inspection</option>
+        <option value="autre" {% if filters.type == "autre" %}selected{% endif %}>Autre</option>
+      </select>
+
+      <select name="site">
+        <option value="">Site (tous)</option>
+        {% for s in sites %}
+          <option value="{{ s.id }}" {% if filters.site == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="statut">
+        <option value="">Statut (tous)</option>
+        <option value="ouvert" {% if filters.statut == "ouvert" %}selected{% endif %}>Ouvert</option>
+        <option value="cloture" {% if filters.statut == "cloture" %}selected{% endif %}>Clôturé</option>
+      </select>
+
+      <button class="btn btn-primary" type="submit">
+        <i class="fa-solid fa-filter"></i> Filtrer
+      </button>
+    </div>
+  </form>
+
+  <!-- TABLE (Type = colonne dédiée) -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px;">Référence</th>
+          <th style="width:160px;">Type</th>
+          <th style="width:160px;">Date</th>
+          <th>Site / Zone</th>
+          <th style="width:220px;">Prestataire</th>
+          <th style="width:160px;">Statut</th>
+          <th style="width:220px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in items %}
+        <tr>
+          <td>
+            <div style="font-weight:900;">{{ it.reference|default:"EVT-" }}{{ it.id }}</div>
+            <div class="muted">ID: {{ it.id }}</div>
+          </td>
+
+          <!-- ✅ Colonne Type (dédiée) -->
+          <td>
+            <span class="pill pill-type">
+              <i class="fa-solid fa-tag"></i> {{ it.get_type_evenement_display }}
+            </span>
+          </td>
+
+          <td>
+            <div style="font-weight:900;">{{ it.date_evenement }}</div>
+            <div class="muted">{{ it.heure|default:"" }}</div>
+          </td>
+
+          <td>
+            <div style="font-weight:900;">{{ it.site.nom }}</div>
+            <div class="muted">{% if it.zone %}{{ it.zone.nom }}{% else %}—{% endif %}</div>
+          </td>
+
+          <td>
+            {% if it.prestataire %}
+              <div style="font-weight:900;">{{ it.prestataire.nom }}</div>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if it.date_cloture %}
+              <span class="pill pill-success"><i class="fa-solid fa-circle-check"></i> Clôturé</span>
+            {% else %}
+              <span class="pill pill-open"><i class="fa-solid fa-hourglass-half"></i> Ouvert</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <div class="actions-inline">
+              <a class="btn iconbtn" href="{% url 'evenements:evenement_detail' it.id %}" title="Voir">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+
+              <a class="btn iconbtn" href="{% url 'evenements:evenement_edit' it.id %}" title="Modifier">
+                <i class="fa-solid fa-pen"></i>
+              </a>
+
+              <a class="btn iconbtn btn-soft" href="{% url 'evenements:suivi_cloture' it.id %}" title="Suivi & clôture">
+                <i class="fa-solid fa-clipboard-check"></i>
+              </a>
+
+              <a class="btn iconbtn btn-soft" href="{% url 'evenements:actions_suivi' %}?origine={{ it.reference }}" title="Actions CAPA">
+                <i class="fa-solid fa-list-check"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="muted" style="padding:18px;">
+            Aucun événement.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

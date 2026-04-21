@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+
+{% block title %}Abonnement — QHSE360{% endblock %}
+
+{% block content %}
+<div class="header-section">
+  <h2>Abonnement</h2>
+  <p>Gérez votre abonnement pour accéder aux modules.</p>
+</div>
+
+<div class="panel" style="max-width:980px; margin:auto;">
+  {% if organisation %}
+    <div class="notice">
+      Organisation : <b>{{ organisation.nom }}</b>
+    </div>
+  {% endif %}
+
+  {% if abonnement %}
+    <p style="margin-top:12px;">
+      Plan : <b>{{ abonnement.plan.nom }}</b><br>
+      Statut : <b>{{ abonnement.statut }}</b>
+    </p>
+  {% else %}
+    <div class="notice warn" style="margin-top:12px;">
+      Aucun abonnement actif trouvé. Veuillez choisir un plan.
+    </div>
+  {% endif %}
+
+  <div class="actions" style="margin-top:16px;">
+    <a class="btn btn-primary" href="#">Choisir / Renouveler un plan</a>
+    <a class="btn btn-ghost" href="{% url 'sites:site_list' %}">Retour</a>
+  </div>
+</div>
+{% endblock %}

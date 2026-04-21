@@ -1,0 +1,163 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow: var(--shadow-soft);
+    padding: 14px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media(max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+  label{ font-size:12px; font-weight: 1000; color: var(--muted); display:block; margin-bottom:6px; }
+  .control{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding: 10px;
+    background:#fff;
+    outline:none;
+  }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); }
+  .btn-primary{ background: var(--brand); color:#fff; border-color: rgba(11,58,106,.2); }
+  .row{ display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top: 12px; }
+
+  /* petit style read-only */
+  .control[readonly]{
+    background: #f7f9fc;
+    font-weight: 900;
+    letter-spacing: .2px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 style="margin:0 0 6px; font-weight:1000;">Nouveau document</h2>
+  <div style="color:var(--muted); font-weight:800; margin-bottom:12px;">Création sans Django Forms — première version obligatoire.</div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="grid">
+      <div>
+        <label>Code document *</label>
+        <input class="control" name="code" id="code" placeholder="Auto..." readonly>
+        <div style="font-size:12px;color:var(--muted);font-weight:800;margin-top:6px;">
+          Généré automatiquement selon Type / Processus / Site.
+        </div>
+      </div>
+
+      <div>
+        <label>Titre *</label>
+        <input class="control" name="titre" placeholder="Ex: Procédure d’accueil" required>
+      </div>
+
+      <div>
+        <label>Type de document *</label>
+        <select class="control" name="type_document" id="type_document" required>
+          <option value="">—</option>
+          {% for t in types %}<option value="{{ t.id }}">{{ t.nom }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Processus</label>
+        <select class="control" name="processus" id="processus">
+          <option value="">—</option>
+          {% for p in processus %}<option value="{{ p.id }}">{{ p.nom }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Site / Projet</label>
+        <select class="control" name="site" id="site">
+          <option value="">—</option>
+          {% for s in sites %}<option value="{{ s.id }}">{{ s.nom }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Mots-clés</label>
+        <input class="control" name="mots_cles" placeholder="Ex: ISO, audit, sécurité">
+      </div>
+
+      <div>
+        <label>Date prochaine révision</label>
+        <input class="control" type="date" name="date_prochaine_revision">
+      </div>
+
+      <div>
+        <label>Confidentiel</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="checkbox" name="confidentialite" id="conf">
+          <label for="conf" style="margin:0; font-size:13px; font-weight:900; color:var(--text);">Restreindre la diffusion</label>
+        </div>
+      </div>
+
+      <div>
+        <label>Version *</label>
+        <input class="control" name="version" value="1.0" required>
+      </div>
+
+      <div>
+        <label>Fichier *</label>
+        <input class="control" type="file" name="fichier" required>
+      </div>
+
+      <div style="grid-column: 1 / -1;">
+        <label>Commentaire</label>
+        <textarea class="control" name="commentaire" rows="4" placeholder="Contexte de création / note de version..."></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <a class="btn" href="{% url 'documentaire:list' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-check"></i> Créer</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  const typeEl = document.getElementById("type_document");
+  const procEl = document.getElementById("processus");
+  const siteEl = document.getElementById("site");
+  const codeEl = document.getElementById("code");
+
+  async function refreshCode(){
+    const type = typeEl.value;
+    const proc = procEl.value;
+    const site = siteEl.value;
+
+    if(!type){
+      codeEl.value = "";
+      return;
+    }
+
+    const url = "{% url 'documentaire:generate_code' %}"
+      + `?type_document=${encodeURIComponent(type)}&processus=${encodeURIComponent(proc)}&site=${encodeURIComponent(site)}`;
+
+    try{
+      const res = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+      const data = await res.json();
+      if(data.ok){
+        codeEl.value = data.code;
+      } else {
+        codeEl.value = "";
+      }
+    }catch(e){
+      codeEl.value = "";
+    }
+  }
+
+  [typeEl, procEl, siteEl].forEach(el => el.addEventListener("change", refreshCode));
+  refreshCode();
+</script>
+{% endblock %}

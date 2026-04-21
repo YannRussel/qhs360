@@ -1,0 +1,76 @@
+{% extends "core/base.html" %} {# <-- remplace "base.html" par le nom exact de ton template ci-dessus si besoin #}
+{% load static %}
+
+{% block title %}Formation & Habilitations — QHSE360{% endblock %}
+
+{% block content %}
+  <div class="header-section">
+    <h2>Formation & Habilitations</h2>
+    <p>Gérez les formations, les habilitations et consultez les registres.</p>
+  </div>
+
+  <div class="cards">
+
+    <!-- 1) Formation -->
+    <a class="card" href="{% url 'permis:formation_dashboard' %}" style="text-decoration:none; color:inherit;">
+      <div class="card-top">
+        <div class="icon">🎓</div>
+        <div>
+          <h4>Formation</h4>
+          <p>Créer, planifier et suivre les sessions de formation par site et par agent.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="badge badge-info">Module</span>
+        <span class="go">Ouvrir →</span>
+      </div>
+    </a>
+
+    <!-- 2) Habilitations -->
+
+    <a class="card" href="{% url 'permis:habilitation_dashboard' %}"  style="text-decoration:none; color:inherit;">
+      <div class="card-top">
+        <div class="icon">🪪</div>
+        <div>
+          <h4>Habilitations</h4>
+          <p>Attribuer et gérer les habilitations (validité, renouvellements, documents).</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="badge badge-muted">Module</span>
+        <span class="go">Ouvrir →</span>
+      </div>
+    </a>
+
+    <!-- 3) Registre de formation -->
+    <a class="card" href="{% url 'permis:registre_formations' %}" style="text-decoration:none; color:inherit;">
+      <div class="card-top">
+        <div class="icon">📒</div>
+        <div>
+          <h4>Registre de formation</h4>
+          <p>Historique complet des formations : dates, participants, résultats, pièces jointes.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="badge badge-success">Registre</span>
+        <span class="go">Consulter →</span>
+      </div>
+    </a>
+
+    <!-- 4) Registre d'habilitations -->
+    <a class="card" href="{% url 'permis:registre_habilitations' %}" style="text-decoration:none; color:inherit;">
+      <div class="card-top">
+        <div class="icon">🗂️</div>
+        <div>
+          <h4>Registre d’habilitations</h4>
+          <p>Liste des habilitations par agent : état, dates d’expiration, alertes, renouvellement.</p>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="badge badge-success">Registre</span>
+        <span class="go">Consulter →</span>
+      </div>
+    </a>
+
+  </div>
+{% endblock %}

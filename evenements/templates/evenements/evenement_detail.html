@@ -1,0 +1,504 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Détail événement — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 12px 30px rgba(2,6,23,.08);
+    --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444; --info:#3b82f6;
+  }
+  .wrap{ max-width:1500px; margin:0 auto; padding:26px; font-family:Poppins,system-ui; }
+  .top{ display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+  h2{ margin:0; color:var(--brand); font-weight:900; }
+  .sub{ margin:6px 0 0; color:var(--muted); font-weight:600; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+        border:1px solid var(--border); background:#fff; text-decoration:none; color:var(--text); font-weight:900; }
+  .btn-primary{ background:linear-gradient(135deg, var(--brand), var(--accent)); border:none; color:#fff; }
+  .grid{ display:grid; grid-template-columns:1.15fr .85fr; gap:14px; margin-top:16px; }
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; }
+  .card h3{ margin:0 0 10px; font-weight:900; font-size:15px; display:flex; align-items:center; gap:10px; }
+  .card h3 i{ color:var(--accent); }
+  .kpis{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:12px; }
+  .kpi{ background:#fff; border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
+  .kpi .n{ font-size:20px; font-weight:900; }
+  .kpi .l{ color:var(--muted); font-weight:800; font-size:12px; margin-top:2px; }
+  .pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:900; border:1px solid var(--border); background:#fff; }
+  .pill.ok{ border-color:rgba(22,163,74,.25); }
+  .pill.warn{ border-color:rgba(245,158,11,.30); }
+  .muted{ color:var(--muted); }
+  .line{ height:1px; background:var(--border); margin:12px 0; }
+  .meta{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+  .meta .item{ padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+  .meta .item .k{ font-size:12px; color:var(--muted); font-weight:800; }
+  .meta .item .v{ font-weight:900; margin-top:2px; }
+  table{ width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  th, td{ padding:12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ background:#f8fafc; font-weight:900; text-align:left; }
+  tr:last-child td{ border-bottom:none; }
+  .formmini{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border);
+    outline:none; background:#fff; color:var(--text);
+  }
+  textarea{ min-height:90px; resize:vertical; }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  @media(max-width:1100px){ .grid{ grid-template-columns:1fr; } .kpis{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h2><i class="fa-solid fa-file-circle-check"></i> Détail événement</h2>
+      <div class="sub">
+        <span style="font-weight:900;">{{ ev.reference|default:"EVT-" }}{{ ev.id }}</span>
+        • {{ ev.get_type_evenement_display }}
+        • {{ ev.date_evenement }}
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="{% url 'evenements:dashboard_evenement' %}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+      <a class="btn" href="{% url 'evenements:evenement_edit' ev.id %}"><i class="fa-solid fa-pen"></i> Modifier</a>
+      <a class="btn btn-primary" href="{% url 'evenements:enquete_edit' ev.id %}">
+        <i class="fa-solid fa-magnifying-glass"></i> Enquête / Analyse
+      </a>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="n">{% if ev.date_cloture %}Clôturé{% else %}Ouvert{% endif %}</div>
+      <div class="l">Statut dossier</div>
+    </div>
+    <div class="kpi">
+      <div class="n">{% if ev.gravite_apparente %}{{ ev.get_gravite_apparente_display }}{% else %}—{% endif %}</div>
+      <div class="l">Gravité</div>
+    </div>
+    <div class="kpi">
+      <div class="n">{% if ev.prestataire %}{{ ev.prestataire.nom }}{% else %}—{% endif %}</div>
+      <div class="l">Prestataire</div>
+    </div>
+    <div class="kpi">
+      <div class="n">{{ ev.actions.count }}</div>
+      <div class="l">Actions CAPA</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- COL 1 -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+      <div class="card">
+        <h3><i class="fa-solid fa-location-dot"></i> Identification & contexte</h3>
+
+        <div class="meta">
+          <div class="item">
+            <div class="k">Site</div>
+            <div class="v">{{ ev.site.nom }}</div>
+          </div>
+          <div class="item">
+            <div class="k">Zone</div>
+            <div class="v">{% if ev.zone %}{{ ev.zone.nom }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Service / Département</div>
+            <div class="v">{% if ev.service_departement %}{{ ev.service_departement }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Lieu précis</div>
+            <div class="v">{% if ev.lieu_precis %}{{ ev.lieu_precis }}{% else %}—{% endif %}</div>
+          </div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="meta">
+          <div class="item">
+            <div class="k">Déclarant</div>
+            <div class="v">{% if ev.declarant_nom_fonction %}{{ ev.declarant_nom_fonction }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Date & heure</div>
+            <div class="v">{{ ev.date_evenement }} {% if ev.heure %}• {{ ev.heure }}{% endif %}</div>
+          </div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="item" style="border:1px solid var(--border); border-radius:12px; padding:12px;">
+          <div class="k" style="font-size:12px; color:var(--muted); font-weight:900;">Description</div>
+          <div style="margin-top:6px; white-space:pre-wrap;">{% if ev.description %}{{ ev.description }}{% else %}<span class="muted">—</span>{% endif %}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-shield-halved"></i> Mesures immédiates & analyse</h3>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          {% if ev.mesures_premiers_secours %}<span class="pill ok"><i class="fa-solid fa-plus"></i> Premiers secours</span>{% endif %}
+          {% if ev.mesures_mise_en_securite %}<span class="pill ok"><i class="fa-solid fa-lock"></i> Mise en sécurité</span>{% endif %}
+          {% if ev.mesures_arret_activite %}<span class="pill warn"><i class="fa-solid fa-hand"></i> Arrêt activité</span>{% endif %}
+          {% if ev.mesures_balisage %}<span class="pill ok"><i class="fa-solid fa-triangle-exclamation"></i> Balisage</span>{% endif %}
+          {% if ev.mesures_alerte_hse %}<span class="pill ok"><i class="fa-solid fa-bell"></i> Alerte HSE</span>{% endif %}
+          {% if not ev.mesures_premiers_secours and not ev.mesures_mise_en_securite and not ev.mesures_arret_activite and not ev.mesures_balisage and not ev.mesures_alerte_hse %}
+            <span class="muted">Aucune mesure cochée.</span>
+          {% endif %}
+        </div>
+
+        {% if ev.mesures_autres %}
+        <div class="line"></div>
+        <div class="muted" style="font-weight:900; font-size:12px;">Autres :</div>
+        <div style="margin-top:6px; font-weight:800;">{{ ev.mesures_autres }}</div>
+        {% endif %}
+
+        <div class="line"></div>
+
+        <div class="muted" style="font-weight:900; font-size:12px;">Analyse préliminaire :</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+          {% if ev.analyse_humaine %}<span class="pill"><i class="fa-solid fa-user"></i> Humaine</span>{% endif %}
+          {% if ev.analyse_technique %}<span class="pill"><i class="fa-solid fa-screwdriver-wrench"></i> Technique</span>{% endif %}
+          {% if ev.analyse_organisationnelle %}<span class="pill"><i class="fa-solid fa-sitemap"></i> Organisationnelle</span>{% endif %}
+          {% if ev.analyse_environnementale %}<span class="pill"><i class="fa-solid fa-leaf"></i> Environnementale</span>{% endif %}
+          {% if not ev.analyse_humaine and not ev.analyse_technique and not ev.analyse_organisationnelle and not ev.analyse_environnementale %}
+            <span class="muted">Aucune analyse cochée.</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-people-group"></i> Personnes impliquées</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Statut</th>
+              <th>Entreprise</th>
+              <th>Poste</th>
+              <th>Formation / habilitation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in ev.personnes_impliquees.all %}
+            <tr>
+              <td style="font-weight:900;">
+                {% if p.agent_prestataire %}{{ p.agent_prestataire.nom }} {{ p.agent_prestataire.prenom }}{% else %}{{ p.nom_prenom|default:"—" }}{% endif %}
+              </td>
+              <td>{{ p.get_statut_display|default:"—" }}</td>
+              <td>{{ p.entreprise_prestataire|default:"—" }}</td>
+              <td>{{ p.poste_fonction|default:"—" }}</td>
+              <td>{% if p.formation_habilitation_valide %}{{ p.formation_habilitation_valide }}{% else %}—{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="muted">Aucune personne impliquée.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <form method="post" action="{% url 'evenements:personne_add' ev.id %}">
+          {% csrf_token %}
+          <div class="muted" style="font-weight:900; margin-bottom:10px;">Ajouter une personne</div>
+
+          <div class="formmini">
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Agent prestataire (si lié)</label>
+              <select name="agent_prestataire">
+                <option value="">—</option>
+                {% for a in agents_prestataire %}
+                  <option value="{{ a.id }}">{{ a.nom }} {{ a.prenom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Nom & prénom (si saisie libre)</label>
+              <input name="nom_prenom" placeholder="Ex: Jean M." />
+            </div>
+
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Statut</label>
+              <select name="statut">
+                <option value="">—</option>
+                <option value="salarie">Salarié</option>
+                <option value="prestataire">Prestataire</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Entreprise prestataire</label>
+              <input name="entreprise_prestataire" placeholder="Ex: ABC Services" />
+            </div>
+
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Poste / Fonction</label>
+              <input name="poste_fonction" placeholder="Ex: Électricien" />
+            </div>
+
+            <div>
+              <label class="muted" style="font-weight:900; font-size:12px;">Formation / habilitation valide</label>
+              <select name="formation_habilitation_valide">
+                <option value="">—</option>
+                <option value="oui">oui</option>
+                <option value="non">non</option>
+                <option value="averifier">à vérifier</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Ajouter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- COL 2 -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <h3><i class="fa-solid fa-heart-pulse"></i> Détails (si accident)</h3>
+        <div class="meta">
+          <div class="item">
+            <div class="k">Nature</div>
+            <div class="v">{% if ev.nature_accident %}{{ ev.nature_accident }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Partie du corps</div>
+            <div class="v">{% if ev.partie_corps %}{{ ev.partie_corps }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Dommages matériels</div>
+            <div class="v">{% if ev.dommages_materiels %}Oui{% else %}Non{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Impact environnemental</div>
+            <div class="v">{% if ev.impact_environnemental %}Oui{% else %}Non{% endif %}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-user-check"></i> Témoins</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Fonction</th>
+              <th>Contact</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in ev.temoins.all %}
+            <tr>
+              <td style="font-weight:900;">{{ t.nom }}</td>
+              <td>{{ t.fonction|default:"—" }}</td>
+              <td>{{ t.contact|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="muted">Aucun témoin.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <form method="post" action="{% url 'evenements:temoin_add' ev.id %}">
+          {% csrf_token %}
+          <div class="formmini">
+            <input name="nom" placeholder="Nom du témoin" required />
+            <input name="fonction" placeholder="Fonction" />
+            <input name="contact" placeholder="Contact (tel/email)" />
+          </div>
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Ajouter</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-paperclip"></i> Pièces jointes</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Titre</th>
+              <th>Fichier</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pj in ev.pieces_jointes.all %}
+            <tr>
+              <td style="font-weight:900;">{{ pj.get_type_piece_display }}</td>
+              <td>{{ pj.titre|default:"—" }}</td>
+              <td>
+                <a class="btn" style="padding:8px 10px;" href="{{ pj.fichier.url }}" target="_blank">
+                  <i class="fa-solid fa-download"></i> Ouvrir
+                </a>
+              </td>
+              <td class="muted">{{ pj.ajoute_le|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="muted">Aucune pièce jointe.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'evenements:piece_add' ev.id %}">
+          {% csrf_token %}
+          <div class="formmini">
+            <select name="type_piece" required>
+              <option value="">Type *</option>
+              <option value="photo">Photo</option>
+              <option value="video">Vidéo</option>
+              <option value="certificat">Certificat médical</option>
+              <option value="rapport">Rapport secours</option>
+              <option value="autre">Autre</option>
+            </select>
+            <input name="titre" placeholder="Titre (optionnel)" />
+            <input type="file" name="fichier" required />
+          </div>
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Ajouter</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-screwdriver-wrench"></i> Actions CAPA</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Responsable</th>
+              <th>Statut</th>
+              <th style="width:120px;">—</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in ev.actions.all %}
+            <tr>
+              <td style="font-weight:900;">{{ a.numero }}</td>
+              <td>{{ a.get_type_action_display }}</td>
+              <td style="white-space:pre-wrap;">{{ a.description_action|truncatechars:120 }}</td>
+              <td>{{ a.responsable|default:"—" }}</td>
+              <td>{{ a.get_statut_display }}</td>
+              <td>
+                <a class="btn" style="padding:8px 10px;" href="{% url 'evenements:action_edit' a.id %}">
+                  <i class="fa-solid fa-pen"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="muted">Aucune action.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'evenements:action_add' ev.id %}">
+          {% csrf_token %}
+          <div class="muted" style="font-weight:900; margin-bottom:10px;">Ajouter une action CAPA</div>
+
+          <div class="formmini">
+            <input name="numero" placeholder="N° (auto si vide)" />
+            <select name="type_action" required>
+              <option value="">Type *</option>
+              <option value="corrective">Corrective</option>
+              <option value="preventive">Préventive</option>
+            </select>
+
+            <select name="priorite">
+              <option value="">Priorité</option>
+              <option value="basse">Basse</option>
+              <option value="moyenne">Moyenne</option>
+              <option value="haute">Haute</option>
+              <option value="critique">Critique</option>
+            </select>
+
+            <select name="statut">
+              <option value="a_faire">À faire</option>
+              <option value="en_cours">En cours</option>
+              <option value="realisee">Réalisée</option>
+              <option value="retard">Retard</option>
+              <option value="annulee">Annulée</option>
+            </select>
+
+            <input name="responsable" placeholder="Responsable" />
+            <input name="service_societe" placeholder="Service / Société" />
+            <input type="date" name="delai" placeholder="Délai" />
+            <input type="date" name="date_realisation" placeholder="Date réalisation" />
+            <input type="file" name="preuve" />
+            <input name="cause_racine" placeholder="Cause racine (optionnel)" />
+          </div>
+
+          <div style="margin-top:10px;">
+            <label class="muted" style="font-weight:900; font-size:12px;">Description *</label>
+            <textarea name="description_action" required placeholder="Décrire l’action..."></textarea>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="muted" style="font-weight:900; font-size:12px;">Commentaires</label>
+            <input name="commentaires" placeholder="Commentaires (optionnel)" />
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Ajouter</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-folder-check"></i> Suivi & clôture</h3>
+        <div class="meta">
+          <div class="item">
+            <div class="k">Ouverture</div>
+            <div class="v">{{ ev.date_ouverture }}</div>
+          </div>
+          <div class="item">
+            <div class="k">Clôture prévue</div>
+            <div class="v">{% if ev.date_cloture_prevue %}{{ ev.date_cloture_prevue }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Clôture</div>
+            <div class="v">{% if ev.date_cloture %}{{ ev.date_cloture }}{% else %}—{% endif %}</div>
+          </div>
+          <div class="item">
+            <div class="k">Décision clôture</div>
+            <div class="v">
+              {% if ev.dossier_cloture_validee == True %}Validée{% elif ev.dossier_cloture_validee == False %}Refusée{% else %}—{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="muted" style="font-weight:900; font-size:12px; margin-bottom:6px;">Signatures</div>
+        <div style="display:grid; gap:8px;">
+          <div><span class="muted" style="font-weight:900;">Déclarant :</span> {% if ev.validation_declarant %}{{ ev.validation_declarant }}{% else %}—{% endif %}</div>
+          <div><span class="muted" style="font-weight:900;">Hiérarchique :</span> {% if ev.validation_hierarchique %}{{ ev.validation_hierarchique }}{% else %}—{% endif %}</div>
+          <div><span class="muted" style="font-weight:900;">HSE :</span> {% if ev.validation_hse %}{{ ev.validation_hse }}{% else %}—{% endif %}</div>
+          <div><span class="muted" style="font-weight:900;">QHS :</span> {% if ev.validation_qhs %}{{ ev.validation_qhs }}{% else %}—{% endif %}</div>
+          <div><span class="muted" style="font-weight:900;">Direction :</span> {% if ev.validation_direction %}{{ ev.validation_direction }}{% else %}—{% endif %}</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

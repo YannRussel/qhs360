@@ -1,0 +1,130 @@
+{% extends "core/base.html" %}
+
+{% block title %}Zones — {{ site.nom }}{% endblock %}
+
+{% block content %}
+
+<div class="header-section"
+     style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+
+  <div>
+
+    <h2>
+      Zones du site
+      <span style="color:var(--brand); font-weight:900;">
+        {{ site.nom }}
+      </span>
+    </h2>
+
+    <p>
+      Organisation :
+      <b>{{ organisation.nom }}</b>
+    </p>
+
+  </div>
+
+
+  <div class="actions">
+
+    <a class="btn btn-ghost"
+       href="{% url 'sites:liste' %}">
+       ← Retour aux sites
+    </a>
+
+    <a class="btn btn-primary"
+       href="{% url 'sites:zone_creer' site.pk %}">
+       + Nouvelle zone
+    </a>
+
+  </div>
+
+</div>
+
+
+{% if zones %}
+
+<div class="cards">
+
+{% for zone in zones %}
+
+<div class="card">
+
+  <div class="card-top">
+
+    <div class="icon">
+      📍
+    </div>
+
+    <div style="min-width:0;">
+
+      <h4 class="truncate">
+        {{ zone.nom }}
+      </h4>
+
+      <p>
+        Site : {{ site.nom }}
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="card-footer">
+
+    <div>
+
+      {% if zone.actif %}
+        <span class="badge badge-success">
+          Actif
+        </span>
+      {% else %}
+        <span class="badge badge-muted">
+          Inactif
+        </span>
+      {% endif %}
+
+    </div>
+
+
+    <div style="display:flex; gap:8px;">
+
+      <a class="btn btn-ghost"
+         href="#">
+         Modifier
+      </a>
+
+      <a class="btn btn-danger"
+         href="#">
+         Supprimer
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="notice"
+     style="margin-top:20px;">
+
+  Aucune zone trouvée pour ce site.
+
+  <br><br>
+
+  <a class="btn btn-primary"
+     href="{% url 'sites:zone_creer' site.pk %}">
+     Créer la première zone
+  </a>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

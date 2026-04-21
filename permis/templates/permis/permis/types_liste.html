@@ -1,0 +1,272 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+    --bg:#eef2f7;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --info:#3b82f6;
+
+    --shadow:0 12px 30px rgba(2,6,23,.08);
+    --radius:16px;
+  }
+
+  .wrap{
+    max-width:1500px;
+    margin:0 auto;
+    padding:18px;
+  }
+
+  .head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .title{
+    font-size:22px;
+    font-weight:900;
+    color:var(--text);
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .subtitle{
+    color:var(--muted);
+    font-weight:700;
+    margin-top:6px;
+    font-size:13px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  .table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table thead th{
+    background:linear-gradient(180deg,#f8fafc,#eef2f7);
+    padding:12px 12px;
+    font-size:12px;
+    font-weight:950;
+    color:#0f172a;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+
+  .table tbody td{
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    font-weight:750;
+    color:var(--text);
+    vertical-align:top;
+  }
+
+  .table tbody tr:hover{ background:#f8fafc; }
+
+  .name{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .p-icon{
+    width:38px; height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(31,106,165,.12);
+    color:var(--brand2);
+    font-size:18px;
+    margin-top:1px;
+  }
+  .p-title{
+    font-weight:950;
+    color:var(--brand);
+    line-height:1.2;
+  }
+  .p-desc{
+    color:var(--muted);
+    font-weight:750;
+    font-size:12px;
+    margin-top:4px;
+  }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:950;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+
+  .chip-ok{ background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .chip-warn{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .chip-info{ background:#dbeafe; color:#1e40af; border-color:#bfdbfe; }
+  .chip-muted{ background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+  }
+  .btn{
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 12px;
+    border-radius:12px;
+    font-weight:950;
+    border:1px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:linear-gradient(180deg, #214f85, #0b3a6a);
+    color:#fff;
+  }
+  .btn-ghost{
+    background:#fff;
+    border-color:var(--border);
+    color:var(--brand);
+  }
+
+  .small{
+    font-size:12px;
+    font-weight:850;
+    color:var(--muted);
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <div>
+      <div class="title">
+        <i class="fa-solid fa-id-card-clip"></i> {{ titre }}
+      </div>
+      <div class="subtitle">
+        Liste des permis disponibles + habilitations requises pour être éligible.
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-ghost" href="{% url 'permis:dashboard_permis_interventions' %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:34%;">Permis</th>
+          <th>Habilitations requises</th>
+          <th style="width:160px; text-align:right;">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for p in items %}
+        <tr>
+
+          <!-- PERMIS -->
+          <td>
+            <div class="name">
+              <div class="p-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <div class="p-title">{{ p.nom }}</div>
+                <div class="p-desc">{{ p.description|default:"Aucune description" }}</div>
+
+                <div class="small" style="margin-top:8px;">
+                  <i class="fa-solid fa-building"></i>
+                  Organisation : {{ organisation.nom|default:"—" }}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- HABILITATIONS REQUISES -->
+          <td>
+            <div class="chips">
+              {% if p.habilitations_requises.all %}
+                {% for h in p.habilitations_requises.all %}
+                  <span class="chip chip-info">
+                    <i class="fa-solid fa-certificate"></i> {{ h.nom }}
+                  </span>
+                {% empty %}
+                  <span class="chip chip-ok">
+                    <i class="fa-solid fa-check"></i> Aucune habilitation requise
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="chip chip-ok">
+                  <i class="fa-solid fa-check"></i> Aucune habilitation requise
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="small" style="margin-top:10px;">
+              <i class="fa-solid fa-circle-info"></i>
+              Ces habilitations sont celles définies sur le type de permis.
+            </div>
+          </td>
+
+          <!-- ACTION -->
+          <td>
+            <div class="actions">
+              <a href="{% url 'permis:registre_par_permis' p.id %}" class="btn btn-primary">
+                <i class="fa-solid fa-eye"></i> Registre
+              </a>
+            </div>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" style="padding:16px;">
+            <span class="small"><i class="fa-solid fa-circle-exclamation"></i> Aucun permis disponible.</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+{% endblock %}

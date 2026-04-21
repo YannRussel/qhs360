@@ -1,0 +1,60 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-3">
+    <i class="fa-solid fa-clipboard-list text-primary"></i>
+    {{ type_permis.nom }}
+  </h2>
+
+  <p class="text-muted">{{ type_permis.description }}</p>
+
+  <div class="card shadow-sm rounded-4 border-0">
+    <div class="card-body">
+
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Agent</th>
+            <th>Prestataire</th>
+            <th>Intervention</th>
+            <th>Date délivrance</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in items %}
+          <tr>
+            <td>{{ p.agent.nom }} {{ p.agent.prenom }}</td>
+            <td>{{ p.agent.prestataire.nom }}</td>
+            <td>{{ p.intervention.titre }}</td>
+            <td>{{ p.date_delivrance|date:"d/m/Y H:i" }}</td>
+            <td>
+              {% if p.statut == "valide" %}
+                <span class="badge bg-success">Validé</span>
+              {% elif p.statut == "refuse" %}
+                <span class="badge bg-danger">Refusé</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">En attente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Aucun permis délivré pour ce type.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+  <a href="{% url 'permis:type_permis_liste' %}" class="btn btn-secondary mt-3">
+    ← Retour aux permis
+  </a>
+</div>
+
+{% endblock %}

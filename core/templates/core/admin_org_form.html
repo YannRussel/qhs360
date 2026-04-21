@@ -1,0 +1,20 @@
+<h2>Créer un admin organisation</h2>
+<form method="post">{% csrf_token %}
+  <label>Organisation</label><br>
+  <select name="organisation_id" required>
+    {% for o in organisations %}
+      <option value="{{ o.id }}">{{ o.nom }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Téléphone (9 chiffres)</label><br>
+  <input name="phone_number" maxlength="9" pattern="\d{9}" required><br><br>
+
+  <label>Mot de passe</label><br>
+  <input type="password" name="password1" required><br><br>
+
+  <label>Confirmer</label><br>
+  <input type="password" name="password2" required><br><br>
+
+  <button type="submit">Créer</button>
+</form>

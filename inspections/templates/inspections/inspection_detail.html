@@ -1,0 +1,804 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ inspection.reference|default:"Inspection" }} — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --accent:#1f6aa5;
+
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e6ebf2;
+
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --success:#16a34a;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --info:#3b82f6;
+
+    --shadow:0 10px 28px rgba(2,6,23,.08);
+    --radius:18px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  .page{
+    max-width:1500px;
+    margin:0 auto;
+    padding:22px;
+    font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    color:var(--text);
+  }
+
+  /* ================= HEADER BLEU PRO ================= */
+  .header-hero{
+    padding:18px 18px 14px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.10);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10)),
+      linear-gradient(135deg, #0b3a6a 0%, #072b50 70%, #061f3a 100%);
+    box-shadow: 0 14px 34px rgba(2,6,23,.14);
+    color:#fff;
+    overflow:hidden;
+  }
+
+  .header-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .header-title{
+    min-width:280px;
+    flex:1 1 520px;
+  }
+
+  .header-title h2{
+    margin:0;
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:.2px;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    line-height:1.2;
+  }
+
+  .header-sub{
+    margin:8px 0 0;
+    color:rgba(255,255,255,.88);
+    font-weight:700;
+    font-size:13px;
+  }
+
+  .header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  .btnx{
+    display:inline-flex; align-items:center; gap:8px;
+    height:42px; padding:0 14px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text);
+    font-weight:900;
+    text-decoration:none;
+    box-shadow:0 10px 20px rgba(0,0,0,.12);
+    transition:.18s ease;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btnx:hover{ transform: translateY(-1px); box-shadow:0 14px 26px rgba(0,0,0,.16); }
+  .btnx-primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  .header-meta{
+    margin-top:12px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .hchip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.16);
+    color:#fff;
+    font-weight:900;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  .hchip i{ opacity:.95; }
+
+  .hstatus{
+    background:rgba(245,158,11,.12);
+    border-color:rgba(245,158,11,.26);
+    color:#fff;
+  }
+
+  .trunc{
+    max-width:340px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  @media (max-width: 640px){
+    .header-title h2{ font-size:18px; }
+    .trunc{ max-width:240px; }
+    .btnx{ height:40px; }
+  }
+
+  /* ================= Layout ================= */
+  .grid{
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap:14px;
+    align-items:start;
+    margin-top:14px;
+  }
+  @media (max-width: 1100px){
+    .grid{ grid-template-columns:1fr; }
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card-head{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(11,58,106,.06), rgba(11,58,106,0));
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .card-head h3{
+    margin:0;
+    font-size:15px;
+    font-weight:900;
+    color:var(--brand);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .card-body{ padding:16px; }
+
+  .meta{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width:650px){ .meta{ grid-template-columns:1fr; } }
+
+  .meta-item{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    background:#fff;
+  }
+  .meta-k{ color:var(--muted); font-size:12px; font-weight:900; }
+  .meta-v{ margin-top:4px; font-weight:900; color:var(--text); }
+  .meta-v small{ color:var(--muted); font-weight:800; }
+
+  /* ================= Non-conformités ================= */
+  .nc-wrap{
+    margin-top:14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .nc-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    padding:18px 18px 14px;
+    background:linear-gradient(180deg, rgba(11,58,106,.08), rgba(11,58,106,0));
+    border-bottom:1px solid var(--border);
+  }
+  .nc-title{
+    display:flex; align-items:center; gap:10px;
+    font-weight:900; color:var(--brand); font-size:18px;
+  }
+  .nc-sub{
+    margin-top:4px;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:800;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .b-success{ border-color:rgba(22,163,74,.30); background:rgba(22,163,74,.10); color:var(--success); }
+  .b-warning{ border-color:rgba(245,158,11,.35); background:rgba(245,158,11,.10); color:#b45309; }
+  .b-danger{ border-color:rgba(239,68,68,.30); background:rgba(239,68,68,.08); color:var(--danger); }
+  .b-info{ border-color:rgba(59,130,246,.30); background:rgba(59,130,246,.10); color:var(--info); }
+
+  .nc-create{
+    padding:14px 18px 18px;
+    border-bottom:1px dashed var(--border);
+  }
+  .form-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .in{
+    height:42px;
+    padding:0 12px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#fff;
+    font-weight:800;
+    color:var(--text);
+    outline:none;
+    min-width:220px;
+  }
+  .sel{ min-width:170px; font-weight:900; }
+  .txt{
+    width:100%;
+    min-height:90px;
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    font-weight:700;
+    color:var(--text);
+    outline:none;
+    margin-top:10px;
+  }
+
+  .nc-table-wrap{ padding:14px 18px 18px; }
+
+  table.nc-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+  }
+  .nc-table thead th{
+    text-align:left;
+    font-size:12px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+    background:#fafcff;
+  }
+  .nc-table tbody td{
+    padding:12px 12px;
+    border-bottom:1px solid #eef2f7;
+    vertical-align:top;
+  }
+  .nc-table tbody tr:hover{ background:#f8fbff; }
+  .nc-table tbody tr:last-child td{ border-bottom:none; }
+
+  .nc-name{ display:flex; flex-direction:column; gap:4px; }
+  .nc-name b{ color:var(--text); font-weight:900; }
+  .nc-mini{ color:var(--muted); font-size:12px; font-weight:800; }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .c-low{ border-color:rgba(59,130,246,.30); background:rgba(59,130,246,.10); color:var(--info); }
+  .c-med{ border-color:rgba(245,158,11,.35); background:rgba(245,158,11,.10); color:#b45309; }
+  .c-high{ border-color:rgba(239,68,68,.25); background:rgba(239,68,68,.06); color:var(--danger); }
+  .c-crit{ border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:var(--danger); }
+
+  .actions-line{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .mini-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    height:36px; padding:0 12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--text);
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .mini-btn:hover{ transform:translateY(-1px); box-shadow:0 10px 18px rgba(2,6,23,.10); }
+  .mini-success{ border-color:rgba(22,163,74,.30); color:var(--success); }
+  .mini-muted{ color:var(--muted); }
+
+  .empty{
+    border:1px dashed var(--border);
+    border-radius:14px;
+    padding:18px;
+    background:#fbfdff;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+  }
+  .empty .ico{
+    width:44px; height:44px; border-radius:14px;
+    display:grid; place-items:center;
+    background:rgba(31,106,165,.12);
+    color:var(--brand);
+    font-size:18px;
+    flex:0 0 auto;
+  }
+  .empty h4{ margin:0; color:var(--text); font-weight:900; }
+  .empty p{ margin:6px 0 0; color:var(--muted); font-weight:800; }
+
+  .actions-box{
+    margin-top:10px;
+    border-top:1px dashed var(--border);
+    padding-top:10px;
+  }
+  .action-item{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:flex-start;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    margin-top:8px;
+  }
+  .action-item b{ font-weight:900; }
+  .action-item small{ color:var(--muted); font-weight:800; }
+
+  .note{
+    width:100%;
+    min-height:70px;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+    font-weight:700;
+    outline:none;
+    margin-top:8px;
+  }
+</style>
+
+<div class="page">
+
+  <!-- =================== HEADER BLEU PRO (FIX) =================== -->
+  <div class="header-hero">
+
+    <div class="header-top">
+      <div class="header-title">
+        <h2>
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span class="trunc">
+            {{ inspection.reference|default:"INS" }} — {{ inspection.template.nom|default:inspection.type_libre|default:"Inspection" }}
+          </span>
+        </h2>
+        <p class="header-sub">Checklist, non-conformités et actions correctives — interface QHSE360</p>
+      </div>
+
+      <div class="header-actions">
+        <a class="btnx" href="{% url 'inspections:inspection_list' %}">
+          <i class="fa-solid fa-arrow-left"></i> Retour
+        </a>
+        <a class="btnx btnx-primary" href="{% url 'inspections:inspection_fill' inspection.id %}">
+          <i class="fa-solid fa-pen-to-square"></i> Remplir / Modifier
+        </a>
+        <a class="btnx" href="#nonconformites">
+          <i class="fa-solid fa-triangle-exclamation"></i> Non-conformités
+        </a>
+      </div>
+    </div>
+
+    <div class="header-meta">
+      {% if inspection.status == "draft" %}
+        <span class="hchip hstatus"><i class="fa-solid fa-pen"></i> Brouillon</span>
+      {% elif inspection.status == "open" %}
+        <span class="hchip" style="background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.26);">
+          <i class="fa-solid fa-play"></i> Ouvert
+        </span>
+      {% elif inspection.status == "closed" %}
+        <span class="hchip" style="background:rgba(22,163,74,.12); border-color:rgba(22,163,74,.26);">
+          <i class="fa-solid fa-circle-check"></i> Clos
+        </span>
+      {% else %}
+        <span class="hchip hstatus"><i class="fa-solid fa-circle-info"></i> {{ inspection.status }}</span>
+      {% endif %}
+
+      <span class="hchip"><i class="fa-solid fa-location-dot"></i> Site : <span class="trunc">{{ inspection.site.nom|default:"—" }}</span></span>
+
+      {% if inspection.zone %}
+        <span class="hchip"><i class="fa-solid fa-map"></i> Zone : <span class="trunc">{{ inspection.zone.nom }}</span></span>
+      {% endif %}
+
+      {% if inspection.prestataire %}
+        <span class="hchip"><i class="fa-solid fa-building"></i> Prestataire : <span class="trunc">{{ inspection.prestataire.nom }}</span></span>
+      {% endif %}
+
+      <span class="hchip"><i class="fa-regular fa-calendar"></i> Date : {{ inspection.date|date:"d/m/Y H:i" }}</span>
+
+      {% if inspection.inspector %}
+        <span class="hchip"><i class="fa-solid fa-user"></i> {{ inspection.inspector.get_full_name|default:inspection.inspector }}</span>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- =================== GRID =================== -->
+  <div class="grid">
+
+    <!-- LEFT -->
+    <div>
+
+      <!-- Détails -->
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-circle-info"></i> Détails</h3>
+          <span class="badge"><i class="fa-solid fa-hashtag"></i> {{ inspection.reference|default:inspection.id }}</span>
+        </div>
+
+        <div class="card-body">
+          <div class="meta">
+            <div class="meta-item">
+              <div class="meta-k">Organisation</div>
+              <div class="meta-v">{{ inspection.organisation.nom|default:"—" }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-k">Template</div>
+              <div class="meta-v">{{ inspection.template.nom|default:"—" }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-k">Score</div>
+              <div class="meta-v">
+                {% if inspection.score is not None %}
+                  {{ inspection.score }}<small> %</small>
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-k">Créée le</div>
+              <div class="meta-v">{{ inspection.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+          </div>
+
+          {% if inspection.notes %}
+            <div style="margin-top:12px; padding:12px; border:1px solid var(--border); border-radius:14px; background:#fff;">
+              <div class="meta-k">Notes générales</div>
+              <div class="meta-v" style="margin-top:6px; font-weight:700;">{{ inspection.notes|linebreaksbr }}</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Questionnaire (aperçu) -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-list-check"></i> Questionnaire (aperçu)</h3>
+          <span class="badge"><i class="fa-solid fa-layer-group"></i> {{ questions|length|default:0 }} questions</span>
+        </div>
+        <div class="card-body">
+          {% if questions %}
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              {% for q in questions %}
+                <div class="meta-item" style="padding:10px 12px;">
+                  <div class="meta-k">{{ q.section.titre|default:"Section" }}</div>
+                  <div class="meta-v" style="margin-top:6px;">{{ q.label }}</div>
+                  {% if q.aide %}<div class="meta-k" style="margin-top:6px;">{{ q.aide }}</div>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div style="margin-top:12px;">
+              <a class="btnx btnx-primary" href="{% url 'inspections:inspection_fill' inspection.id %}">
+                <i class="fa-solid fa-pen-to-square"></i> Ouvrir le formulaire de saisie
+              </a>
+            </div>
+          {% else %}
+            <p style="margin:0; color:var(--muted); font-weight:800;">
+              Aucun questionnaire disponible.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ================= Non-conformités ================= -->
+      <div class="nc-wrap" id="nonconformites">
+        <div class="nc-head">
+          <div>
+            <div class="nc-title"><i class="fa-solid fa-triangle-exclamation"></i> Non-conformités</div>
+            <div class="nc-sub">Création rapide (POST) + suivi (gravité, échéance, responsable, actions).</div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <span class="badge"><i class="fa-solid fa-list-check"></i> {{ ncs|length|default:0 }} NC</span>
+          </div>
+        </div>
+
+        <!-- CREATE NC (POST -> nc_create) -->
+        <div class="nc-create">
+          <form method="post" action="{% url 'inspections:nc_create' inspection.id %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+              <input class="in" type="text" name="titre" placeholder="Titre de la non-conformité *" required>
+
+              <select class="in sel" name="severity">
+                <option value="medium">Moyen</option>
+                <option value="low">Faible</option>
+                <option value="high">Élevé</option>
+                <option value="critical">Critique</option>
+              </select>
+
+              <input class="in" type="date" name="due_date" title="Échéance">
+
+              <select class="in sel" name="question_id" title="Question liée (optionnel)" style="min-width:240px;">
+                <option value="">Question liée (optionnel)</option>
+                {% for q in questions %}
+                  <option value="{{ q.id }}">{{ q.label|truncatechars:70 }}</option>
+                {% endfor %}
+              </select>
+
+              <input type="hidden" name="assigned_to_id" value="">
+              <input type="hidden" name="prestataire_id" value="">
+
+              <button class="btnx btnx-primary" type="submit">
+                <i class="fa-solid fa-plus"></i> Ajouter
+              </button>
+            </div>
+
+            <textarea class="txt" name="description" placeholder="Description (optionnel)"></textarea>
+          </form>
+        </div>
+
+        <!-- LIST NC -->
+        <div class="nc-table-wrap">
+          {% if ncs %}
+            <table class="nc-table">
+              <thead>
+                <tr>
+                  <th>NC</th>
+                  <th>Gravité</th>
+                  <th>Échéance</th>
+                  <th>Responsable</th>
+                  <th>État</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for nc in ncs %}
+                <tr>
+                  <td>
+                    <div class="nc-name">
+                      <b>{{ nc.titre }}</b>
+                      <span class="nc-mini">
+                        <i class="fa-regular fa-clock"></i> {{ nc.reported_at|date:"d/m/Y H:i" }}
+                        {% if nc.question %} • <i class="fa-solid fa-link"></i> question liée{% endif %}
+                      </span>
+                      {% if nc.description %}
+                        <div class="nc-mini" style="margin-top:6px;">{{ nc.description|truncatechars:180 }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="actions-box">
+                      <div class="nc-mini"><i class="fa-solid fa-screwdriver-wrench"></i> Actions correctives</div>
+
+                      {% if nc.actions.all %}
+                        {% for act in nc.actions.all %}
+                          <div class="action-item">
+                            <div>
+                              <b>{{ act.titre }}</b>
+                              <div><small>
+                                {% if act.date_target %}Cible : {{ act.date_target|date:"d/m/Y" }} • {% endif %}
+                                {% if act.assigned_to %}Assigné : {{ act.assigned_to.get_full_name|default:act.assigned_to }}{% else %}Non assigné{% endif %}
+                              </small></div>
+                            </div>
+
+                            <form method="post" action="{% url 'inspections:action_toggle' act.id %}">
+                              {% csrf_token %}
+                              <button class="mini-btn {% if act.done %}mini-success{% else %}mini-muted{% endif %}" type="submit">
+                                {% if act.done %}
+                                  <i class="fa-solid fa-circle-check"></i> Fait
+                                {% else %}
+                                  <i class="fa-regular fa-circle"></i> À faire
+                                {% endif %}
+                              </button>
+                            </form>
+                          </div>
+                        {% endfor %}
+                      {% else %}
+                        <div class="nc-mini" style="margin-top:8px;">Aucune action ajoutée.</div>
+                      {% endif %}
+
+                      <form method="post" action="{% url 'inspections:action_add' nc.id %}">
+                        {% csrf_token %}
+                        <div class="form-row" style="margin-top:10px;">
+                          <input class="in" type="text" name="titre" placeholder="Nouvelle action corrective *" required style="min-width:280px;">
+                          <input class="in" type="date" name="date_target" title="Date cible">
+                          <input type="hidden" name="assigned_to_id" value="">
+                          <button class="mini-btn" type="submit">
+                            <i class="fa-solid fa-plus"></i> Ajouter
+                          </button>
+                        </div>
+                        <textarea class="note" name="description" placeholder="Détails (optionnel)"></textarea>
+                      </form>
+                    </div>
+                  </td>
+
+                  <td>
+                    {% if nc.severity == "low" %}
+                      <span class="chip c-low"><i class="fa-solid fa-circle-info"></i> Faible</span>
+                    {% elif nc.severity == "high" %}
+                      <span class="chip c-high"><i class="fa-solid fa-triangle-exclamation"></i> Élevé</span>
+                    {% elif nc.severity == "critical" %}
+                      <span class="chip c-crit"><i class="fa-solid fa-fire"></i> Critique</span>
+                    {% else %}
+                      <span class="chip c-med"><i class="fa-solid fa-bolt"></i> Moyen</span>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {% if nc.due_date %}
+                      <span class="chip"><i class="fa-regular fa-calendar"></i> {{ nc.due_date|date:"d/m/Y" }}</span>
+                    {% else %}
+                      <span class="nc-mini">—</span>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {% if nc.assigned_to %}
+                      <span class="chip"><i class="fa-solid fa-user"></i> {{ nc.assigned_to.get_full_name|default:nc.assigned_to }}</span>
+                    {% elif nc.prestataire_responsible %}
+                      <span class="chip"><i class="fa-solid fa-building"></i> {{ nc.prestataire_responsible.nom }}</span>
+                    {% else %}
+                      <span class="nc-mini">—</span>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {% if nc.resolved %}
+                      <span class="badge b-success"><i class="fa-solid fa-circle-check"></i> Clôturée</span>
+                      {% if nc.resolved_at %}
+                        <div class="nc-mini" style="margin-top:6px;">le {{ nc.resolved_at|date:"d/m/Y H:i" }}</div>
+                      {% endif %}
+                    {% else %}
+                      <span class="badge b-warning"><i class="fa-solid fa-hourglass-half"></i> En cours</span>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    <div class="actions-line">
+                      {% if not nc.resolved %}
+                        <form method="post" action="{% url 'inspections:nc_resolve' nc.id %}" style="min-width:260px;">
+                          {% csrf_token %}
+                          <textarea class="note" name="resolution_notes" placeholder="Note de clôture (optionnel)"></textarea>
+                          <button class="mini-btn mini-success" type="submit">
+                            <i class="fa-solid fa-circle-check"></i> Clôturer NC
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="nc-mini">—</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div class="empty">
+              <div class="ico"><i class="fa-solid fa-shield-heart"></i></div>
+              <div>
+                <h4>Aucune non-conformité enregistrée</h4>
+                <p>Crée une NC ci-dessus (le bouton “Ajouter” fait un POST vers <b>nc_create</b>).</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-chart-simple"></i> Synthèse</h3>
+        </div>
+        <div class="card-body">
+          <div class="meta" style="grid-template-columns:1fr;">
+            <div class="meta-item">
+              <div class="meta-k">Non-conformités (total)</div>
+              <div class="meta-v">{{ ncs|length|default:0 }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-k">Statut</div>
+              <div class="meta-v">{{ inspection.get_status_display|default:inspection.status }}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-k">Inspecteur</div>
+              <div class="meta-v">
+                {% if inspection.inspector %}
+                  {{ inspection.inspector.get_full_name|default:inspection.inspector }}
+                {% else %}
+                  —
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <a class="btnx btnx-primary" href="{% url 'inspections:inspection_fill' inspection.id %}">
+              <i class="fa-solid fa-pen-to-square"></i> Compléter l’inspection
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <h3><i class="fa-solid fa-lightbulb"></i> Aide</h3>
+        </div>
+        <div class="card-body">
+          <p style="margin:0; color:var(--muted); font-weight:800;">
+            Si tu veux assigner un responsable (utilisateur) ou un prestataire responsable directement depuis cette page,
+            on remplace les champs hidden <b>assigned_to_id</b> et <b>prestataire_id</b> par des listes déroulantes.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

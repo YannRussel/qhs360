@@ -1,0 +1,324 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>{{ titre }}</h2>
+    <p>Créer un prestataire, choisir son domaine, puis joindre ses documents et ses agents.</p>
+  </div>
+
+  <div class="actions">
+    <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">← Retour à la liste</a>
+  </div>
+</div>
+
+<div class="panel" style="max-width:1200px; margin:auto;">
+
+  {# ✅ Messages Django #}
+  {% if messages %}
+    <div style="margin-bottom:14px;">
+      {% for message in messages %}
+        <div class="notice" style="margin-bottom:10px; {% if message.tags == 'error' %}border-color:#fecaca;background:#fff1f2;color:#991b1b;{% elif message.tags == 'success' %}border-color:#bbf7d0;background:#f0fdf4;color:#166534;{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <!-- =================== INFOS PRESTATAIRE =================== -->
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+      <div style="font-weight:900; font-size:14px;">Informations du prestataire</div>
+      <div class="help">Les champs marqués * sont obligatoires.</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+
+      <!-- NOM -->
+      <div class="field" style="grid-column:1/-1;">
+        <label>Nom du prestataire *</label>
+        <input class="input" type="text" name="nom" required
+               value="{{ data.nom|default:'' }}"
+               placeholder="Ex: Clean Service, SGS, Apave...">
+        <div class="help">Nom officiel de l’entreprise.</div>
+      </div>
+
+      <!-- DOMAINE -->
+      <div class="field" style="grid-column:1/-1;">
+        <label>Domaine d’intervention *</label>
+        <select name="domaine" required>
+          <option value="">— Choisir un domaine —</option>
+          {% for d in domaines %}
+            <option value="{{ d.id }}" {% if data.domaine_id|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
+              {{ d.nom }}
+            </option>
+          {% endfor %}
+        </select>
+        <div class="help">Ex: Nettoyage, Sécurité, Maintenance…</div>
+      </div>
+
+      <!-- TELEPHONE -->
+      <div class="field">
+        <label>Téléphone</label>
+        <input class="input" type="text" name="telephone"
+               value="{{ data.telephone|default:'' }}"
+               placeholder="+242 06 123 45 67">
+      </div>
+
+      <!-- EMAIL -->
+      <div class="field">
+        <label>Email</label>
+        <input class="input" type="email" name="email"
+               value="{{ data.email|default:'' }}"
+               placeholder="contact@prestataire.com">
+      </div>
+
+      <!-- ADRESSE -->
+      <div class="field" style="grid-column:1/-1;">
+        <label>Adresse</label>
+        <textarea class="input" name="adresse" rows="3"
+                  placeholder="Adresse physique du prestataire">{{ data.adresse|default:'' }}</textarea>
+      </div>
+
+      <!-- ACTIF -->
+      <div class="field" style="grid-column:1/-1;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+          <input type="checkbox" name="actif" {% if data.actif %}checked{% endif %}>
+          Prestataire actif
+        </label>
+        <div class="help">Décoche si le prestataire n’est plus actif.</div>
+      </div>
+
+      <!-- DATE CREATION (info) -->
+      <div class="field" style="grid-column:1/-1;">
+        <label>Date de création (auto)</label>
+        <input class="input" type="text" value="Générée automatiquement à l’enregistrement" disabled>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== DOCUMENTS =================== -->
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+      <div style="font-weight:900; font-size:14px;">Documents du prestataire</div>
+      <div class="help">Tu peux joindre maintenant, ou plus tard.</div>
+    </div>
+
+    <!-- IMMATRICULATION -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none; margin-bottom:12px;">
+      <div style="font-weight:900; margin-bottom:10px;">📄 Immatriculation société</div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="field" style="grid-column:1/-1;">
+          <label>Fichier (PDF/JPG/PNG)</label>
+          <input class="input" type="file" name="immatriculation_fichier">
+        </div>
+
+        <div class="field">
+          <label>Date d’émission</label>
+          <input class="input" type="date" name="immatriculation_date_emission" value="{{ data.immatriculation_date_emission|default:'' }}">
+        </div>
+
+        <div class="field">
+          <label>Date d’expiration</label>
+          <input class="input" type="date" name="immatriculation_date_expiration" value="{{ data.immatriculation_date_expiration|default:'' }}">
+          <div class="help">Laisse vide si pas d’expiration.</div>
+        </div>
+
+        <div class="field" style="grid-column:1/-1;">
+          <label>Description</label>
+          <input class="input" type="text" name="immatriculation_description" value="{{ data.immatriculation_description|default:'' }}" placeholder="Ex: RCCM / Registre du commerce...">
+        </div>
+
+        <div class="field" style="grid-column:1/-1;">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+            <input type="checkbox" name="immatriculation_actif" checked>
+            Document actif
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- NIU -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none; margin-bottom:12px;">
+      <div style="font-weight:900; margin-bottom:10px;">🧾 NIU</div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="field" style="grid-column:1/-1;">
+          <label>Fichier (PDF/JPG/PNG)</label>
+          <input class="input" type="file" name="niu_fichier">
+        </div>
+
+        <div class="field">
+          <label>Date d’émission</label>
+          <input class="input" type="date" name="niu_date_emission" value="{{ data.niu_date_emission|default:'' }}">
+        </div>
+
+        <div class="field">
+          <label>Date d’expiration</label>
+          <input class="input" type="date" name="niu_date_expiration" value="{{ data.niu_date_expiration|default:'' }}">
+        </div>
+
+        <div class="field" style="grid-column:1/-1;">
+          <label>Description</label>
+          <input class="input" type="text" name="niu_description" value="{{ data.niu_description|default:'' }}" placeholder="Ex: Attestation NIU...">
+        </div>
+
+        <div class="field" style="grid-column:1/-1;">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+            <input type="checkbox" name="niu_actif" checked>
+            Document actif
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTRES DOCUMENTS -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+        <div style="font-weight:900;">📎 Autres documents (illimité)</div>
+        <button type="button" class="btn btn-ghost" onclick="addOtherDoc()">+ Ajouter</button>
+      </div>
+
+      <div class="help" style="margin-bottom:10px;">
+        Exemple : Assurance RC, Contrat, Agrément, Attestation CNSS…
+      </div>
+
+      <div id="otherDocs"></div>
+
+      <template id="otherDocTpl">
+        <div class="panel other-doc-item" style="border:1px dashed var(--border); box-shadow:none; margin:10px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+            <div style="font-weight:800;">Document</div>
+            <button type="button" class="btn btn-danger" onclick="this.closest('.other-doc-item').remove()">Supprimer</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="field" style="grid-column:1/-1;">
+              <label>Titre *</label>
+              <input class="input" type="text" name="autre_titre[]" placeholder="Ex: Assurance RC">
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Fichier *</label>
+              <input class="input" type="file" name="autre_fichier[]">
+              <div class="help">Obligatoire si tu ajoutes un document "Autre".</div>
+            </div>
+
+            <div class="field">
+              <label>Date d’émission</label>
+              <input class="input" type="date" name="autre_date_emission[]">
+            </div>
+
+            <div class="field">
+              <label>Date d’expiration</label>
+              <input class="input" type="date" name="autre_date_expiration[]">
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Description</label>
+              <input class="input" type="text" name="autre_description[]" placeholder="Optionnel">
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <script>
+        function addOtherDoc(){
+          const tpl = document.getElementById("otherDocTpl");
+          document.getElementById("otherDocs").appendChild(tpl.content.cloneNode(true));
+        }
+      </script>
+    </div>
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== AGENTS (illimité) =================== -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+        <div style="font-weight:900;">👥 Agents du prestataire (optionnel)</div>
+        <button type="button" class="btn btn-ghost" onclick="addAgent()">+ Ajouter un agent</button>
+      </div>
+
+      <div class="help" style="margin-bottom:10px;">
+        Tu peux ajouter plusieurs agents maintenant. Si tu laisses vide, tu pourras les ajouter plus tard.
+      </div>
+
+      <div id="agentsWrap"></div>
+
+      <template id="agentTpl">
+        <div class="panel agent-item" style="border:1px dashed var(--border); box-shadow:none; margin:10px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+            <div style="font-weight:800;">Agent</div>
+            <button type="button" class="btn btn-danger" onclick="this.closest('.agent-item').remove()">Supprimer</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="field">
+              <label>Nom *</label>
+              <input class="input" type="text" name="agent_nom[]" placeholder="Nom">
+            </div>
+
+            <div class="field">
+              <label>Prénom</label>
+              <input class="input" type="text" name="agent_prenom[]" placeholder="Prénom">
+            </div>
+
+            <div class="field">
+              <label>Téléphone</label>
+              <input class="input" type="text" name="agent_telephone[]" placeholder="+242 ...">
+            </div>
+
+            <div class="field">
+              <label>Email</label>
+              <input class="input" type="email" name="agent_email[]" placeholder="email@...">
+            </div>
+
+            <div class="field">
+              <label>Fonction</label>
+              <input class="input" type="text" name="agent_fonction[]" placeholder="Chef d’équipe / Technicien...">
+            </div>
+
+            <div class="field">
+              <label>Matricule</label>
+              <input class="input" type="text" name="agent_matricule[]" placeholder="Optionnel">
+            </div>
+
+            <!-- ✅ checkbox fiable: hidden 0 + checkbox 1 -->
+            <div class="field" style="grid-column:1/-1;">
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <input type="hidden" name="agent_actif_val[]" value="0">
+                <input type="checkbox" name="agent_actif_val[]" value="1" checked>
+                Agent actif
+              </label>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <script>
+        function addAgent(){
+          const tpl = document.getElementById("agentTpl");
+          document.getElementById("agentsWrap").appendChild(tpl.content.cloneNode(true));
+        }
+        // 1 bloc par défaut
+        addAgent();
+      </script>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions" style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
+      <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">💾 Enregistrer</button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

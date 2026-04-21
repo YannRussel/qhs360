@@ -1,0 +1,62 @@
+{% extends "core/base.html" %}
+{% block title %}RIA — QHSE360{% endblock %}
+{% block content %}
+<style>
+  :root{ --brand:#0b3a6a; --card:#fff; --border:#e6ebf2; --muted:#64748b; --shadow:0 10px 28px rgba(2,6,23,.07); }
+  .wrap{max-width:1500px;margin:18px auto;padding:18px}
+  .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .title{font-size:24px;font-weight:950;color:var(--brand)}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .input,.select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;text-decoration:none;font-weight:800;color:#0f172a}
+  table{width:100%;border-collapse:separate;border-spacing:0 10px}
+  td,th{padding:12px}
+  th{color:var(--muted);font-size:12px;text-align:left}
+  tr.row{background:var(--card);box-shadow:var(--shadow);border-radius:14px}
+  tr.row td:first-child{border-top-left-radius:14px;border-bottom-left-radius:14px}
+  tr.row td:last-child{border-top-right-radius:14px;border-bottom-right-radius:14px}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="title">🚒 Vérifications mensuelles des RIA</div>
+      <div style="color:var(--muted)">Inventaire + contrôles + pression mesurée.</div>
+    </div>
+    <div class="filters">
+      <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select class="select" name="site">
+          <option value="">Tous les sites</option>
+          {% for s in sites %}
+            <option value="{{ s.id }}" {% if site_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+          {% endfor %}
+        </select>
+        <input class="input" name="q" value="{{ q }}" placeholder="Rechercher numéro / localisation">
+        <button class="btn" type="submit">Filtrer</button>
+      </form>
+      <a class="btn" href="{% url 'incendie:ria_create' %}">➕ Ajouter</a>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Numéro</th><th>Localisation</th><th>Site</th><th>Zone</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rias %}
+      <tr class="row">
+        <td><b>{{ r.numero }}</b></td>
+        <td>{{ r.localisation }}</td>
+        <td>{{ r.site.nom }}</td>
+        <td>{{ r.zone.nom|default:"—" }}</td>
+        <td><a class="btn" href="{% url 'incendie:ria_detail' r.id %}">Détails</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="color:var(--muted)">Aucun RIA.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

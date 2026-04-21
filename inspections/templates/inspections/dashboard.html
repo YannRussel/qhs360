@@ -1,0 +1,188 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Inspections — Dashboard{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --brand:#0b3a6a; 
+  --accent:#1f6aa5;
+  --bg:#f4f6f9; 
+  --card:#ffffff; 
+  --border:#e6ebf2;
+  --text:#0f172a; 
+  --muted:#64748b;
+  --radius:18px;
+  --shadow:0 10px 28px rgba(2,6,23,.08);
+
+  --grad-1: linear-gradient(135deg,#0b3a6a,#1f6aa5);
+  --grad-2: linear-gradient(135deg,#16a34a,#22c55e);
+  --grad-3: linear-gradient(135deg,#2563eb,#3b82f6);
+  --grad-4: linear-gradient(135deg,#7c3aed,#ec4899);
+  --grad-5: linear-gradient(135deg,#f97316,#ef4444);
+}
+
+body{ font-family:Poppins,system-ui; background:var(--bg); color:var(--text); }
+.wrap{ max-width:1400px; margin:22px auto; padding:0 18px; }
+.top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.h1{ font-size:22px; font-weight:800; }
+
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--grad-1); color:#fff; padding:11px 14px;
+  border-radius:14px; text-decoration:none; font-weight:800;
+  box-shadow:0 10px 22px rgba(11,58,106,.25);
+}
+
+/* ✅ bouton secondaire (registre) */
+.btn-secondary{
+  display:inline-flex; align-items:center; gap:10px;
+  background:#fff; color:var(--brand);
+  padding:11px 14px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:900;
+  border:1px solid rgba(31,106,165,.22);
+  box-shadow:0 10px 22px rgba(2,6,23,.06);
+}
+.btn-secondary:hover{
+  background:rgba(31,106,165,.06);
+}
+
+.grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:14px 0 18px; }
+.kpi{ border-radius:var(--radius); padding:14px; color:#fff; box-shadow:var(--shadow); }
+.k1{ background:var(--grad-1); } .k2{ background:var(--grad-2); } .k3{ background:var(--grad-3); }
+.k4{ background:var(--grad-4); } .k5{ background:var(--grad-5); }
+.kpi .t{ font-weight:800; font-size:12px; opacity:.9; }
+.kpi .v{ font-size:22px; font-weight:900; margin-top:6px; }
+
+.panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+.panel-h{ padding:14px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+.panel-h h3{ margin:0; font-size:14px; font-weight:900; }
+.muted{ color:var(--muted); }
+
+/* Cards templates */
+.cards-wrap{ padding:16px; }
+.cards-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+
+.tpl-card{
+  background:#fff; border-radius:18px; padding:18px;
+  border:1px solid var(--border); transition:.2s ease; position:relative;
+}
+.tpl-card:hover{ transform:translateY(-4px); box-shadow:0 20px 40px rgba(2,6,23,.12); }
+.tpl-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:6px;
+  border-radius:18px 18px 0 0; background:var(--grad-3);
+}
+
+.tpl-title{ font-weight:900; font-size:16px; margin-bottom:6px; }
+.tpl-meta{ font-size:13px; color:var(--muted); margin-bottom:12px; }
+
+.tpl-stats{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+.tpl-box{ background:#f8fafc; padding:10px; border-radius:12px; font-size:13px; }
+.tpl-footer{ margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+
+.badge{ padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800; color:#fff; display:inline-flex; gap:6px; }
+.b-active{ background:#22c55e; } .b-inactive{ background:#ef4444; } .b-required{ background:#3b82f6; }
+
+.viewbtn{
+  text-decoration:none; background:var(--grad-1); color:#fff;
+  padding:8px 12px; border-radius:12px; font-weight:800; font-size:12px;
+  white-space:nowrap;
+}
+
+@media(max-width:1200px){ .grid{ grid-template-columns:repeat(2,1fr); } .cards-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:720px){
+  .cards-grid{ grid-template-columns:1fr; }
+  .top{ flex-direction:column; align-items:flex-start; }
+}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="h1">🧩 Templates d’inspection</div>
+      <div class="muted">Modèles disponibles dans la base</div>
+    </div>
+
+    <!-- ✅ Groupe de boutons -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+      <a class="btn-secondary" href="{% url 'inspections:registre_inspections' %}">
+        📒 Registre des inspections
+      </a>
+
+      <a class="btn" href="{% url 'inspections:inspection_create' %}">
+        ➕ Nouvelle inspection
+      </a>
+    </div>
+  </div>
+
+  {% if no_org %}
+    <div class="panel" style="padding:16px">
+      <b>Ton compte n’est lié à aucune organisation.</b>
+    </div>
+  {% else %}
+
+    <div class="grid">
+      <div class="kpi k1"><div class="t">📌 Total</div><div class="v">{{ kpi.total }}</div></div>
+      <div class="kpi k2"><div class="t">🟢 Ouvert</div><div class="v">{{ kpi.open }}</div></div>
+      <div class="kpi k3"><div class="t">🔵 Clos</div><div class="v">{{ kpi.closed }}</div></div>
+      <div class="kpi k4"><div class="t">📅 30 jours</div><div class="v">{{ kpi.last30 }}</div></div>
+      <div class="kpi k5"><div class="t">⚠️ NC ouvertes</div><div class="v">{{ kpi.open_nc }}</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <h3>Templates disponibles</h3>
+        <a class="muted" href="{% url 'inspections:inspection_list' %}" style="font-weight:900; text-decoration:none;">Voir la liste →</a>
+      </div>
+
+      <div class="cards-wrap">
+        <div class="cards-grid">
+          {% for tpl in top_templates %}
+          <div class="tpl-card">
+            <div class="tpl-title">📋 {{ tpl.nom }}</div>
+            <div class="tpl-meta">v{{ tpl.version }} • {{ tpl.slug }}</div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              {% if tpl.required_for_deployment %}
+                <span class="badge b-required">🔵 Requis</span>
+              {% endif %}
+              {% if tpl.actif %}
+                <span class="badge b-active">🟢 Actif</span>
+              {% else %}
+                <span class="badge b-inactive">🔴 Inactif</span>
+              {% endif %}
+            </div>
+
+            <div class="tpl-stats">
+              <div class="tpl-box">🧾 Utilisations: <b>{{ tpl.nb }}</b></div>
+              <div class="tpl-box">🗓️ {{ tpl.created_at|date:"d/m/Y" }}</div>
+            </div>
+
+            <div class="tpl-footer">
+              <span style="font-size:12px;color:var(--muted); font-weight:800;">
+                👤 {% if tpl.created_by %}{{ tpl.created_by }}{% else %}—{% endif %}
+              </span>
+
+              {% if tpl.pk %}
+                <a class="viewbtn" href="{% url 'inspections:inspections_by_template' tpl.pk %}">Voir →</a>
+              {% else %}
+                <span class="muted" style="font-weight:900;">—</span>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div class="muted" style="padding:16px">
+            Aucun template disponible.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Permis — {{ permis.type_permis.nom }}{% endblock %}
+
+{% block content %}
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --text:#0f172a;
+    --muted:#64748b;
+    --shadow:0 10px 28px rgba(2,6,23,.08);
+    --radius:16px;
+
+    --ok:#059669;
+    --warn:#d97706;
+    --bad:#dc2626;
+    --info:#2563eb;
+  }
+
+  .wrap{ max-width:1500px; margin:18px auto; padding:22px; }
+
+  .head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:16px;
+  }
+
+  .title{
+    font-size:26px;
+    font-weight:950;
+    color:var(--brand);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .sub{
+    margin-top:6px;
+    color:var(--muted);
+    font-weight:700;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid var(--border);
+    background:#fff;
+  }
+  .pill-ok{ background:#dcfce7; border-color:#bbf7d0; color:#166534; }
+  .pill-warn{ background:#fef3c7; border-color:#fde68a; color:#92400e; }
+  .pill-bad{ background:#fee2e2; border-color:#fecaca; color:#991b1b; }
+  .pill-info{ background:#dbeafe; border-color:#bfdbfe; color:#1e40af; }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 16px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:900;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .btn-primary{ background:var(--brand); color:#fff; }
+  .btn-success{ background:var(--ok); color:#fff; }
+  .btn-ghost{ background:#fff; color:var(--brand); border-color:var(--border); }
+  .btn-dark{ background:#334155; color:#fff; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:16px;
+  }
+
+  .card h3{
+    margin:0 0 12px 0;
+    font-size:18px;
+    font-weight:950;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .meta{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:12px;
+    margin-top:12px;
+  }
+
+  .kv{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    background:#fbfdff;
+  }
+
+  .kv b{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:900;
+    margin-bottom:4px;
+  }
+
+  .kv span{
+    font-weight:900;
+    color:var(--text);
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+
+  th{
+    background:#f1f5f9;
+    padding:12px;
+    text-align:left;
+    font-size:13px;
+  }
+
+  td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+
+  tr:hover{ background:#f9fafb; }
+
+  .muted{ color:var(--muted); font-weight:700; }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+    align-items:center;
+  }
+
+  /* Habilitations */
+  .hab-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:12px;
+    margin-top:12px;
+  }
+
+  .hab{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    background:#fff;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .hab-left{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .hab-ico{
+    width:40px; height:40px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:950;
+    border:1px solid var(--border);
+    background:#f8fafc;
+  }
+
+  .hab-name{ font-weight:950; color:var(--text); }
+  .hab-desc{ font-size:12px; font-weight:800; color:var(--muted); }
+
+  .hab-right{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+    min-width:120px;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <div>
+      <div class="title">🪪 Permis — {{ permis.type_permis.nom }}</div>
+
+      <div class="sub">
+        <span class="pill pill-info">🛠️ {{ permis.intervention.titre }}</span>
+
+        {% if permis.statut == "en_attente" %}
+          <span class="pill pill-warn">EN ATTENTE</span>
+        {% elif permis.statut == "valide" %}
+          <span class="pill pill-ok">VALIDÉ</span>
+        {% else %}
+          <span class="pill pill-bad">REFUSÉ</span>
+        {% endif %}
+
+        <span class="pill">📅 {{ permis.date_delivrance|date:"d/m/Y H:i" }}</span>
+      </div>
+    </div>
+
+    <div>
+      <a class="btn btn-ghost" href="{% url 'permis:intervention_detail' permis.intervention.id %}">⬅ Retour intervention</a>
+      <a class="btn btn-dark" href="{% url 'permis:dashboard_permis_interventions' %}">🏠 Dashboard</a>
+    </div>
+  </div>
+
+  <!-- INFORMATIONS -->
+  <div class="card">
+    <h3>📌 Informations</h3>
+
+    <div class="meta">
+      <div class="kv"><b>Agent</b><span>{{ permis.agent.nom }} {{ permis.agent.prenom }}</span></div>
+      <div class="kv"><b>Prestataire</b><span>{{ permis.agent.prestataire.nom }}</span></div>
+      <div class="kv"><b>Lieu</b><span>{{ permis.intervention.lieu|default:"—" }}</span></div>
+      <div class="kv"><b>Date intervention</b><span>{{ permis.intervention.date_debut|date:"d/m/Y H:i" }}</span></div>
+    </div>
+
+    {% if permis.statut == "refuse" and permis.motif_refus %}
+      <div style="margin-top:12px; padding:12px; border-radius:14px; background:#fff1f2; border:1px solid #fecaca;">
+        <b>Motif refus :</b> {{ permis.motif_refus }}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- HABILITATIONS -->
+  <div class="card">
+    <h3>🎓 Habilitations requises</h3>
+
+    {% if hab_rows %}
+      <div class="hab-grid">
+        {% for row in hab_rows %}
+          <div class="hab">
+            <div class="hab-left">
+              <div class="hab-ico">🎓</div>
+              <div>
+                <div class="hab-name">{{ row.hab.nom }}</div>
+                <div class="hab-desc">{{ row.hab.description|default:"Habilitation" }}</div>
+              </div>
+            </div>
+
+            <div class="hab-right">
+              {% if row.status == "ok" %}
+                <span class="pill pill-ok">✅ OK</span>
+              {% elif row.status == "soon" %}
+                <span class="pill pill-warn">⏳ Bientôt expirée</span>
+              {% elif row.status == "expired" %}
+                <span class="pill pill-bad">⚠ Expirée</span>
+              {% elif row.status == "inactive" %}
+                <span class="pill pill-bad">⛔ Inactive</span>
+              {% else %}
+                <span class="pill pill-bad">❌ Manquante</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="muted">Aucune habilitation requise pour ce permis.</div>
+    {% endif %}
+  </div>
+
+  <!-- QUESTIONNAIRE -->
+  <div class="card">
+    <h3>✅ Questionnaire</h3>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <table>
+        <tr>
+          <th style="width:45%;">Question</th>
+          <th>Réponse</th>
+          <th style="width:30%;">Remarque / preuve</th>
+        </tr>
+
+        {% for r in reponses %}
+        <tr>
+          <td>
+            <b>{{ r.question.ordre }}.</b> {{ r.question.texte }}
+          </td>
+          <td>{{ r.valeur_text|default:r.valeur_choice|default:r.valeur_bool|default:"—" }}</td>
+          <td>{{ r.remarque|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">Aucune question configurée pour ce type de permis.</td>
+        </tr>
+        {% endfor %}
+      </table>
+
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}

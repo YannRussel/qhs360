@@ -1,0 +1,452 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-hero{
+    background: linear-gradient(180deg, rgba(11,58,106,.10), rgba(11,58,106,0));
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:16px 16px 14px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom:14px;
+  }
+  .page-hero h2{
+    margin:0;
+    font-size:26px;
+    font-weight:900;
+    letter-spacing:-.2px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .hero-icon{
+    width:44px;height:44px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(11,58,106,.12);
+    border:1px solid rgba(11,58,106,.18);
+    color: var(--brand);
+  }
+
+  .topbar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin: 10px 0 12px;
+  }
+  .searchbox{
+    flex:1;
+    min-width: 240px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-soft);
+  }
+  .searchbox input{
+    border:0; outline:0; background:transparent;
+    width:100%;
+    font-size:14px;
+  }
+  .btn{
+    border:1px solid var(--border);
+    background: var(--card);
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary{
+    background: var(--brand);
+    border-color: rgba(11,58,106,.2);
+    color: #fff;
+  }
+  .btn-soft{
+    background: rgba(11,58,106,.08);
+    border-color: rgba(11,58,106,.18);
+    color: var(--brand);
+  }
+
+  .filters{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: 18px;
+    padding: 12px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 12px;
+  }
+  .filters-grid{
+    display:grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media(max-width: 1100px){
+    .filters-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media(max-width: 680px){
+    .filters-grid{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  }
+  .f-group label{
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--muted);
+    display:block;
+    margin-bottom: 6px;
+  }
+  .f-control{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 10px;
+    background: #fff;
+    outline: none;
+  }
+
+  .kpis{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  @media(max-width: 900px){ .kpis{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .kpi{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: 18px;
+    padding: 12px;
+    box-shadow: var(--shadow-soft);
+  }
+  .kpi .label{ color: var(--muted); font-weight: 900; font-size: 12px; }
+  .kpi .value{ font-size: 22px; font-weight: 1000; margin-top: 6px; }
+
+  .table-card{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    overflow:hidden;
+  }
+  table{
+    width:100%;
+    border-collapse: collapse;
+  }
+  thead th{
+    text-align:left;
+    font-size: 12px;
+    letter-spacing:.3px;
+    color: var(--muted);
+    font-weight: 1000;
+    padding: 12px 12px;
+    background: rgba(15,23,42,.02);
+    border-bottom:1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td{
+    padding: 12px 12px;
+    border-bottom:1px solid var(--border);
+    vertical-align: middle;
+    font-size: 13px;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 12px;
+    border:1px solid var(--border);
+    background: rgba(15,23,42,.03);
+    white-space: nowrap;
+  }
+  .pill.ok{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: var(--success); }
+  .pill.warn{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); color: var(--warning); }
+  .pill.bad{ background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.20); color: var(--danger); }
+  .actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .icon-btn{
+    width:36px;height:36px;
+    border-radius: 12px;
+    border:1px solid var(--border);
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+  }
+  .footbar{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap: 10px;
+    padding: 12px;
+  }
+  .muted{ color: var(--muted); }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 1000;
+    background: rgba(11,58,106,.10);
+    border:1px solid rgba(11,58,106,.18);
+    color: var(--brand);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-hero">
+  <h2>
+    <span class="hero-icon"><i class="fa-solid fa-folder-open"></i></span>
+    {{ titre }}
+  </h2>
+  <div class="muted" style="margin-top:6px;">
+    Centralise, versionne, contrôle la diffusion et trace les accès (ISO 9001 — 7.5).
+  </div>
+</div>
+
+<div class="topbar">
+  <form method="get" class="searchbox">
+    <i class="fa-solid fa-magnifying-glass muted"></i>
+    <input type="text" name="q" value="{{ q }}" placeholder="Rechercher : code, titre, mots-clés, type..." />
+    {# garder filtres #}
+    <input type="hidden" name="type" value="{{ filters.type }}">
+    <input type="hidden" name="processus" value="{{ filters.processus }}">
+    <input type="hidden" name="site" value="{{ filters.site }}">
+    <input type="hidden" name="statut" value="{{ filters.statut }}">
+    <input type="hidden" name="date_filter" value="{{ filters.date_filter }}">
+    <input type="hidden" name="date_from" value="{{ filters.date_from }}">
+    <input type="hidden" name="date_to" value="{{ filters.date_to }}">
+    <input type="hidden" name="per_page" value="{{ filters.per_page }}">
+  </form>
+
+  <a class="btn btn-primary" href="{% url 'documentaire:create' %}">
+    <i class="fa-solid fa-plus"></i> Nouveau document
+  </a>
+
+  <a class="btn btn-soft" href="{% url 'documentaire:notifications' %}">
+    <i class="fa-solid fa-bell"></i> Notifications
+    {% if notif_count %}<span class="badge">{{ notif_count }}</span>{% endif %}
+  </a>
+</div>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="label">Documents</div>
+    <div class="value">{{ kpis.total }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">À jour</div>
+    <div class="value">{{ kpis.a_jour }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">En retard de révision</div>
+    <div class="value">{{ kpis.retard }}</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Obsolètes</div>
+    <div class="value">{{ kpis.obsolete }}</div>
+  </div>
+</div>
+
+<form method="get" class="filters">
+  <div class="filters-grid">
+    <div class="f-group">
+      <label>Type de document</label>
+      <select class="f-control" name="type">
+        <option value="">Tous</option>
+        {% for t in types %}
+          <option value="{{ t.id }}" {% if filters.type == t.id|stringformat:"s" %}selected{% endif %}>{{ t.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Processus</label>
+      <select class="f-control" name="processus">
+        <option value="">Tous</option>
+        {% for p in processus %}
+          <option value="{{ p.id }}" {% if filters.processus == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Site / Projet</label>
+      <select class="f-control" name="site">
+        <option value="">Tous</option>
+        {% for s in sites %}
+          <option value="{{ s.id }}" {% if filters.site == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Statut</label>
+      <select class="f-control" name="statut">
+        <option value="">Tous</option>
+        {% for k,v in statuts %}
+          <option value="{{ k }}" {% if filters.statut == k %}selected{% endif %}>{{ v }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Filtre date</label>
+      <select class="f-control" name="date_filter">
+        <option value="">Aucun</option>
+        <option value="cree" {% if filters.date_filter == "cree" %}selected{% endif %}>Création</option>
+        <option value="modifie" {% if filters.date_filter == "modifie" %}selected{% endif %}>Mise à jour</option>
+        <option value="revision" {% if filters.date_filter == "revision" %}selected{% endif %}>Prochaine révision</option>
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Volume</label>
+      <select class="f-control" name="per_page">
+        <option value="10" {% if filters.per_page == 10 %}selected{% endif %}>10</option>
+        <option value="20" {% if filters.per_page == 20 %}selected{% endif %}>20</option>
+        <option value="50" {% if filters.per_page == 50 %}selected{% endif %}>50</option>
+        <option value="100" {% if filters.per_page == 100 %}selected{% endif %}>100</option>
+      </select>
+    </div>
+
+    <div class="f-group">
+      <label>Date début</label>
+      <input class="f-control" type="date" name="date_from" value="{{ filters.date_from }}">
+    </div>
+
+    <div class="f-group">
+      <label>Date fin</label>
+      <input class="f-control" type="date" name="date_to" value="{{ filters.date_to }}">
+    </div>
+
+    <div class="f-group">
+      <label>Recherche</label>
+      <input class="f-control" type="text" name="q" value="{{ q }}" placeholder="Code / Titre / Mots-clés">
+    </div>
+
+    <div class="f-group" style="display:flex; gap:10px; align-items:flex-end;">
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Appliquer</button>
+      <a class="btn" href="{% url 'documentaire:list' %}"><i class="fa-solid fa-rotate-right"></i> Reset</a>
+    </div>
+  </div>
+</form>
+
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Titre</th>
+        <th>Type</th>
+        <th>Processus</th>
+        <th>Site</th>
+        <th>Version</th>
+        <th>Statut</th>
+        <th>Prochaine révision</th>
+        <th>Dernière MAJ</th>
+        <th>Propriétaire</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for d in page_obj %}
+        <tr>
+          <td><strong>{{ d.code }}</strong></td>
+          <td>{{ d.titre }}</td>
+          <td>{{ d.type_document.nom }}</td>
+          <td>{% if d.processus %}{{ d.processus.nom }}{% else %}—{% endif %}</td>
+          <td>{% if d.site %}{{ d.site.nom }}{% else %}—{% endif %}</td>
+          <td><span class="pill">{{ d.version_label }}</span></td>
+          <td>
+            {% if d.statut == "approuve" %}
+              <span class="pill ok"><i class="fa-solid fa-circle-check"></i> Approuvé</span>
+            {% elif d.statut == "validation" %}
+              <span class="pill warn"><i class="fa-solid fa-hourglass-half"></i> Validation</span>
+            {% elif d.statut == "obsolete" %}
+              <span class="pill bad"><i class="fa-solid fa-box-archive"></i> Obsolète</span>
+            {% else %}
+              <span class="pill"><i class="fa-solid fa-pen"></i> Brouillon</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.date_prochaine_revision %}
+              {% if d.est_en_retard_revision %}
+                <span class="pill bad"><i class="fa-solid fa-triangle-exclamation"></i> {{ d.date_prochaine_revision }}</span>
+              {% else %}
+                <span class="pill ok"><i class="fa-solid fa-calendar"></i> {{ d.date_prochaine_revision }}</span>
+              {% endif %}
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ d.modifie_le|date:"d/m/Y H:i" }}</td>
+          <td>{{ d.proprietaire }}</td>
+          <td>
+            <div class="actions">
+              <a class="icon-btn" title="Fiche" href="{% url 'documentaire:detail' d.id %}">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+              <a class="icon-btn" title="Versions" href="{% url 'documentaire:versions' d.id %}">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </a>
+
+              {% if d.version_courante %}
+                <a class="icon-btn" title="Télécharger"
+                   href="{% url 'documentaire:download_version' d.version_courante.id %}">
+                  <i class="fa-solid fa-download"></i>
+                </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="11" class="muted" style="padding:16px;">
+            Aucun document trouvé.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="footbar">
+    <div class="muted">
+      Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} — {{ page_obj.paginator.count }} documents
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="btn" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ filters.type }}&processus={{ filters.processus }}&site={{ filters.site }}&statut={{ filters.statut }}&date_filter={{ filters.date_filter }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&per_page={{ filters.per_page }}">Précédent</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="btn" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ filters.type }}&processus={{ filters.processus }}&site={{ filters.site }}&statut={{ filters.statut }}&date_filter={{ filters.date_filter }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&per_page={{ filters.per_page }}">Suivant</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

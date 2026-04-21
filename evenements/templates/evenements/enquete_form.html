@@ -1,0 +1,1603 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Enquête — {{ ev }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --accent:#1f6aa5;
+
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e6ebf2;
+
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+
+    --radius:16px;
+    --shadow:0 12px 30px rgba(2,6,23,.08);
+    --shadow-soft:0 8px 22px rgba(15,23,42,.06);
+  }
+
+  *{ box-sizing:border-box; }
+  body{ font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+  .wrap{ max-width:1400px; margin:0 auto; padding:18px 18px 34px; }
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:14px; flex-wrap:wrap; margin-bottom:14px;
+  }
+  .title{
+    display:flex; align-items:flex-start; gap:12px;
+  }
+  .title .icon{
+    width:44px; height:44px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(11,58,106,.1); color:var(--brand);
+    box-shadow:var(--shadow-soft);
+    flex:0 0 auto;
+  }
+  .title h2{ margin:0; font-size:22px; font-weight:900; color:var(--brand); }
+  .title p{ margin:4px 0 0; color:var(--muted); font-size:13px; }
+
+  .actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .btn{
+    border:1px solid var(--border);
+    background:var(--card);
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:800;
+    color:var(--text);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:var(--shadow-soft);
+  }
+  .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.ghost{ background:transparent; box-shadow:none; }
+  .btn.danger{ background:#fff; border-color:rgba(239,68,68,.35); color:#b91c1c; }
+
+  .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
+  @media (max-width: 1050px){ .grid{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+    gap:10px; flex-wrap:wrap;
+    background:linear-gradient(180deg, rgba(11,58,106,.06), transparent);
+  }
+  .card .hd h3{ margin:0; font-size:14px; font-weight:900; color:var(--text); }
+  .card .bd{ padding:14px 16px; }
+
+  .tabs{
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .tab{
+    padding:10px 12px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#fff;
+    cursor:pointer;
+    font-weight:900;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .tab.active{
+    color:var(--brand);
+    border-color:rgba(31,106,165,.45);
+    background:rgba(31,106,165,.08);
+  }
+  .pane{ display:none; }
+  .pane.active{ display:block; }
+
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  @media (max-width: 700px){ .row{ grid-template-columns:1fr; } }
+
+  .field label{
+    display:block; font-size:12px; font-weight:900; color:var(--text);
+    margin-bottom:6px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    outline:none;
+    font-family:inherit;
+    font-size:13px;
+    background:#fff;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .field textarea{ min-height:110px; resize:vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:rgba(31,106,165,.55);
+    box-shadow:0 0 0 4px rgba(31,106,165,.08);
+  }
+  .field textarea.input-error,
+  .field input.input-error,
+  .field select.input-error{
+    border-color:var(--bad) !important;
+    box-shadow:0 0 0 4px rgba(239,68,68,.10) !important;
+  }
+
+  .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid var(--border);
+    background:#fff;
+  }
+
+  .tree{
+    border:1px dashed rgba(100,116,139,.35);
+    border-radius:14px;
+    padding:10px;
+    background:rgba(244,246,249,.6);
+  }
+  .node{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    box-shadow:var(--shadow-soft);
+    margin:10px 0;
+  }
+  .node.root-cause{
+    border-color:rgba(239,68,68,.35);
+    background:linear-gradient(180deg, rgba(239,68,68,.05), rgba(255,255,255,1));
+  }
+  .node .meta{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;
+  }
+  .node .meta .left{
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .node .meta .t{
+    font-weight:900; font-size:12px; color:var(--text);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .node .meta .s{
+    font-size:12px; color:var(--muted);
+  }
+  .node .desc{
+    margin-top:8px; font-size:13px; color:var(--text);
+    white-space:pre-wrap;
+  }
+  .node .controls{
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  }
+  .mini{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:10px;
+    padding:7px 10px;
+    cursor:pointer;
+    font-weight:900;
+    font-size:12px;
+    color:var(--text);
+  }
+  .mini.danger{
+    border-color:rgba(239,68,68,.35);
+    color:#b91c1c;
+  }
+
+  .children{
+    margin-left:20px;
+    padding-left:14px;
+    border-left:2px solid rgba(31,106,165,.25);
+  }
+
+  .notice{
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(31,106,165,.25);
+    background:rgba(31,106,165,.06);
+    color:var(--text);
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .req{
+    color:#b91c1c;
+    font-weight:900;
+    margin-left:6px;
+  }
+
+  .footer-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:14px;
+    flex-wrap:wrap;
+  }
+
+  .tree-block{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#f8fafc;
+    border:1px solid var(--border);
+  }
+  .tree-block b{
+    color:var(--brand);
+    display:block;
+    margin-bottom:4px;
+    font-size:12px;
+  }
+
+  .toast-wrap{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .toast{
+    min-width:280px;
+    max-width:360px;
+    border-radius:14px;
+    color:#fff;
+    padding:12px 14px;
+    box-shadow:0 12px 28px rgba(2,6,23,.18);
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    animation:toastIn .22s ease;
+  }
+  .toast.success{ background:#16a34a; }
+  .toast.error{ background:#dc2626; }
+  .toast.warn{ background:#d97706; }
+  .toast.info{ background:#0b3a6a; }
+  .toast .ico{ font-size:16px; line-height:1.2; margin-top:1px; }
+  .toast .txt{ font-size:13px; font-weight:700; line-height:1.35; }
+
+  .check-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  @media (max-width: 900px){
+    .check-grid{ grid-template-columns:1fr; }
+  }
+
+  .check-card{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    background:#fff;
+    box-shadow:var(--shadow-soft);
+  }
+  .check-card h4{
+    margin:0 0 10px;
+    color:var(--brand);
+    font-size:14px;
+    font-weight:900;
+  }
+
+  .check-list{
+    display:grid;
+    gap:8px;
+  }
+
+  .check-list.two-cols{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+  @media (max-width:700px){
+    .check-list.two-cols{ grid-template-columns:1fr; }
+  }
+
+  .check-item{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:9px 10px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#f8fafc;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  .check-item:hover{
+    border-color:rgba(31,106,165,.35);
+    background:rgba(31,106,165,.04);
+  }
+  .check-item input{
+    margin-top:2px;
+    width:16px;
+    height:16px;
+    accent-color:var(--brand);
+    flex:0 0 auto;
+  }
+  .check-note{
+    margin-top:8px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  @keyframes toastIn{
+    from{ opacity:0; transform:translateY(-8px) translateX(10px); }
+    to{ opacity:1; transform:translateY(0) translateX(0); }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="title">
+      <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+      <div>
+        <h2>Enquête — {{ ev }}</h2>
+        <p>Chronologie structurée + méthode d’analyse (5P industrie / Arbre des causes). Enregistrement sans DjangoForm.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn ghost" href="{% url 'evenements:evenement_detail' ev.id %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour événement
+      </a>
+      <button form="enqueteForm" class="btn primary" type="submit">
+        <i class="fa-solid fa-floppy-disk"></i> Enregistrer l’enquête
+      </button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="hd">
+        <h3>Formulaire enquête</h3>
+        <div class="tabs" id="tabs">
+          <button type="button" class="tab active" data-tab="infos"><i class="fa-solid fa-circle-info"></i> Infos</button>
+          <button type="button" class="tab" data-tab="chrono"><i class="fa-solid fa-timeline"></i> Chronologie</button>
+          <button type="button" class="tab" data-tab="methode"><i class="fa-solid fa-diagram-project"></i> Méthode</button>
+          <button type="button" class="tab" data-tab="valid"><i class="fa-solid fa-pen-nib"></i> Validation</button>
+        </div>
+      </div>
+
+      <div class="bd">
+        <form id="enqueteForm" method="post" action="{% url 'evenements:enquete_edit' ev.id %}">
+          {% csrf_token %}
+
+          <div class="pane active" id="pane-infos">
+            <div class="row">
+              <div class="field">
+                <label>Équipe d’enquête</label>
+                <textarea name="equipe_enquete" placeholder="Ex: HSE site, Superviseur, Médecin, Représentant prestataire...">{{ enquete.equipe_enquete }}</textarea>
+                <div class="hint">Tu peux mettre les noms + rôles.</div>
+              </div>
+              <div class="field">
+                <label>Résumé global (optionnel)</label>
+                <textarea name="deroulement_faits" placeholder="Résumé global (si tu veux)">{{ enquete.deroulement_faits }}</textarea>
+                <div class="hint">Le détail structuré se fait dans la Chronologie.</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;" class="row">
+              <div class="field">
+                <label>Méthode d’analyse</label>
+                <select name="methode_analyse" id="methodeSelect">
+                  <option value="" {% if not enquete.methode_analyse %}selected{% endif %}>—</option>
+                  <option value="5p" {% if enquete.methode_analyse == "5p" %}selected{% endif %}>Méthode des 5P (Personnel, Procédures, Produits, Procédé, Place)</option>
+                  <option value="arbre" {% if enquete.methode_analyse == "arbre" %}selected{% endif %}>Arbre des causes</option>
+                </select>
+                <div class="hint">Le formulaire “Méthode” s’adapte automatiquement.</div>
+              </div>
+
+              <div class="notice">
+                <i class="fa-solid fa-lightbulb"></i>
+                <b>Conseil :</b> commence par la Chronologie (faits), puis passe à 5P ou Arbre.
+              </div>
+            </div>
+
+            <div style="margin-top:14px;" class="check-grid">
+
+              <div class="check-card">
+                <h4>Causes humaines</h4>
+                <div class="check-list">
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Erreur de manipulation"
+                           {% if enquete.causes_humaines and "Erreur de manipulation" in enquete.causes_humaines %}checked{% endif %}>
+                    Erreur de manipulation
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Fatigue"
+                           {% if enquete.causes_humaines and "Fatigue" in enquete.causes_humaines %}checked{% endif %}>
+                    Fatigue
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Inattention"
+                           {% if enquete.causes_humaines and "Inattention" in enquete.causes_humaines %}checked{% endif %}>
+                    Inattention
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Non-respect des consignes"
+                           {% if enquete.causes_humaines and "Non-respect des consignes" in enquete.causes_humaines %}checked{% endif %}>
+                    Non-respect des consignes
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Mauvaise communication"
+                           {% if enquete.causes_humaines and "Mauvaise communication" in enquete.causes_humaines %}checked{% endif %}>
+                    Mauvaise communication
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_humaines[]" value="Manque de compétence"
+                           {% if enquete.causes_humaines and "Manque de compétence" in enquete.causes_humaines %}checked{% endif %}>
+                    Manque de compétence
+                  </label>
+                </div>
+              </div>
+
+              <div class="check-card">
+                <h4>Causes techniques</h4>
+                <div class="check-list">
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Défaillance équipement"
+                           {% if enquete.causes_techniques and "Défaillance équipement" in enquete.causes_techniques %}checked{% endif %}>
+                    Défaillance équipement
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Défaut de maintenance"
+                           {% if enquete.causes_techniques and "Défaut de maintenance" in enquete.causes_techniques %}checked{% endif %}>
+                    Défaut de maintenance
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Fuite"
+                           {% if enquete.causes_techniques and "Fuite" in enquete.causes_techniques %}checked{% endif %}>
+                    Fuite
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Surpression"
+                           {% if enquete.causes_techniques and "Surpression" in enquete.causes_techniques %}checked{% endif %}>
+                    Surpression
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Instrument défectueux"
+                           {% if enquete.causes_techniques and "Instrument défectueux" in enquete.causes_techniques %}checked{% endif %}>
+                    Instrument défectueux
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_techniques[]" value="Alarme inefficace"
+                           {% if enquete.causes_techniques and "Alarme inefficace" in enquete.causes_techniques %}checked{% endif %}>
+                    Alarme inefficace
+                  </label>
+                </div>
+              </div>
+
+              <div class="check-card">
+                <h4>Causes organisationnelles</h4>
+                <div class="check-list">
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Procédure absente"
+                           {% if enquete.causes_organisationnelles and "Procédure absente" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Procédure absente
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Procédure non appliquée"
+                           {% if enquete.causes_organisationnelles and "Procédure non appliquée" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Procédure non appliquée
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Supervision insuffisante"
+                           {% if enquete.causes_organisationnelles and "Supervision insuffisante" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Supervision insuffisante
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Planification insuffisante"
+                           {% if enquete.causes_organisationnelles and "Planification insuffisante" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Planification insuffisante
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Formation non adaptée"
+                           {% if enquete.causes_organisationnelles and "Formation non adaptée" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Formation non adaptée
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_organisationnelles[]" value="Analyse de risque absente"
+                           {% if enquete.causes_organisationnelles and "Analyse de risque absente" in enquete.causes_organisationnelles %}checked{% endif %}>
+                    Analyse de risque absente
+                  </label>
+                </div>
+              </div>
+
+              <div class="check-card">
+                <h4>Causes environnementales</h4>
+                <div class="check-list">
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Sol glissant"
+                           {% if enquete.causes_environnementales and "Sol glissant" in enquete.causes_environnementales %}checked{% endif %}>
+                    Sol glissant
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Éclairage insuffisant"
+                           {% if enquete.causes_environnementales and "Éclairage insuffisant" in enquete.causes_environnementales %}checked{% endif %}>
+                    Éclairage insuffisant
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Ventilation insuffisante"
+                           {% if enquete.causes_environnementales and "Ventilation insuffisante" in enquete.causes_environnementales %}checked{% endif %}>
+                    Ventilation insuffisante
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Bruit excessif"
+                           {% if enquete.causes_environnementales and "Bruit excessif" in enquete.causes_environnementales %}checked{% endif %}>
+                    Bruit excessif
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Conditions météo défavorables"
+                           {% if enquete.causes_environnementales and "Conditions météo défavorables" in enquete.causes_environnementales %}checked{% endif %}>
+                    Conditions météo défavorables
+                  </label>
+                  <label class="check-item">
+                    <input type="checkbox" name="causes_environnementales[]" value="Zone encombrée"
+                           {% if enquete.causes_environnementales and "Zone encombrée" in enquete.causes_environnementales %}checked{% endif %}>
+                    Zone encombrée
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <div style="margin-top:12px;" class="row">
+              <div class="field">
+                <label>Conclusion</label>
+                <textarea name="conclusion">{{ enquete.conclusion }}</textarea>
+              </div>
+              
+            </div>
+          </div>
+
+          <div class="pane" id="pane-chrono">
+            <div class="notice" style="margin-bottom:12px;">
+              <i class="fa-solid fa-timeline"></i>
+              <b>Chronologie dynamique :</b> ajoute un fait, puis ajoute des sous-faits pour construire l’arbre.
+            </div>
+
+            <div class="card" style="box-shadow:none; border-radius:14px; margin-bottom:12px;">
+              <div class="bd">
+                <div class="row">
+                  <div class="field">
+                    <label>Date <span class="req">*</span></label>
+                    <input type="date" id="chronoDate">
+                  </div>
+                  <div class="field">
+                    <label>Heure</label>
+                    <input type="time" id="chronoTime">
+                  </div>
+                </div>
+                <div class="field" style="margin-top:10px;">
+                  <label>Description du fait <span class="req">*</span></label>
+                  <textarea id="chronoDesc" placeholder="Décris le fait de manière factuelle (quoi, qui, où, comment)."></textarea>
+                </div>
+
+                <div class="row" style="margin-top:10px;">
+                  <div class="field">
+                    <label>Parent (optionnel)</label>
+                    <select id="chronoParent">
+                      <option value="">— Aucun (fait principal)</option>
+                    </select>
+                    <div class="hint">Si tu choisis un parent, ce fait devient un sous-fait.</div>
+                  </div>
+                  <div class="field">
+                    <label>Ordre</label>
+                    <input type="number" id="chronoOrder" value="1" min="1">
+                  </div>
+                </div>
+
+                <div class="footer-actions">
+                  <button type="button" class="btn primary" id="btnAddChrono">
+                    <i class="fa-solid fa-plus"></i> Ajouter ce fait
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tree" id="chronoTree"></div>
+          </div>
+
+          <div class="pane" id="pane-methode">
+            <div class="notice" style="margin-bottom:12px;">
+              <i class="fa-solid fa-diagram-project"></i>
+              Choisis une méthode dans “Infos”. Ici, tu remplis la méthode choisie.
+            </div>
+
+            <div id="block5p" style="display:none;">
+              <div class="card" style="box-shadow:none; border-radius:14px;">
+                <div class="hd">
+                  <h3><i class="fa-solid fa-list-check"></i> Méthode des 5P</h3>
+                  <span class="pill"><i class="fa-solid fa-square-check"></i> Analyse par cases à cocher</span>
+                </div>
+                <div class="bd">
+
+                  <div class="check-grid">
+
+                    <div class="check-card">
+                      <h4>Personnel <span class="req">*</span></h4>
+                      <div class="check-list">
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Formation insuffisante"
+                                 {% if analyse_5p and "Formation insuffisante" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Formation insuffisante
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Manque d'expérience"
+                                 {% if analyse_5p and "Manque d'expérience" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Manque d'expérience
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Fatigue"
+                                 {% if analyse_5p and "Fatigue" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Fatigue
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Inattention"
+                                 {% if analyse_5p and "Inattention" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Inattention
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Non-port des EPI"
+                                 {% if analyse_5p and "Non-port des EPI" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Non-port des EPI
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Mauvaise communication"
+                                 {% if analyse_5p and "Mauvaise communication" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Mauvaise communication
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Non-respect des consignes"
+                                 {% if analyse_5p and "Non-respect des consignes" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Non-respect des consignes
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="personnel[]" value="Supervision insuffisante"
+                                 {% if analyse_5p and "Supervision insuffisante" in analyse_5p.reponse1 %}checked{% endif %}>
+                          Supervision insuffisante
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="check-card">
+                      <h4>Procédures <span class="req">*</span></h4>
+                      <div class="check-list">
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Procédure absente"
+                                 {% if analyse_5p and "Procédure absente" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Procédure absente
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Procédure non connue"
+                                 {% if analyse_5p and "Procédure non connue" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Procédure non connue
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Procédure non appliquée"
+                                 {% if analyse_5p and "Procédure non appliquée" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Procédure non appliquée
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Permis de travail non conforme"
+                                 {% if analyse_5p and "Permis de travail non conforme" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Permis de travail non conforme
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Consignation insuffisante"
+                                 {% if analyse_5p and "Consignation insuffisante" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Consignation insuffisante
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Contrôle préalable non réalisé"
+                                 {% if analyse_5p and "Contrôle préalable non réalisé" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Contrôle préalable non réalisé
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Mode opératoire inadapté"
+                                 {% if analyse_5p and "Mode opératoire inadapté" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Mode opératoire inadapté
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procedures[]" value="Absence d'analyse de risque"
+                                 {% if analyse_5p and "Absence d'analyse de risque" in analyse_5p.reponse2 %}checked{% endif %}>
+                          Absence d'analyse de risque
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="check-card">
+                      <h4>Produits <span class="req">*</span></h4>
+                      <div class="check-list">
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Produit inflammable"
+                                 {% if analyse_5p and "Produit inflammable" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Produit inflammable
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Produit toxique"
+                                 {% if analyse_5p and "Produit toxique" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Produit toxique
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Produit sous pression"
+                                 {% if analyse_5p and "Produit sous pression" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Produit sous pression
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Fuite de produit"
+                                 {% if analyse_5p and "Fuite de produit" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Fuite de produit
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Stockage non conforme"
+                                 {% if analyse_5p and "Stockage non conforme" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Stockage non conforme
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Étiquetage insuffisant"
+                                 {% if analyse_5p and "Étiquetage insuffisant" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Étiquetage insuffisant
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Incompatibilité chimique"
+                                 {% if analyse_5p and "Incompatibilité chimique" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Incompatibilité chimique
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="produits[]" value="Mauvaise manipulation du produit"
+                                 {% if analyse_5p and "Mauvaise manipulation du produit" in analyse_5p.reponse3 %}checked{% endif %}>
+                          Mauvaise manipulation du produit
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="check-card">
+                      <h4>Procédé <span class="req">*</span></h4>
+                      <div class="check-list">
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Surpression"
+                                 {% if analyse_5p and "Surpression" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Surpression
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Température anormale"
+                                 {% if analyse_5p and "Température anormale" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Température anormale
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Défaillance capteur"
+                                 {% if analyse_5p and "Défaillance capteur" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Défaillance capteur
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Alarme absente ou inefficace"
+                                 {% if analyse_5p and "Alarme absente ou inefficace" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Alarme absente ou inefficace
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Mauvaise séquence opératoire"
+                                 {% if analyse_5p and "Mauvaise séquence opératoire" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Mauvaise séquence opératoire
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Défaillance équipement"
+                                 {% if analyse_5p and "Défaillance équipement" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Défaillance équipement
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Dérive de paramètres"
+                                 {% if analyse_5p and "Dérive de paramètres" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Dérive de paramètres
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="procede[]" value="Défaut de maintenance"
+                                 {% if analyse_5p and "Défaut de maintenance" in analyse_5p.reponse4 %}checked{% endif %}>
+                          Défaut de maintenance
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="check-card" style="grid-column:1/-1;">
+                      <h4>Place / Environnement <span class="req">*</span></h4>
+                      <div class="check-list two-cols">
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Sol glissant"
+                                 {% if analyse_5p and "Sol glissant" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Sol glissant
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Éclairage insuffisant"
+                                 {% if analyse_5p and "Éclairage insuffisant" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Éclairage insuffisant
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Signalisation absente"
+                                 {% if analyse_5p and "Signalisation absente" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Signalisation absente
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Zone encombrée"
+                                 {% if analyse_5p and "Zone encombrée" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Zone encombrée
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Ventilation insuffisante"
+                                 {% if analyse_5p and "Ventilation insuffisante" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Ventilation insuffisante
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Conditions météo défavorables"
+                                 {% if analyse_5p and "Conditions météo défavorables" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Conditions météo défavorables
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Bruit excessif"
+                                 {% if analyse_5p and "Bruit excessif" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Bruit excessif
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Espace confiné"
+                                 {% if analyse_5p and "Espace confiné" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Espace confiné
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Accès difficile"
+                                 {% if analyse_5p and "Accès difficile" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Accès difficile
+                        </label>
+                        <label class="check-item">
+                          <input type="checkbox" name="place[]" value="Zone non balisée"
+                                 {% if analyse_5p and "Zone non balisée" in analyse_5p.reponse5 %}checked{% endif %}>
+                          Zone non balisée
+                        </label>
+                      </div>
+                      <div class="check-note">
+                        Coche au moins un élément dans chaque famille 5P.
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div class="field" style="margin-top:12px;">
+                    <label>Cause racine finale <span class="req">*</span></label>
+                    <textarea name="cause_racine_finale" id="causeFinale" placeholder="Résume ici la cause racine finale">{% if analyse_5p %}{{ analyse_5p.cause_racine_finale }}{% endif %}</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="blockArbre" style="display:none;">
+              <div class="card" style="box-shadow:none; border-radius:14px; margin-bottom:12px;">
+                <div class="hd">
+                  <h3><i class="fa-solid fa-diagram-project"></i> Arbre des causes détaillé</h3>
+                  <span class="pill"><i class="fa-solid fa-sitemap"></i> Cause → Pourquoi → Réponse</span>
+                </div>
+                <div class="bd">
+
+                  <div class="row">
+                    <div class="field">
+                      <label>Type nœud <span class="req">*</span></label>
+                      <select id="arbreType">
+                        <option value="fait">Fait</option>
+                        <option value="cause">Cause</option>
+                        <option value="barriere">Barrière absente</option>
+                        <option value="cause_racine">Cause racine</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Logique (optionnel)</label>
+                      <select id="arbreLogique">
+                        <option value="">—</option>
+                        <option value="et">ET</option>
+                        <option value="ou">OU</option>
+                      </select>
+                      <div class="hint">Utile sur un parent qui regroupe plusieurs causes.</div>
+                    </div>
+                  </div>
+
+                  <div class="field" style="margin-top:10px;">
+                    <label>Cause / Fait constaté <span class="req">*</span></label>
+                    <textarea id="arbreCause" placeholder="Ex: Sol mouillé non signalé"></textarea>
+                  </div>
+
+                  <div class="row" style="margin-top:10px;">
+                    <div class="field">
+                      <label>Pourquoi ?</label>
+                      <textarea id="arbrePourquoi" placeholder="Ex: Pourquoi cette situation s'est produite ?"></textarea>
+                    </div>
+                    <div class="field">
+                      <label>Réponse</label>
+                      <textarea id="arbreReponse" placeholder="Ex: Aucun balisage n’a été mis en place"></textarea>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:10px;">
+                    <div class="field">
+                      <label>Parent (optionnel)</label>
+                      <select id="arbreParent">
+                        <option value="">— Aucun (racine)</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Ordre</label>
+                      <input type="number" id="arbreOrder" value="1" min="1">
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px;">
+                    <label class="pill">
+                      <input type="checkbox" id="arbreCauseRacine">
+                      Marquer comme cause racine
+                    </label>
+                  </div>
+
+                  <div class="footer-actions">
+                    <button type="button" class="btn primary" id="btnAddArbre">
+                      <i class="fa-solid fa-plus"></i> Ajouter le nœud
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tree" id="arbreTree"></div>
+            </div>
+          </div>
+
+          <div class="pane" id="pane-valid">
+            <div class="row">
+              <div class="field">
+                <label>Validation Responsable HSE</label>
+                <input type="text" name="validation_responsable_hse" value="{{ enquete.validation_responsable_hse }}">
+              </div>
+              <div class="field">
+                <label>Validation Chef de site / Direction</label>
+                <input type="text" name="validation_chef_site_direction" value="{{ enquete.validation_chef_site_direction }}">
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:12px;">
+              <div class="field">
+                <label>Facteurs contributifs (cases)</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <label class="pill"><input type="checkbox" name="fc_formation_non_valide" {% if enquete.fc_formation_non_valide %}checked{% endif %}> Formation non valide</label>
+                  <label class="pill"><input type="checkbox" name="fc_habilitation_expiree" {% if enquete.fc_habilitation_expiree %}checked{% endif %}> Habilitation expirée</label>
+                  <label class="pill"><input type="checkbox" name="fc_permis_non_conforme" {% if enquete.fc_permis_non_conforme %}checked{% endif %}> Permis non conforme</label>
+                  <label class="pill"><input type="checkbox" name="fc_epi_non_porte" {% if enquete.fc_epi_non_porte %}checked{% endif %}> EPI non porté</label>
+                  <label class="pill"><input type="checkbox" name="fc_procedure_non_appliquee" {% if enquete.fc_procedure_non_appliquee %}checked{% endif %}> Procédure non appliquée</label>
+                  <label class="pill"><input type="checkbox" name="fc_supervision_insuffisante" {% if enquete.fc_supervision_insuffisante %}checked{% endif %}> Supervision insuffisante</label>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Liens (modules)</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <label class="pill"><input type="checkbox" name="lien_formation" {% if enquete.lien_formation %}checked{% endif %}> Formation</label>
+                  <label class="pill"><input type="checkbox" name="lien_habilitation" {% if enquete.lien_habilitation %}checked{% endif %}> Habilitation</label>
+                  <label class="pill"><input type="checkbox" name="lien_permis" {% if enquete.lien_permis %}checked{% endif %}> Permis</label>
+                  <label class="pill"><input type="checkbox" name="lien_procedure" {% if enquete.lien_procedure %}checked{% endif %}> Procédure</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer-actions">
+              <button class="btn primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h3>Résumé & aide</h3>
+      </div>
+      <div class="bd">
+        <div class="notice" style="margin-bottom:10px;">
+          <b>Workflow conseillé :</b><br>
+          1) Ajoute les faits (Chronologie)<br>
+          2) Choisis la méthode (Infos)<br>
+          3) Remplis 5P ou Arbre (Méthode)<br>
+          4) Conclus + valide (Validation)
+        </div>
+
+        <div class="pill" style="margin-bottom:8px;">
+          <i class="fa-solid fa-building"></i> Site : <b>{{ ev.site }}</b>
+        </div>
+        {% if ev.zone %}
+          <div class="pill" style="margin-bottom:8px;">
+            <i class="fa-solid fa-location-dot"></i> Zone : <b>{{ ev.zone }}</b>
+          </div>
+        {% endif %}
+        <div class="pill" style="margin-bottom:8px;">
+          <i class="fa-solid fa-tag"></i> Type : <b>{{ ev.get_type_evenement_display }}</b>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">
+
+        <div class="hint">
+          <b>Règles 5P industrie :</b> analyse séparément le facteur humain, les procédures, les produits, le procédé et l’environnement de travail.<br><br>
+          <b>Arbre des causes :</b> pars du fait, pose “Pourquoi ?”, note la réponse, puis transforme cette réponse en sous-cause.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+  function getCookie(name) {
+    const v = document.cookie.split(';').map(c => c.trim());
+    for (const c of v) {
+      if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+    }
+    return null;
+  }
+  const csrfToken = getCookie('csrftoken');
+
+  async function postForm(url, dataObj) {
+    const fd = new FormData();
+    Object.entries(dataObj).forEach(([k,v]) => fd.append(k, v ?? ""));
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "X-CSRFToken": csrfToken },
+      body: fd
+    });
+    return res.json();
+  }
+
+  function showToast(message, type="info") {
+    const wrap = document.getElementById("toastWrap");
+    const toast = document.createElement("div");
+
+    const iconMap = {
+      success: "fa-circle-check",
+      error: "fa-circle-exclamation",
+      warn: "fa-triangle-exclamation",
+      info: "fa-circle-info"
+    };
+
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <div class="ico"><i class="fa-solid ${iconMap[type] || iconMap.info}"></i></div>
+      <div class="txt">${message}</div>
+    `;
+    wrap.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-6px)";
+      setTimeout(() => toast.remove(), 180);
+    }, 2600);
+  }
+
+  function setError(el, active=true) {
+    if (!el) return;
+    el.classList.toggle("input-error", active);
+  }
+
+  const tabs = document.querySelectorAll(".tab");
+  const panes = {
+    infos: document.getElementById("pane-infos"),
+    chrono: document.getElementById("pane-chrono"),
+    methode: document.getElementById("pane-methode"),
+    valid: document.getElementById("pane-valid"),
+  };
+
+  tabs.forEach(t => {
+    t.addEventListener("click", () => {
+      tabs.forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      Object.values(panes).forEach(p => p.classList.remove("active"));
+      const key = t.getAttribute("data-tab");
+      panes[key].classList.add("active");
+    });
+  });
+
+  const methodeSelect = document.getElementById("methodeSelect");
+  const block5p = document.getElementById("block5p");
+  const blockArbre = document.getElementById("blockArbre");
+
+  function applyMethodeUI() {
+    const v = methodeSelect.value;
+    block5p.style.display = (v === "5p") ? "block" : "none";
+    blockArbre.style.display = (v === "arbre") ? "block" : "none";
+  }
+  methodeSelect.addEventListener("change", applyMethodeUI);
+  applyMethodeUI();
+
+  const chronoItems = [
+    {% for c in chronologie %}
+      {
+        id: {{ c.id }},
+        parent_id: {% if c.parent_id %}{{ c.parent_id }}{% else %}null{% endif %},
+        date: "{{ c.date_fait|date:'Y-m-d' }}",
+        time: "{% if c.heure_fait %}{{ c.heure_fait|time:'H:i' }}{% else %}{% endif %}",
+        desc: "{{ c.description|escapejs }}",
+        ordre: {{ c.ordre|default:1 }}
+      },
+    {% endfor %}
+  ];
+
+  const arbreItems = [
+    {% for n in arbre_causes %}
+      {
+        id: {{ n.id }},
+        parent_id: {% if n.parent_id %}{{ n.parent_id }}{% else %}null{% endif %},
+        type: "{{ n.type_noeud }}",
+        logique: "{% if n.logique %}{{ n.logique }}{% else %}{% endif %}",
+        cause: "{{ n.cause|escapejs }}",
+        pourquoi: "{{ n.pourquoi|escapejs }}",
+        reponse: "{{ n.reponse|escapejs }}",
+        ordre: {{ n.ordre|default:1 }},
+        niveau: {{ n.niveau|default:0 }},
+        est_cause_racine: {% if n.est_cause_racine %}true{% else %}false{% endif %}
+      },
+    {% endfor %}
+  ];
+
+  function buildTree(items) {
+    const byId = new Map();
+    items.forEach(it => byId.set(it.id, {...it, children: []}));
+
+    const roots = [];
+    byId.forEach(node => {
+      if (node.parent_id && byId.has(node.parent_id)) {
+        byId.get(node.parent_id).children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    function sortRec(nodes){
+      nodes.sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.time||"").localeCompare(b.time||"") || (a.ordre||0)-(b.ordre||0) || a.id-b.id);
+      nodes.forEach(n => sortRec(n.children));
+    }
+    sortRec(roots);
+    return roots;
+  }
+
+  const chronoTreeEl = document.getElementById("chronoTree");
+  const chronoParentSel = document.getElementById("chronoParent");
+
+  function refreshChronoParentOptions() {
+    const saved = chronoParentSel.value;
+    chronoParentSel.innerHTML = '<option value="">— Aucun (fait principal)</option>';
+    chronoItems
+      .slice()
+      .sort((a,b) => (a.date||"").localeCompare(b.date||"") || (a.time||"").localeCompare(b.time||"") || (a.ordre||0)-(b.ordre||0) || a.id-b.id)
+      .forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        const short = (it.desc || "").replace(/\s+/g,' ').slice(0, 70);
+        opt.textContent = `${it.date}${it.time ? " " + it.time : ""} — ${short}${it.desc.length>70 ? "…" : ""}`;
+        chronoParentSel.appendChild(opt);
+      });
+    chronoParentSel.value = saved;
+  }
+
+  function chronoNodeHtml(node) {
+    return `
+      <div class="node" data-id="${node.id}">
+        <div class="meta">
+          <div class="left">
+            <div class="t"><i class="fa-solid fa-clock"></i> ${node.date}${node.time ? " " + node.time : ""}</div>
+            <div class="s">Ordre: ${node.ordre || 1} ${node.parent_id ? " • Sous-fait de #" + node.parent_id : ""}</div>
+          </div>
+          <div class="controls">
+            <button class="mini" data-action="add-child" data-id="${node.id}" data-tree="chrono"><i class="fa-solid fa-plus"></i> Sous-fait</button>
+            <button class="mini danger" data-action="delete" data-id="${node.id}" data-tree="chrono"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="desc">${(node.desc || "").replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+        <div class="children" data-children="${node.id}"></div>
+      </div>
+    `;
+  }
+
+  function renderChrono() {
+    const tree = buildTree(chronoItems);
+    chronoTreeEl.innerHTML = "";
+    if (!tree.length) {
+      chronoTreeEl.innerHTML = `<div class="hint">Aucun fait pour le moment. Ajoute le premier fait ci-dessus.</div>`;
+      refreshChronoParentOptions();
+      return;
+    }
+
+    function renderRec(nodes, container) {
+      nodes.forEach(n => {
+        container.insertAdjacentHTML("beforeend", chronoNodeHtml(n));
+        const childWrap = container.querySelector(`.children[data-children="${n.id}"]`);
+        if (n.children && n.children.length) renderRec(n.children, childWrap);
+      });
+    }
+    renderRec(tree, chronoTreeEl);
+    refreshChronoParentOptions();
+  }
+
+  document.getElementById("btnAddChrono").addEventListener("click", async () => {
+    const dateEl = document.getElementById("chronoDate");
+    const descEl = document.getElementById("chronoDesc");
+    const timeEl = document.getElementById("chronoTime");
+    const parentEl = document.getElementById("chronoParent");
+    const ordreEl = document.getElementById("chronoOrder");
+
+    const d = dateEl.value;
+    const t = timeEl.value;
+    const desc = descEl.value.trim();
+    const parent = parentEl.value;
+    const ordre = ordreEl.value || "1";
+
+    setError(dateEl, false);
+    setError(descEl, false);
+
+    if (!d || !desc) {
+      if (!d) setError(dateEl, true);
+      if (!desc) setError(descEl, true);
+      showToast("Date et description sont obligatoires.", "error");
+      if (!d) dateEl.focus(); else descEl.focus();
+      return;
+    }
+
+    const url = "{% url 'evenements:api_chrono_add' ev.id %}";
+    const res = await postForm(url, {
+      date_fait: d,
+      heure_fait: t,
+      description: desc,
+      parent_id: parent,
+      ordre: ordre
+    });
+
+    if (!res.ok) {
+      showToast(res.error || "Erreur ajout chronologie.", "error");
+      return;
+    }
+
+    chronoItems.push({
+      id: res.id,
+      parent_id: parent ? parseInt(parent) : null,
+      date: d,
+      time: t,
+      desc: desc,
+      ordre: parseInt(ordre) || 1
+    });
+
+    descEl.value = "";
+    timeEl.value = "";
+    parentEl.value = "";
+    ordreEl.value = "1";
+
+    renderChrono();
+    showToast("Fait ajouté à la chronologie.", "success");
+  });
+
+  chronoTreeEl.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const action = btn.getAttribute("data-action");
+    const id = parseInt(btn.getAttribute("data-id"));
+
+    if (action === "add-child") {
+      chronoParentSel.value = String(id);
+      document.getElementById("chronoDesc").focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (action === "delete") {
+      if (!confirm("Supprimer ce fait et ses sous-faits ?")) return;
+
+      const url = "{% url 'evenements:api_chrono_delete' 0 %}".replace("/0/", "/" + id + "/");
+      const res = await postForm(url, {});
+      if (!res.ok) {
+        showToast(res.error || "Erreur suppression.", "error");
+        return;
+      }
+
+      const toDelete = new Set();
+      function markChildren(pid) {
+        toDelete.add(pid);
+        chronoItems.forEach(it => { if (it.parent_id === pid) markChildren(it.id); });
+      }
+      markChildren(id);
+
+      for (let i = chronoItems.length - 1; i >= 0; i--) {
+        if (toDelete.has(chronoItems[i].id)) chronoItems.splice(i, 1);
+      }
+      renderChrono();
+      showToast("Fait supprimé.", "success");
+    }
+  });
+
+  renderChrono();
+
+  const arbreTreeEl = document.getElementById("arbreTree");
+  const arbreParentSel = document.getElementById("arbreParent");
+
+  function labelType(t){
+    if (t === "fait") return "Fait";
+    if (t === "barriere") return "Barrière absente";
+    if (t === "cause_racine") return "Cause racine";
+    return "Cause";
+  }
+
+  function refreshArbreParentOptions() {
+    const saved = arbreParentSel.value;
+    arbreParentSel.innerHTML = '<option value="">— Aucun (racine)</option>';
+    arbreItems
+      .slice()
+      .sort((a,b) => (a.ordre||0)-(b.ordre||0) || a.id-b.id)
+      .forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it.id;
+        const short = (it.cause || "").replace(/\s+/g,' ').slice(0, 70);
+        opt.textContent = `[${labelType(it.type)}] ${short}${it.cause.length>70 ? "…" : ""}`;
+        arbreParentSel.appendChild(opt);
+      });
+    arbreParentSel.value = saved;
+  }
+
+  function arbreNodeHtml(node) {
+    const lg = node.logique ? ` • Logique: ${node.logique.toUpperCase()}` : "";
+    const racine = node.est_cause_racine ? `<span class="pill" style="border-color:rgba(239,68,68,.35); color:#b91c1c;">Cause racine</span>` : "";
+    const rootClass = node.est_cause_racine ? "root-cause" : "";
+
+    return `
+      <div class="node ${rootClass}" data-id="${node.id}">
+        <div class="meta">
+          <div class="left">
+            <div class="t"><i class="fa-solid fa-diagram-project"></i> ${labelType(node.type)} ${racine}</div>
+            <div class="s">Ordre: ${node.ordre || 1}${lg}${node.parent_id ? " • Enfant de #" + node.parent_id : ""}</div>
+          </div>
+          <div class="controls">
+            <button class="mini" data-action="add-child" data-id="${node.id}" data-tree="arbre"><i class="fa-solid fa-plus"></i> Sous-cause</button>
+            <button class="mini danger" data-action="delete" data-id="${node.id}" data-tree="arbre"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+
+        <div class="tree-block">
+          <b>Cause / Fait</b>
+          <div class="desc">${(node.cause || "").replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+        </div>
+
+        ${node.pourquoi ? `
+          <div class="tree-block">
+            <b>Pourquoi ?</b>
+            <div class="desc">${node.pourquoi.replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+          </div>
+        ` : ""}
+
+        ${node.reponse ? `
+          <div class="tree-block">
+            <b>Réponse</b>
+            <div class="desc">${node.reponse.replaceAll("<","&lt;").replaceAll(">","&gt;")}</div>
+          </div>
+        ` : ""}
+
+        <div class="children" data-children="${node.id}"></div>
+      </div>
+    `;
+  }
+
+  function renderArbre() {
+    const tree = buildTree(arbreItems);
+    arbreTreeEl.innerHTML = "";
+    if (!tree.length) {
+      arbreTreeEl.innerHTML = `<div class="hint">Aucun nœud pour le moment. Ajoute le premier nœud ci-dessus.</div>`;
+      refreshArbreParentOptions();
+      return;
+    }
+
+    function sortRec(nodes){
+      nodes.sort((a,b) => (a.ordre||0)-(b.ordre||0) || a.id-b.id);
+      nodes.forEach(n => sortRec(n.children));
+    }
+    sortRec(tree);
+
+    function renderRec(nodes, container) {
+      nodes.forEach(n => {
+        container.insertAdjacentHTML("beforeend", arbreNodeHtml(n));
+        const childWrap = container.querySelector(`.children[data-children="${n.id}"]`);
+        if (n.children && n.children.length) renderRec(n.children, childWrap);
+      });
+    }
+    renderRec(tree, arbreTreeEl);
+    refreshArbreParentOptions();
+  }
+
+  document.getElementById("btnAddArbre").addEventListener("click", async () => {
+    const typeEl = document.getElementById("arbreType");
+    const logiqueEl = document.getElementById("arbreLogique");
+    const causeEl = document.getElementById("arbreCause");
+    const pourquoiEl = document.getElementById("arbrePourquoi");
+    const reponseEl = document.getElementById("arbreReponse");
+    const parentEl = document.getElementById("arbreParent");
+    const ordreEl = document.getElementById("arbreOrder");
+    const racineEl = document.getElementById("arbreCauseRacine");
+
+    const type = typeEl ? typeEl.value : "cause";
+    const logique = logiqueEl ? logiqueEl.value : "";
+    const cause = causeEl.value.trim();
+    const pourquoi = pourquoiEl ? pourquoiEl.value.trim() : "";
+    const reponse = reponseEl ? reponseEl.value.trim() : "";
+    const parent = parentEl ? parentEl.value : "";
+    const ordre = ordreEl ? (ordreEl.value || "1") : "1";
+    const estCauseRacine = racineEl && racineEl.checked ? "1" : "0";
+
+    setError(causeEl, false);
+
+    if (!cause) {
+      setError(causeEl, true);
+      causeEl.focus();
+      showToast("La cause est obligatoire.", "error");
+      return;
+    }
+
+    const url = "{% url 'evenements:api_arbre_add' ev.id %}";
+    const res = await postForm(url, {
+      type_noeud: type,
+      logique: logique,
+      cause: cause,
+      pourquoi: pourquoi,
+      reponse: reponse,
+      parent_id: parent,
+      ordre: ordre,
+      est_cause_racine: estCauseRacine
+    });
+
+    if (!res.ok) {
+      showToast(res.error || "Erreur ajout arbre.", "error");
+      return;
+    }
+
+    arbreItems.push({
+      id: res.id,
+      parent_id: parent ? parseInt(parent) : null,
+      type: type,
+      logique: logique,
+      cause: cause,
+      pourquoi: pourquoi,
+      reponse: reponse,
+      ordre: parseInt(ordre) || 1,
+      niveau: res.niveau || 0,
+      est_cause_racine: (estCauseRacine === "1" || type === "cause_racine")
+    });
+
+    causeEl.value = "";
+    if (pourquoiEl) pourquoiEl.value = "";
+    if (reponseEl) reponseEl.value = "";
+    if (logiqueEl) logiqueEl.value = "";
+    if (parentEl) parentEl.value = "";
+    if (ordreEl) ordreEl.value = "1";
+    if (racineEl) racineEl.checked = false;
+    setError(causeEl, false);
+
+    renderArbre();
+    showToast("Nœud ajouté dans l’arbre des causes.", "success");
+  });
+
+  arbreTreeEl.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const action = btn.getAttribute("data-action");
+    const id = parseInt(btn.getAttribute("data-id"));
+
+    if (action === "add-child") {
+      arbreParentSel.value = String(id);
+      document.getElementById("arbreCause").focus();
+      showToast("Parent sélectionné. Renseigne maintenant la sous-cause.", "info");
+      return;
+    }
+
+    if (action === "delete") {
+      if (!confirm("Supprimer ce nœud et ses enfants ?")) return;
+
+      const url = "{% url 'evenements:api_arbre_delete' 0 %}".replace("/0/", "/" + id + "/");
+      const res = await postForm(url, {});
+      if (!res.ok) {
+        showToast(res.error || "Erreur suppression.", "error");
+        return;
+      }
+
+      const toDelete = new Set();
+      function markChildren(pid) {
+        toDelete.add(pid);
+        arbreItems.forEach(it => { if (it.parent_id === pid) markChildren(it.id); });
+      }
+      markChildren(id);
+
+      for (let i = arbreItems.length - 1; i >= 0; i--) {
+        if (toDelete.has(arbreItems[i].id)) arbreItems.splice(i, 1);
+      }
+      renderArbre();
+      showToast("Nœud supprimé.", "success");
+    }
+  });
+
+  renderArbre();
+
+  document.getElementById("enqueteForm").addEventListener("submit", function(e){
+    const methode = methodeSelect.value;
+
+    if (methode === "5p") {
+      const groupes = [
+        { name: 'personnel[]', label: 'Personnel' },
+        { name: 'procedures[]', label: 'Procédures' },
+        { name: 'produits[]', label: 'Produits' },
+        { name: 'procede[]', label: 'Procédé' },
+        { name: 'place[]', label: 'Place / Environnement' }
+      ];
+
+      const manquants = groupes.filter(g => !document.querySelector(`input[name="${g.name}"]:checked`));
+      const causeFinale = document.getElementById("causeFinale");
+      setError(causeFinale, false);
+
+      if (manquants.length || !causeFinale.value.trim()) {
+        e.preventDefault();
+
+        tabs.forEach(x => x.classList.remove("active"));
+        document.querySelector('.tab[data-tab="methode"]').classList.add("active");
+        Object.values(panes).forEach(p => p.classList.remove("active"));
+        panes.methode.classList.add("active");
+
+        if (!causeFinale.value.trim()) {
+          setError(causeFinale, true);
+        }
+
+        showToast("Complète toutes les catégories 5P et la cause racine finale.", "error");
+        return;
+      }
+    }
+
+    if ((document.querySelector('[name="cloture_enquete"]') || {}).value === "1" && chronoItems.length === 0) {
+      e.preventDefault();
+      tabs.forEach(x => x.classList.remove("active"));
+      document.querySelector('.tab[data-tab="chrono"]').classList.add("active");
+      Object.values(panes).forEach(p => p.classList.remove("active"));
+      panes.chrono.classList.add("active");
+      showToast("Ajoute au moins un fait avant de clôturer l’enquête.", "error");
+      return;
+    }
+
+    if ((document.querySelector('[name="cloture_enquete"]') || {}).value === "1" && methode === "arbre" && arbreItems.length === 0) {
+      e.preventDefault();
+      tabs.forEach(x => x.classList.remove("active"));
+      document.querySelector('.tab[data-tab="methode"]').classList.add("active");
+      Object.values(panes).forEach(p => p.classList.remove("active"));
+      panes.methode.classList.add("active");
+      showToast("L’arbre des causes est vide.", "error");
+      return;
+    }
+  });
+</script>
+
+{% endblock %}

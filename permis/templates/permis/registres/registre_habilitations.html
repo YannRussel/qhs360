@@ -1,0 +1,435 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .page-head{
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+    margin:8px 0 12px;
+  }
+  .page-head h2{ margin:0; font-weight:900; font-size:26px; }
+  .page-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  .btn-export{
+    background:linear-gradient(180deg,#3b5b84,#2d476c);
+    color:#fff; border:1px solid rgba(255,255,255,.10);
+    padding:10px 14px; border-radius:12px; font-weight:900;
+    display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+    box-shadow:0 12px 26px rgba(2,6,23,.18);
+    transition:.12s;
+  }
+  .btn-export:hover{ filter:brightness(.98); transform:translateY(-1px); }
+
+  .toolbar{
+    background:linear-gradient(180deg,#ffffff,#f6f8fc);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+    box-shadow:var(--shadow-soft);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin-bottom:12px;
+  }
+  .t-item{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    padding:10px 12px;
+  }
+  .t-ico{ font-size:18px; opacity:.95; }
+  .t-ctrl{
+    border:none; outline:none; background:transparent;
+    font-family:inherit; font-weight:900; color:#0f172a;
+    min-width:140px;
+  }
+  .t-ctrl::placeholder{ color:#94a3b8; font-weight:800; }
+  .t-select{
+    border:none; outline:none; background:transparent;
+    font-family:inherit; font-weight:900; color:#0f172a;
+  }
+
+  .kpi-row{ display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:12px; }
+  @media(max-width:1200px){ .kpi-row{ grid-template-columns:repeat(3,1fr);} }
+  @media(max-width:800px){ .kpi-row{ grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:520px){ .kpi-row{ grid-template-columns:1fr;} }
+
+  .kpi{
+    border-radius:16px;
+    color:#fff;
+    padding:14px 14px;
+    box-shadow:var(--shadow-strong);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .kpi .t{ font-weight:900; opacity:.92; }
+  .kpi .v{ font-weight:900; font-size:28px; margin-top:6px; }
+  .kpi .ico{ font-size:38px; line-height:1; filter: drop-shadow(0 10px 14px rgba(2,6,23,.18)); }
+
+  .panelX{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:18px;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .panelX-head{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#fff,#f6f8fc);
+    display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .panelX-title{
+    font-weight:900;
+    display:flex; align-items:center; gap:10px;
+  }
+  .sq{
+    width:38px;height:38px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900; color:#fff;
+    box-shadow:0 12px 18px rgba(2,6,23,.12);
+  }
+  .sq-blue{ background:linear-gradient(135deg,#2563eb,#60a5fa); }
+  .sq-green{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+  .sq-amber{ background:linear-gradient(135deg,#f59e0b,#fb923c); }
+  .sq-red{ background:linear-gradient(135deg,#ef4444,#fb7185); }
+  .sq-slate{ background:linear-gradient(135deg,#111827,#334155); }
+  .sq-purple{ background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+
+  .muted{ color:var(--muted); font-weight:700; font-size:12.5px; }
+
+  .table-wrap{
+    max-height:72vh;
+    overflow:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .table-wrap::-webkit-scrollbar{ width:0;height:0; }
+
+  table.reg{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  table.reg thead th{
+    position:sticky; top:0; z-index:1;
+    background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+    border-bottom:1px solid var(--border);
+    padding:12px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:#334155;
+    white-space:nowrap;
+  }
+  table.reg tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+    font-size:13.5px;
+  }
+  table.reg tbody tr:nth-child(even){ background:#fbfdff; }
+  table.reg tbody tr:hover{ background:#f1f7ff; }
+
+  .cell{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .name{
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:360px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:700;
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:460px;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center;
+    padding:7px 11px; border-radius:12px;
+    font-weight:900; font-size:12px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .b-ok{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .b-soon{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .b-exp{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+  .b-off{ background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+  .b-info{ background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+
+  .row-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .icon-btn{
+    width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;
+    transition:.12s;
+  }
+  .icon-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .icon-btn.primary{ background:linear-gradient(135deg,#0b3a6a,#1f6aa5); color:#fff; border-color:rgba(255,255,255,.12); }
+
+  .pnum{
+    min-width:40px; height:34px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900;
+    background:#fff;
+    padding:0 12px;
+  }
+
+  @media(max-width:980px){
+    .hide-md{ display:none; }
+  }
+  @media(max-width:780px){
+    .hide-sm{ display:none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h2>Registre des Habilitations</h2>
+    <div class="muted">Organisation : <b>{{ organisation.nom }}</b> — suivi complet des habilitations délivrées aux agents.</div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-soft" href="{% url 'permis:habilitation_dashboard' %}">↩ Dashboard</a>
+    <a class="btn-export" href="#" onclick="alert('Exporter : à brancher (PDF/Excel)');return false;">⬇️ Exporter</a>
+  </div>
+</div>
+
+<!-- Toolbar filters -->
+<form class="toolbar" method="get">
+  <div class="t-item">
+    <span class="t-ico">🔎</span>
+    <input class="t-ctrl" name="q" value="{{ filters.q }}" placeholder="Rechercher agent / habilitation / matricule…">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">🪪</span>
+    <select class="t-select" name="type">
+      <option value="">Toutes habilitations</option>
+      {% for t in types %}
+        <option value="{{ t.id }}" {% if filters.type|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>{{ t.nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">⏱️</span>
+    <select class="t-select" name="validite">
+      <option value="">Toutes validités</option>
+      <option value="valide" {% if filters.validite == "valide" %}selected{% endif %}>Valide</option>
+      <option value="bientot" {% if filters.validite == "bientot" %}selected{% endif %}>Expire bientôt</option>
+      <option value="expire" {% if filters.validite == "expire" %}selected{% endif %}>Expirée</option>
+      <option value="inactif" {% if filters.validite == "inactif" %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">🏢</span>
+    <input class="t-ctrl" name="prestataire" value="{{ filters.prestataire }}" placeholder="Prestataire…">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">📅</span>
+    <input class="t-ctrl" type="date" name="start" value="{{ filters.start|date:'Y-m-d' }}">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">→</span>
+    <input class="t-ctrl" type="date" name="end" value="{{ filters.end|date:'Y-m-d' }}">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">Pages</span>
+    <select class="t-select" name="per_page">
+      <option value="10" {% if filters.per_page == 10 %}selected{% endif %}>10</option>
+      <option value="20" {% if filters.per_page == 20 %}selected{% endif %}>20</option>
+      <option value="50" {% if filters.per_page == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if filters.per_page == 100 %}selected{% endif %}>100</option>
+    </select>
+  </div>
+
+  <button class="btn btn-ghost" type="submit">Filtrer</button>
+</form>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi" style="background:linear-gradient(135deg,#0b3a6a,#1f6aa5);">
+    <div><div class="t">Total</div><div class="v">{{ kpi.total }}</div></div>
+    <div class="ico">🪪</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#16a34a,#22c55e);">
+    <div><div class="t">Valides</div><div class="v">{{ kpi.valides }}</div></div>
+    <div class="ico">✅</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#f59e0b,#fb923c);">
+    <div><div class="t">Expire bientôt</div><div class="v">{{ kpi.bientot }}</div></div>
+    <div class="ico">⏳</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#ef4444,#fb7185);">
+    <div><div class="t">Expirées</div><div class="v">{{ kpi.expires }}</div></div>
+    <div class="ico">⛔</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#111827,#334155);">
+    <div><div class="t">Inactives</div><div class="v">{{ kpi.inactifs }}</div></div>
+    <div class="ico">🧊</div>
+  </div>
+</div>
+
+<!-- FULL WIDTH TABLE -->
+<div class="panelX">
+  <div class="panelX-head">
+    <div class="panelX-title">
+      <span class="sq sq-purple">📋</span>
+      <div>
+        <div style="font-weight:900;">Registre des habilitations délivrées</div>
+        <div class="muted">Agents, validité, dates, prestataire, preuve</div>
+      </div>
+    </div>
+    <div class="muted">Total : <b>{{ paginator.count }}</b></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="reg">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Habilitation</th>
+          <th class="hide-md">Prestataire</th>
+          <th>Date obtention</th>
+          <th>Date expiration</th>
+          <th>Validité</th>
+          <th class="hide-md">Preuve</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for it in page_obj.object_list %}
+          <tr>
+            <!-- Agent -->
+            <td>
+              <div class="cell">
+                <span class="sq sq-blue">👷</span>
+                <div style="min-width:0;">
+                  <div class="name">{{ it.agent.nom }} {{ it.agent.prenom }}</div>
+                  <div class="sub">Matricule : {{ it.agent.matricule|default:"—" }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Habilitation -->
+            <td>
+              <div class="cell">
+                {% if it.validite_statut == "valide" %}
+                  <span class="sq sq-green">🪪</span>
+                {% elif it.validite_statut == "bientot" %}
+                  <span class="sq sq-amber">🪪</span>
+                {% elif it.validite_statut == "expire" %}
+                  <span class="sq sq-red">🪪</span>
+                {% else %}
+                  <span class="sq sq-slate">🪪</span>
+                {% endif %}
+                <div style="min-width:0;">
+                  <div class="name">{{ it.type_habilitation.nom }}</div>
+                  <div class="sub">{{ it.type_habilitation.description|default:"—" }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Prestataire -->
+            <td class="hide-md">
+              <span class="badge b-info">🏢 {{ it.agent.prestataire.nom|default:"—" }}</span>
+            </td>
+
+            <!-- Dates -->
+            <td><span class="badge b-info">📅 {{ it.date_obtention|date:"d/m/Y" }}</span></td>
+
+            <td>
+              {% if it.date_expiration %}
+                <span class="badge b-info">⏱️ {{ it.date_expiration|date:"d/m/Y" }}</span>
+              {% else %}
+                <span class="badge b-off">—</span>
+              {% endif %}
+            </td>
+
+            <!-- Validité -->
+            <td>
+              {% if it.validite_statut == "valide" %}
+                <span class="badge b-ok">✅ Valide{% if it.days_left != None %} ({{ it.days_left }}j){% endif %}</span>
+              {% elif it.validite_statut == "bientot" %}
+                <span class="badge b-soon">⏳ Bientôt{% if it.days_left != None %} ({{ it.days_left }}j){% endif %}</span>
+              {% elif it.validite_statut == "expire" %}
+                <span class="badge b-exp">⛔ Expirée ({{ it.days_left }}j)</span>
+              {% else %}
+                <span class="badge b-off">🧊 Inactive</span>
+              {% endif %}
+            </td>
+
+            <!-- Preuve -->
+            <td class="hide-md">
+              {% if it.preuve %}
+                <span class="badge b-info">📎 Oui</span>
+              {% else %}
+                <span class="badge b-off">—</span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td style="text-align:right;">
+              <div class="row-actions">
+                <a class="icon-btn primary" href="#" onclick="alert('Détail habilitation : à brancher');return false;" title="Ouvrir">👁️</a>
+                <a class="icon-btn" href="#" onclick="alert('Renouveler : à brancher');return false;" title="Renouveler">♻️</a>
+                <a class="icon-btn" href="#" onclick="alert('Exporter : à brancher');return false;" title="Exporter">⬇️</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8"><div class="notice" style="margin:12px;">Aucune habilitation trouvée avec ces filtres.</div></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-top:1px solid var(--border); background:linear-gradient(180deg,#fff,#f8fafc);">
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span class="muted">Pages</span>
+      <span class="pnum">{{ filters.per_page }}</span>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="icon-btn" href="?page=1&per_page={{ filters.per_page }}&q={{ filters.q }}&type={{ filters.type }}&validite={{ filters.validite }}&prestataire={{ filters.prestataire }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">«</a>
+        <a class="icon-btn" href="?page={{ page_obj.previous_page_number }}&per_page={{ filters.per_page }}&q={{ filters.q }}&type={{ filters.type }}&validite={{ filters.validite }}&prestataire={{ filters.prestataire }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">‹</a>
+      {% else %}
+        <span class="icon-btn" style="opacity:.45;">«</span>
+        <span class="icon-btn" style="opacity:.45;">‹</span>
+      {% endif %}
+
+      <span class="pnum">{{ page_obj.number }}</span>
+      <span class="muted">/ {{ paginator.num_pages }}</span>
+
+      {% if page_obj.has_next %}
+        <a class="icon-btn" href="?page={{ page_obj.next_page_number }}&per_page={{ filters.per_page }}&q={{ filters.q }}&type={{ filters.type }}&validite={{ filters.validite }}&prestataire={{ filters.prestataire }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">›</a>
+        <a class="icon-btn" href="?page={{ paginator.num_pages }}&per_page={{ filters.per_page }}&q={{ filters.q }}&type={{ filters.type }}&validite={{ filters.validite }}&prestataire={{ filters.prestataire }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">»</a>
+      {% else %}
+        <span class="icon-btn" style="opacity:.45;">›</span>
+        <span class="icon-btn" style="opacity:.45;">»</span>
+      {% endif %}
+    </div>
+
+    <div class="muted">Total : <b>{{ paginator.count }}</b></div>
+  </div>
+</div>
+
+{% endblock %}

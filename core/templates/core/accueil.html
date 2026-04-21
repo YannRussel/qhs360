@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QHSE360 — Dashboard</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --brand:#0b3a6a;
+  --brand-dark:#072b50;
+  --accent:#1f6aa5;
+
+  --bg:#f4f6f9;
+  --card:#ffffff;
+  --border:#e6ebf2;
+
+  --text:#0f172a;
+  --muted:#64748b;
+
+  --shadow-soft:0 8px 20px rgba(15,23,42,.06);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+  background:linear-gradient(180deg, var(--brand), var(--brand-dark));
+  padding:10px 22px;
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 6px 18px rgba(2,6,23,.18);
+  border-bottom:1px solid rgba(255,255,255,0.10);
+}
+
+.topbar-inner{
+  max-width:1900px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  font-size:16px;
+  letter-spacing:0.4px;
+}
+
+.brand-badge{
+  width:36px;height:36px;
+  border-radius:10px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+}
+
+.nav{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.nav a{
+  text-decoration:none;
+  color:#fff;
+  font-weight:700;
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:13.5px;
+  transition:.15s;
+}
+
+.nav a:hover{
+  background:rgba(255,255,255,.10);
+}
+
+.user-pill{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  padding:6px 12px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+/* ================= MAIN ================= */
+.container{
+  max-width:1900px;
+  margin:26px auto;
+  padding:0 36px 46px;
+}
+
+.header-section{
+  text-align:center;
+  margin:10px 0 18px;
+}
+
+.header-section h2{
+  font-size:30px;
+  margin:0;
+  letter-spacing:-0.2px;
+  font-weight:800;
+}
+
+.header-section p{
+  font-size:14.5px;
+  font-weight:500;
+  color:var(--muted);
+  margin-top:8px;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.quick-actions{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  margin:18px 0 26px;
+}
+
+.btn{
+  border:1px solid transparent;
+  padding:12px 18px;
+  border-radius:12px;
+  font-weight:800;
+  cursor:pointer;
+  font-size:13.5px;
+  transition:.15s;
+}
+
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  box-shadow:0 10px 18px rgba(11,58,106,.20);
+}
+
+.btn-primary:hover{
+  background:var(--brand-dark);
+  transform:translateY(-1px);
+}
+
+.btn-ghost{
+  background:#ffffff;
+  color:var(--text);
+  border-color:var(--border);
+}
+
+.btn-ghost:hover{
+  transform:translateY(-1px);
+  box-shadow:var(--shadow-soft);
+}
+
+/* ================= CLEAN CARDS ================= */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:26px;
+}
+
+/* ✅ lien carte */
+.card-link{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+}
+
+/* carte */
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:26px;
+  border:1px solid var(--border);
+  min-height:180px;
+  display:flex;
+  flex-direction:column;
+  transition:all .15s ease;
+}
+
+/* hover seulement si cliquable */
+.card-link:hover .card{
+  border-color:#cfd8e3;
+  box-shadow:var(--shadow-soft);
+  transform:translateY(-2px);
+}
+
+.card-top{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+}
+
+.card-icon{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:#f1f5f9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  flex:0 0 44px;
+}
+
+.card h4{
+  margin:0;
+  font-size:16px;
+  font-weight:600;
+  line-height:1.4;
+}
+
+.card p{
+  margin-top:8px;
+  font-size:13.5px;
+  font-weight:400;
+  line-height:1.6;
+  color:var(--muted);
+}
+
+.card-footer{
+  margin-top:auto;
+  padding-top:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.go{
+  font-size:13px;
+  font-weight:600;
+  color:var(--brand);
+}
+
+/* ✅ carte non cliquable (url manquante) */
+.card-disabled{
+  opacity:.65;
+  cursor:not-allowed;
+}
+.card-disabled .go{
+  color:#94a3b8;
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:1400px){
+  .cards{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:900px){
+  .cards{grid-template-columns:1fr;}
+  .container{padding:0 18px 40px;}
+  .nav{display:none;}
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-badge">Q</div>
+      QHSE360
+    </div>
+
+    <!-- NE PAS TOUCHER AUX LIENS -->
+    <nav class="nav">
+      <a href="#">Dashboard</a>
+      <a href="#">Sites</a>
+      <a href="#">Prestataires</a>
+      <a href="#">Abonnement</a>
+      <a href="#">Organisation</a>
+    </nav>
+
+    <div class="user-pill">
+      👤 {{ request.user.phone_number|default:request.user.username }}
+      {% if organisation %}
+        &nbsp;—&nbsp; {{ organisation.nom }}
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="header-section">
+    <h2>Tableau de bord QHSE360</h2>
+    <p>
+      {% if organisation %}
+        Organisation : <b>{{ organisation.nom }}</b> — accès selon votre abonnement
+      {% else %}
+        Vue rapide des modules — accès selon votre abonnement
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="quick-actions">
+    <button class="btn btn-primary" onclick="window.location.href='{% url 'sites:liste' %}'">
+      + Gestion des sites
+    </button>
+    <button class="btn btn-ghost" onclick="window.location.href='{% url 'prestataire:creer' %}'">
+      + Ajouter un prestataire
+    </button>
+  </div>
+
+  <div class="cards">
+    {% for m in modules %}
+
+      {# ✅ Si le module a une url => carte cliquable #}
+      {% if m.url %}
+        <a class="card-link" href="{% url m.url %}">
+          <div class="card">
+            <div class="card-top">
+              <div class="card-icon">{{ m.icone }}</div>
+              <div>
+                <h4>{{ m.titre }}</h4>
+                <p>{{ m.desc }}</p>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="go">Ouvrir →</span>
+            </div>
+          </div>
+        </a>
+      {% else %}
+        {# ✅ Sinon => carte non cliquable #}
+        <div class="card card-disabled" title="Module pas encore disponible">
+          <div class="card-top">
+            <div class="card-icon">{{ m.icone }}</div>
+            <div>
+              <h4>{{ m.titre }}</h4>
+              <p>{{ m.desc }}</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="go">Bientôt…</span>
+          </div>
+        </div>
+      {% endif %}
+
+    {% endfor %}
+  </div>
+
+</main>
+</body>
+</html>

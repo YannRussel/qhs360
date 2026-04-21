@@ -1,0 +1,264 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Contrôle système — {{ controle.id }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 10px 28px rgba(2,6,23,.08);
+  }
+  body{ font-family:Poppins,system-ui; background:var(--bg); color:var(--text); }
+  .wrap{ max-width:1400px; margin:18px auto; padding:0 16px; }
+
+  .hero{
+    border-radius:18px; padding:16px; color:#fff;
+    background:linear-gradient(135deg, #0b3a6a 0%, #072b50 75%, #061f3a 100%);
+    box-shadow:0 18px 44px rgba(2,6,23,.14);
+  }
+  .hero-top{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; }
+  .hero h2{ margin:0; font-size:20px; font-weight:900; display:flex; gap:10px; align-items:center; }
+  .meta{ margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px; border-radius:999px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.18);
+    font-weight:800; font-size:12px; white-space:nowrap;
+  }
+
+  .grid{ margin-top:12px; display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start; }
+  @media(max-width:1100px){ .grid{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card-h{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:linear-gradient(180deg, rgba(11,58,106,.06), rgba(11,58,106,0));
+    font-weight:900; color:var(--brand);
+  }
+  .card-b{ padding:14px; }
+
+  label{ display:block; font-size:12px; font-weight:900; color:var(--muted); margin-bottom:6px; }
+  input, select, textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:800;
+    outline:none;
+    background:#fff;
+  }
+  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  @media(max-width:700px){ .grid2{ grid-template-columns:1fr; } }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    height:40px; padding:0 12px;
+    border-radius:12px;
+    font-weight:900; font-size:12px;
+    border:none; cursor:pointer;
+    color:#fff;
+    background:linear-gradient(135deg,var(--brand),var(--accent));
+    box-shadow:0 12px 24px rgba(11,58,106,.18);
+    white-space:nowrap;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px;
+    font-weight:900; font-size:11px;
+    background:#f1f5f9; border:1px solid var(--border);
+  }
+
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .item{ border:1px solid var(--border); border-radius:14px; padding:12px; background:#fff; }
+  .item .t{ font-weight:900; display:flex; justify-content:space-between; gap:10px; }
+  .item .m{ color:var(--muted); font-weight:800; font-size:12px; margin-top:6px; }
+</style>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <h2><i class="fa-solid fa-bell"></i> Contrôle système incendie</h2>
+        <div class="meta">
+          <span class="chip"><i class="fa-solid fa-industry"></i> Site : <b>{{ controle.site.nom }}</b></span>
+          <span class="chip"><i class="fa-solid fa-location-dot"></i> Zone : <b>{% if controle.zone %}{{ controle.zone.nom }}{% else %}—{% endif %}</b></span>
+          <span class="chip"><i class="fa-regular fa-calendar"></i> Date : <b>{{ controle.date_controle|date:"d/m/Y" }}</b></span>
+          <span class="chip"><i class="fa-solid fa-layer-group"></i> Type : <b>{{ controle.type_systeme }}</b></span>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="pill" href="{% url 'incendie:systemes_list' %}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ✅ Ajouter DM -->
+    <div class="card">
+      <div class="card-h"><span><i class="fa-solid fa-hand-point-up"></i> Ajouter un DM (Déclencheur Manuel)</span></div>
+      <div class="card-b">
+        <form method="post" action="{% url 'incendie:systeme_dm_add' controle.pk %}">
+          {% csrf_token %}
+          <div class="grid2">
+            <div>
+              <label>Identifiant</label>
+              <input name="identifiant" placeholder="Ex: DM-01" required>
+            </div>
+            <div>
+              <label>Localisation</label>
+              <input name="localisation" placeholder="Ex: Entrée principale">
+            </div>
+          </div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <div>
+              <label><input type="checkbox" name="acces_ok"> Accès OK</label>
+            </div>
+            <div>
+              <label><input type="checkbox" name="etat_ok"> État OK</label>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label><input type="checkbox" name="test_ok"> Test OK</label>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Remarque</label>
+            <textarea name="remarque" rows="2" placeholder="Remarques…"></textarea>
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn" type="submit"><i class="fa-solid fa-plus"></i> Ajouter DM</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ✅ Ajouter Détecteur -->
+    <div class="card">
+      <div class="card-h"><span><i class="fa-solid fa-tower-broadcast"></i> Ajouter un détecteur</span></div>
+      <div class="card-b">
+        <form method="post" action="{% url 'incendie:systeme_detecteur_add' controle.pk %}">
+          {% csrf_token %}
+          <div class="grid2">
+            <div>
+              <label>Identifiant</label>
+              <input name="identifiant" placeholder="Ex: D-01" required>
+            </div>
+            <div>
+              <label>Type détecteur</label>
+              <input name="type_detecteur" placeholder="Ex: Fumée / Chaleur…">
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Localisation</label>
+            <input name="localisation" placeholder="Ex: Couloir A">
+          </div>
+
+          <div class="grid2" style="margin-top:10px;">
+            <div><label><input type="checkbox" name="proprete_ok"> Propreté OK</label></div>
+            <div><label><input type="checkbox" name="test_ok"> Test OK</label></div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Remarque</label>
+            <textarea name="remarque" rows="2" placeholder="Remarques…"></textarea>
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn" type="submit"><i class="fa-solid fa-plus"></i> Ajouter détecteur</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ✅ Listes DM / détecteurs (si related_name standard) -->
+  <div class="grid" style="margin-top:12px;">
+
+    <div class="card">
+      <div class="card-h">
+        <span><i class="fa-solid fa-hand-point-up"></i> DM enregistrés</span>
+        <span class="pill"><i class="fa-solid fa-list"></i> {{ controle.dms.all|length }}</span>
+      </div>
+      <div class="card-b">
+        <div class="list">
+          {% for dm in controle.dms.all %}
+            <div class="item">
+              <div class="t">
+                <span>{{ dm.identifiant }}</span>
+                <span class="pill">{{ dm.localisation|default:"—" }}</span>
+              </div>
+              <div class="m">
+                Accès: <b>{{ dm.acces_ok|yesno:"OK,KO" }}</b> ·
+                État: <b>{{ dm.etat_ok|yesno:"OK,KO" }}</b> ·
+                Test: <b>{{ dm.test_ok|yesno:"OK,KO" }}</b>
+              </div>
+              {% if dm.remarque %}<div class="m">{{ dm.remarque }}</div>{% endif %}
+            </div>
+          {% empty %}
+            <div class="m">Aucun DM enregistré pour ce contrôle.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <span><i class="fa-solid fa-tower-broadcast"></i> Détecteurs enregistrés</span>
+        <span class="pill"><i class="fa-solid fa-list"></i> {{ controle.detecteurs.all|length }}</span>
+      </div>
+      <div class="card-b">
+        <div class="list">
+          {% for d in controle.detecteurs.all %}
+            <div class="item">
+              <div class="t">
+                <span>{{ d.identifiant }}</span>
+                <span class="pill">{{ d.type_detecteur|default:"—" }}</span>
+              </div>
+              <div class="m">
+                Localisation: <b>{{ d.localisation|default:"—" }}</b> ·
+                Propreté: <b>{{ d.proprete_ok|yesno:"OK,KO" }}</b> ·
+                Test: <b>{{ d.test_ok|yesno:"OK,KO" }}</b>
+              </div>
+              {% if d.remarque %}<div class="m">{{ d.remarque }}</div>{% endif %}
+            </div>
+          {% empty %}
+            <div class="m">Aucun détecteur enregistré pour ce contrôle.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <div class="card-h"><span><i class="fa-solid fa-circle-info"></i> Note</span></div>
+    <div class="card-b">
+      <div class="m">
+        Si tes relations ne s’appellent pas <b>controle.dms</b> et <b>controle.detecteurs</b>,
+        dis-moi juste les <b>related_name</b> (ou colle tes modèles) et je t’ajuste 100% sans erreur.
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,610 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Statistiques HSE (Auto) — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+    --bg:#f4f6fb;
+    --card:#ffffff;
+    --border:#e7edf6;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --radius:18px;
+    --shadow:0 14px 34px rgba(2,6,23,.08);
+    --shadow2:0 10px 22px rgba(2,6,23,.05);
+
+    --blue:#3b82f6;
+    --teal:#14b8a6;
+    --amber:#f59e0b;
+    --rose:#fb7185;
+    --violet:#8b5cf6;
+    --emerald:#22c55e;
+    --slate:#94a3b8;
+
+    --soft-blue: rgba(59,130,246,.12);
+    --soft-teal: rgba(20,184,166,.12);
+    --soft-amber: rgba(245,158,11,.14);
+    --soft-rose: rgba(251,113,133,.12);
+    --soft-violet: rgba(139,92,246,.12);
+    --soft-emerald: rgba(34,197,94,.12);
+    --soft-slate: rgba(148,163,184,.18);
+  }
+
+  *{ box-sizing:border-box; }
+  body{ background: var(--bg); }
+
+  .wrap{ max-width: 1500px; margin: 0 auto; padding: 22px; font-family: Poppins, system-ui; color: var(--text); }
+
+  /* Header */
+  .head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(11,58,106,.08), rgba(31,106,165,.03));
+    border: 1px solid var(--border);
+  }
+  .title{
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .title h1{
+    margin:0;
+    font-size: 30px;
+    letter-spacing: -0.3px;
+    font-weight: 900;
+    color: var(--brand);
+    display:flex; align-items:center; gap:10px;
+  }
+  .crumbs{ color: var(--muted); font-weight: 700; font-size: 13px; }
+  .meta{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow: var(--shadow2);
+  }
+
+  .head-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border:1px solid var(--border);
+    background:#fff;
+    text-decoration:none;
+    color: var(--text);
+    font-weight: 900;
+    box-shadow: var(--shadow2);
+    transition:.15s ease;
+    cursor:pointer;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-primary{
+    border:none;
+    color:#fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+  }
+  .btn-ghost{
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Layout grid */
+  .grid{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.15fr 1fr 1fr;
+    gap: 14px;
+  }
+  .row2{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 14px;
+  }
+  .row3{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 14px;
+  }
+  @media(max-width: 1100px){
+    .grid{ grid-template-columns: 1fr; }
+    .row2{ grid-template-columns: 1fr; }
+    .row3{ grid-template-columns: 1fr; }
+  }
+
+  /* Card */
+  .card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card-h{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--soft-slate), rgba(248,250,252,1));
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .card-h b{ font-weight: 900; letter-spacing: -0.2px; }
+  .card-b{ padding: 14px; }
+
+  /* Filter bar */
+  .filters{
+    margin-top: 14px;
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow2);
+    padding: 12px;
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  }
+  .filters label{ font-weight: 900; color: var(--brand); }
+  select{
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    outline:none;
+    background:#fff;
+    font-family: inherit;
+    min-width: 260px;
+  }
+
+  /* KPI blocks */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .kpi{
+    border:1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+    box-shadow: var(--shadow2);
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .ico{
+    width:44px; height:44px;
+    border-radius: 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .kpi .v{ font-size: 22px; font-weight: 900; line-height: 1; }
+  .kpi .l{ color: var(--muted); font-weight: 800; font-size: 12px; margin-top: 4px; }
+
+  .ico.blue{ background: var(--soft-blue); color: var(--blue); }
+  .ico.teal{ background: var(--soft-teal); color: var(--teal); }
+  .ico.amber{ background: var(--soft-amber); color: var(--amber); }
+  .ico.rose{ background: var(--soft-rose); color: var(--rose); }
+  .ico.violet{ background: var(--soft-violet); color: var(--violet); }
+  .ico.emerald{ background: var(--soft-emerald); color: var(--emerald); }
+
+  .big{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .big .main{
+    display:flex; gap:12px; align-items:center;
+  }
+  .big .main .num{
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.6px;
+  }
+  .big .main .txt{ display:flex; flex-direction:column; }
+  .big .main .txt .s{ font-size: 12px; color: var(--muted); font-weight: 800; }
+
+  /* Mini bars */
+  .spark{
+    display:flex; align-items:flex-end; gap:5px;
+    height: 44px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    border:1px solid var(--border);
+    background: #fff;
+    box-shadow: var(--shadow2);
+    min-width: 170px;
+  }
+  .spark span{
+    display:block;
+    width: 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(59,130,246,.25));
+  }
+
+  /* Donut */
+  .donut-wrap{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .donut{
+    --p: 0;
+    width: 118px; height: 118px;
+    border-radius: 50%;
+    background:
+      conic-gradient(var(--teal) calc(var(--p)*1%), rgba(148,163,184,.25) 0);
+    display:grid; place-items:center;
+    position:relative;
+    box-shadow: 0 14px 28px rgba(2,6,23,.10);
+  }
+  .donut:after{
+    content:"";
+    position:absolute;
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--border);
+  }
+  .donut .center{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    line-height:1.1;
+  }
+  .donut .center .p{ font-weight: 900; font-size: 20px; }
+  .donut .center .s{ color: var(--muted); font-weight: 800; font-size: 11px; }
+
+  .legend{
+    display:flex; flex-direction:column; gap:8px;
+    min-width: 220px;
+  }
+  .leg{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 10px 12px;
+    border:1px solid var(--border);
+    border-radius: 14px;
+    background:#fff;
+    box-shadow: var(--shadow2);
+    font-weight: 900;
+  }
+  .leg .left{ display:flex; align-items:center; gap:10px; }
+  .dot{ width:10px; height:10px; border-radius:50%; }
+  .dot.teal{ background: var(--teal); }
+  .dot.blue{ background: var(--blue); }
+  .dot.rose{ background: var(--rose); }
+  .dot.amber{ background: var(--amber); }
+  .muted{ color: var(--muted); font-weight: 800; }
+
+  /* Analysis block */
+  .analysis ul{
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .analysis li{ margin: 7px 0; }
+  .empty{
+    padding: 12px;
+    border:1px dashed rgba(148,163,184,.65);
+    border-radius: 14px;
+    color: var(--muted);
+    font-weight: 800;
+    background: rgba(255,255,255,.6);
+  }
+
+  /* Footer CTA */
+  .footer{
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .footer .left{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    font-weight: 900;
+    color: var(--brand);
+  }
+  .footer .right{ display:flex; gap:10px; flex-wrap:wrap; }
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <div class="title">
+      <div class="crumbs">
+        QHS360 <i class="fa-solid fa-angle-right"></i>
+        Tableau de bord <i class="fa-solid fa-angle-right"></i>
+        <b>Statistiques HSE (Auto)</b>
+      </div>
+
+      <h1>
+        <i class="fa-solid fa-chart-pie"></i>
+        Statistiques HSE
+      </h1>
+
+      <div class="meta">
+        <span class="chip"><i class="fa-solid fa-database"></i> Source : <b>Base de données</b></span>
+        <span class="chip"><i class="fa-solid fa-location-dot"></i> Site : <b>{% if site_id %}{{ site_id }}{% else %}Tous{% endif %}</b></span>
+        <span class="chip"><i class="fa-solid fa-folder-open"></i> Dossiers : <b>{{ total }}</b></span>
+        <span class="chip"><i class="fa-solid fa-circle-check"></i> Clôturés : <b>{{ clotures }}</b></span>
+      </div>
+    </div>
+
+    <div class="head-actions">
+      <a class="btn btn-ghost" href="{% url 'evenements:dashboard_evenement' %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour
+      </a>
+      <a class="btn" href="{% url 'evenements:actions_suivi' %}">
+        <i class="fa-solid fa-list-check"></i> Actions
+      </a>
+      <a class="btn btn-primary" href="{% url 'evenements:evenement_create' %}">
+        <i class="fa-solid fa-plus"></i> Nouveau dossier
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTRE SITE -->
+  <form class="filters" method="get">
+    <label for="site"><i class="fa-solid fa-filter"></i> Filtrer par site</label>
+    <select name="site" id="site" onchange="this.form.submit()">
+      <option value="">Tous les sites</option>
+      {% for s in sites %}
+        <option value="{{ s.id }}" {% if site_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+          {{ s.nom }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <a class="btn" href="{% url 'evenements:stats_auto' %}">
+      <i class="fa-solid fa-rotate-right"></i> Réinitialiser
+    </a>
+  </form>
+
+  <!-- Ligne 1 -->
+  <div class="grid">
+
+    <!-- 1) Dossiers -->
+    <div class="card">
+      <div class="card-h">
+        <b>1) Dossiers</b>
+        <span class="muted"><i class="fa-solid fa-layer-group"></i> Global</span>
+      </div>
+
+      <div class="card-b">
+        <div class="big">
+          <div class="main">
+            <div class="ico blue"><i class="fa-solid fa-folder-open"></i></div>
+            <div class="txt">
+              <div class="num">{{ total }}</div>
+              <div class="s">Total dossiers</div>
+            </div>
+          </div>
+
+          <div class="spark" title="tendance (visuelle)">
+            <span style="height:12px"></span>
+            <span style="height:22px"></span>
+            <span style="height:16px"></span>
+            <span style="height:30px"></span>
+            <span style="height:20px"></span>
+            <span style="height:38px"></span>
+            <span style="height:26px"></span>
+            <span style="height:42px"></span>
+            <span style="height:28px"></span>
+            <span style="height:36px"></span>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico emerald"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+              <div class="v">{{ clotures }}</div>
+              <div class="l">Clôturés</div>
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="ico amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+              <div class="v">{{ ouverts }}</div>
+              <div class="l">Ouverts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) Incidents & Presqu’accidents -->
+    <div class="card">
+      <div class="card-h">
+        <b>2) Incidents & Presqu’accidents</b>
+        <span class="muted"><i class="fa-solid fa-chart-line"></i> Vue</span>
+      </div>
+
+      <div class="card-b">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico amber"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+              <div class="v">{{ incidents }}</div>
+              <div class="l">Incidents</div>
+            </div>
+          </div>
+
+          <div class="kpi">
+            <div class="ico violet"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div>
+              <div class="v">{{ presqu }}</div>
+              <div class="l">Presqu’accidents</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi">
+          <div class="ico blue"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div>
+            <div class="v">—</div>
+            <div class="l">Tendance (à brancher plus tard)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3) Actions -->
+    <div class="card">
+      <div class="card-h">
+        <b>3) Actions Correctives & Préventives</b>
+        <span class="muted"><i class="fa-solid fa-list-check"></i> CAPA</span>
+      </div>
+
+      <div class="card-b">
+        {% with total_actions=actions_ouvertes|add:actions_cloturees %}
+          {% if total_actions > 0 %}
+            {% widthratio actions_cloturees total_actions 100 as taux %}
+          {% else %}
+            {% widthratio 0 1 100 as taux %}
+          {% endif %}
+
+          <div class="donut-wrap">
+            <div class="donut" style="--p:{{ taux }};">
+              <div class="center">
+                <div class="p">{{ taux }}%</div>
+                <div class="s">Clôture</div>
+              </div>
+            </div>
+
+            <div class="legend">
+              <div class="leg">
+                <div class="left"><span class="dot teal"></span> Clôturées</div>
+                <div>{{ actions_cloturees }}</div>
+              </div>
+              <div class="leg">
+                <div class="left"><span class="dot blue"></span> Ouvertes</div>
+                <div>{{ actions_ouvertes }}</div>
+              </div>
+              <div class="leg">
+                <div class="left"><span class="dot rose"></span> En retard</div>
+                <div>{{ actions_retard }}</div>
+              </div>
+            </div>
+          </div>
+        {% endwith %}
+
+        <div style="height:12px;"></div>
+
+        <a class="btn btn-primary" href="{% url 'evenements:actions_suivi' %}" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-eye"></i> Voir les détails des actions
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Ligne 2 -->
+  <div class="row2">
+
+    <!-- Accidents -->
+    <div class="card">
+      <div class="card-h">
+        <b>4) Accidents du travail</b>
+        <span class="muted"><i class="fa-solid fa-helmet-safety"></i> Comptage</span>
+      </div>
+
+      <div class="card-b">
+        <div class="big">
+          <div class="main">
+            <div class="ico blue"><i class="fa-solid fa-user-injured"></i></div>
+            <div class="txt">
+              <div class="num">{{ accidents }}</div>
+              <div class="s">Accidents déclarés</div>
+            </div>
+          </div>
+
+          <div class="kpi" style="min-width:260px;">
+            <div class="ico emerald"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+              <div class="v">{{ clotures }}</div>
+              <div class="l">Dossiers clôturés (tous types)</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+              <div class="v">{{ ouverts }}</div>
+              <div class="l">Dossiers ouverts (tous types)</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico violet"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div>
+              <div class="v">—</div>
+              <div class="l">Gravité / jours perdus (à brancher)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyse -->
+    <div class="card">
+      <div class="card-h">
+        <b>Analyse HSE (Auto)</b>
+        <span class="muted"><i class="fa-solid fa-clipboard-list"></i> Lecture</span>
+      </div>
+      <div class="card-b">
+        <div class="analysis">
+          <ul>
+            <li>Cette page calcule les stats directement depuis <b>Evenement</b> et <b>ActionCAPA</b>.</li>
+            <li>Les <b>dossiers clôturés</b> = événements avec <code>date_cloture</code> renseignée.</li>
+            <li>Les <b>actions clôturées</b> = actions avec statut <code>realisee</code>.</li>
+            <li>Tu peux ajouter des courbes réelles plus tard (Chart.js).</li>
+          </ul>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <a class="btn" href="{% url 'evenements:dashboard_evenement' %}" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-house"></i> Retour dashboard évènements
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="left">
+      <i class="fa-solid fa-shield-heart"></i>
+      <span>Dashboard HSE (Auto) — Source : Base de données</span>
+    </div>
+    <div class="right">
+      <a class="btn" href="{% url 'evenements:actions_suivi' %}">
+        <i class="fa-solid fa-list-check"></i> Suivi des actions
+      </a>
+      <a class="btn btn-primary" href="{% url 'evenements:evenement_create' %}">
+        <i class="fa-solid fa-plus"></i> Nouveau dossier
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

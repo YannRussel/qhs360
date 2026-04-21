@@ -1,0 +1,25 @@
+<h2>Plateforme — Superadmin</h2>
+
+<p>
+  <a href="{% url 'core:organisation_creer' %}">+ Organisation</a> |
+  <a href="{% url 'core:abonnement_creer' %}">+ Abonnement</a> |
+  <a href="{% url 'core:admin_org_creer' %}">+ Admin Org</a>
+</p>
+
+<h3>Organisations</h3>
+<ul>
+  {% for o in organisations %}
+    <li>{{ o.nom }}</li>
+  {% empty %}
+    <li>Aucune organisation</li>
+  {% endfor %}
+</ul>
+
+<h3>Abonnements (derniers)</h3>
+<ul>
+  {% for a in abonnements %}
+    <li>{{ a.organisation.nom }} — {{ a.plan }} — {% if a.actif %}Actif{% else %}Inactif{% endif %}</li>
+  {% empty %}
+    <li>Aucun abonnement</li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,719 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ===========================
+     HERO (titre)
+  ============================ */
+  .page-hero{
+    background: linear-gradient(180deg, rgba(11,58,106,.10), rgba(11,58,106,0));
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:16px 16px 14px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom:14px;
+  }
+  .page-hero h2{
+    margin:0;
+    font-size:26px;
+    font-weight:900;
+    letter-spacing:-.2px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .hero-icon{
+    width:44px;height:44px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    background: rgba(11,58,106,.12);
+    border:1px solid rgba(11,58,106,.18);
+  }
+  .hero-sub{
+    margin-top:6px;
+    color:var(--muted);
+    font-weight:600;
+    font-size:13.5px;
+  }
+
+  /* ===========================
+     FILTRES (visuel)
+  ============================ */
+  .filters-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    padding:12px;
+    border-radius:16px;
+    border:1px solid var(--border);
+    background:#fff;
+    box-shadow: var(--shadow-soft);
+    margin-bottom:14px;
+  }
+  .fctl{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:#f8fafc;
+    padding:9px 10px;
+    border-radius:12px;
+    font-weight:800;
+    font-size:12.5px;
+    color:#0f172a;
+  }
+  .fctl select, .fctl input{
+    border:none;
+    background:transparent;
+    font:inherit;
+    outline:none;
+    padding:0;
+    min-width:120px;
+  }
+  .fctl input{ min-width:240px; }
+  .fctl .mini-ico{ font-size:16px; opacity:.9; }
+
+  /* ===========================
+     KPI (comme l'image)
+  ============================ */
+  .kpi-row{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:12px;
+    margin-bottom:14px;
+  }
+  @media(max-width:1100px){ .kpi-row{ grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width:700px){ .kpi-row{ grid-template-columns: 1fr; } }
+
+  .kpi-card{
+    border-radius:16px;
+    padding:14px;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow: var(--shadow-strong);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    min-height:86px;
+  }
+  .kpi-card .kpi-title{ font-weight:900; opacity:.95; }
+  .kpi-card .kpi-value{ font-size:34px; font-weight:900; line-height:1; margin-top:4px; }
+  .kpi-card .kpi-emoji{
+    font-size:56px;
+    line-height:1;
+    filter: drop-shadow(0 14px 18px rgba(2,6,23,.20));
+  }
+
+  /* ===========================
+     REGISTRE TABLE (full width)
+  ============================ */
+  .register{
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow: var(--shadow-soft);
+  }
+  .register-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    background:linear-gradient(180deg, #ffffff, #f6f8fc);
+    border-bottom:1px solid var(--border);
+  }
+  .register-head .left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:900;
+    font-size:15px;
+  }
+  .reg-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:12px;
+    background:#eef2ff;
+    border:1px solid #c7d2fe;
+    color:#1e40af;
+    font-weight:900;
+    font-size:12.5px;
+  }
+  .reg-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .btn-export{
+    background:linear-gradient(180deg, #334155, #1f2937);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:900;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+  .btn-export:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+
+  .reg-search{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    padding:10px 12px;
+    outline:none;
+    min-width:340px;
+    max-width:100%;
+    font-family:inherit;
+    font-weight:800;
+  }
+  .reg-search:focus{ border-color:#b6c6da; box-shadow:0 0 0 4px rgba(31,106,165,.12); }
+
+  .reg-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  .reg-table thead th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background: #f1f5f9;
+    border-bottom:1px solid var(--border);
+    padding:12px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:#334155;
+    white-space:nowrap;
+  }
+  .reg-table tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    font-size:13.5px;
+    vertical-align:middle;
+  }
+  .reg-table tbody tr:nth-child(even){ background:#fbfdff; }
+  .reg-table tbody tr:hover{ background:#f1f7ff; }
+
+  /* type bloc */
+  .type-pill{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:900;
+  }
+  .type-ico{
+    width:34px;height:34px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:18px;
+    font-weight:900;
+    flex:0 0 34px;
+    box-shadow:0 10px 16px rgba(2,6,23,.14);
+  }
+  .ico-blue{ background:linear-gradient(135deg,#2563eb,#60a5fa); }
+  .ico-green{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+  .ico-orange{ background:linear-gradient(135deg,#f59e0b,#fb923c); }
+  .ico-purple{ background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+  .ico-slate{ background:linear-gradient(135deg,#334155,#64748b); }
+
+  /* badges statut */
+  .badgex{
+    display:inline-flex;
+    align-items:center;
+    padding:7px 11px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12.5px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .b-ok{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .b-bad{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+  .muted{ color:var(--muted); font-weight:700; }
+
+  /* Habilitations carrousel */
+  .hab-cell{ min-width:340px; }
+  .hab-wrap{ display:flex; align-items:center; gap:8px; }
+  .hab-nav{
+    width:34px;height:34px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    cursor:pointer;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.12s;
+    user-select:none;
+  }
+  .hab-nav:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+
+  .hab-track{
+    display:flex;
+    gap:8px;
+    overflow:auto;
+    scroll-behavior:smooth;
+    padding:6px 2px;
+    max-width:560px;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .hab-track::-webkit-scrollbar{
+    width:0px;
+    height:0px;
+  }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    padding:7px 11px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .chip-warn{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .chip-muted{ background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+  .hab-ico{ font-size:14px; margin-right:6px; }
+
+  /* Actions */
+  .row-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    align-items:center;
+  }
+  .icon-btn{
+    width:34px;height:34px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    cursor:pointer;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.12s;
+    text-decoration:none;
+    color:#0f172a;
+  }
+  .icon-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .icon-btn.primary{ background:linear-gradient(135deg,#0b3a6a,#1f6aa5); color:#fff; border-color:rgba(255,255,255,.12); }
+
+  /* Scroll tableau: caché mais fonctionnel */
+  .table-scroll{
+    max-height: 70vh;
+    overflow:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .table-scroll::-webkit-scrollbar{
+    width:0px;
+    height:0px;
+  }
+
+  /* footer clean */
+  .reg-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    background:#f8fafc;
+  }
+  .pager{ display:flex; gap:8px; align-items:center; }
+  .page-pill{
+    width:38px;height:34px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    text-decoration:none;
+    color:#0f172a;
+  }
+
+  @media(max-width:900px){
+    .reg-search{ min-width:220px; }
+    .hab-track{ max-width:320px; }
+  }
+  @media(max-width:750px){
+    .hide-sm{ display:none; }
+    .hide-md{ display:none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- =================== HERO =================== -->
+<div class="page-hero">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+    <div>
+      <h2>
+        <span class="hero-icon">🎓</span>
+        {{ titre }}
+      </h2>
+      <div class="hero-sub">
+        Organisation : <b>{{ organisation.nom }}</b> — suivi des formations, sessions et habilitations.
+      </div>
+    </div>
+
+    <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-ghost" href="{% url 'permis:formation_dashboard' %}">↻ Actualiser</a>
+      <a class="btn btn-soft" href="{% url 'permis:formation_liste' %}">Liste des formations</a>
+      <a class="btn btn-soft" href="{% url 'permis:habilitation_liste' %}">Habilitations</a>
+    </div>
+  </div>
+</div>
+
+{# ✅ Messages Django #}
+{% if messages %}
+  <div style="margin-bottom:14px;">
+    {% for message in messages %}
+      <div class="notice" style="margin-bottom:10px; {% if message.tags == 'error' %}border-color:#fecaca;background:#fff1f2;color:#991b1b;{% elif message.tags == 'success' %}border-color:#bbf7d0;background:#f0fdf4;color:#166534;{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- =================== FILTRES =================== -->
+<div class="filters-bar">
+  <div class="fctl"><span class="mini-ico">🏢</span> Site
+    <select><option>Tout site</option></select>
+  </div>
+
+  <div class="fctl"><span class="mini-ico">🗂️</span> Statut
+    <select>
+      <option>Tous</option>
+      <option>Actif</option>
+      <option>Inactif</option>
+    </select>
+  </div>
+
+  <div class="fctl"><span class="mini-ico">📅</span> Période
+    <select>
+      <option>Ce mois</option>
+      <option>Cette année</option>
+      <option>Personnalisée</option>
+    </select>
+  </div>
+
+  <div class="fctl"><span class="mini-ico">🔎</span>
+    <input id="formationSearchTop" type="search" placeholder="Rechercher (nom, habilitation…)">
+  </div>
+
+  <div style="margin-left:auto; display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-soft" href="{% url 'permis:session_liste' %}">📘 Registre sessions</a>
+    <a class="btn btn-soft" href="{% url 'permis:session_creer' %}">+ Nouvelle session</a>
+  </div>
+</div>
+
+<!-- =================== KPI =================== -->
+<div class="kpi-row">
+  <div class="kpi-card" style="background:linear-gradient(135deg,#0b3a6a,#1f6aa5);">
+    <div>
+      <div class="kpi-title">Formations</div>
+      <div class="kpi-value">{{ kpi.formations_total }}</div>
+    </div>
+    <div class="kpi-emoji">🎓</div>
+  </div>
+
+  <div class="kpi-card" style="background:linear-gradient(135deg,#16a34a,#22c55e);">
+    <div>
+      <div class="kpi-title">Actives</div>
+      <div class="kpi-value">{{ kpi.formations_actifs }}</div>
+    </div>
+    <div class="kpi-emoji">✅</div>
+  </div>
+
+  <div class="kpi-card" style="background:linear-gradient(135deg,#f59e0b,#fb923c);">
+    <div>
+      <div class="kpi-title">Inactives</div>
+      <div class="kpi-value">{{ kpi.formations_inactifs }}</div>
+    </div>
+    <div class="kpi-emoji">⛔</div>
+  </div>
+
+  <div class="kpi-card" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">
+    <div>
+      <div class="kpi-title">Participants</div>
+      <div class="kpi-value">{{ kpi.participants_total }}</div>
+    </div>
+    <div class="kpi-emoji">👥</div>
+  </div>
+</div>
+
+<!-- =================== REGISTRE FULL WIDTH =================== -->
+<div class="register">
+
+  <div class="register-head">
+    <div class="left">
+      <span class="reg-badge">📘 Catalogues des formations</span>
+      <span class="muted">— dernières entrées</span>
+    </div>
+
+    <div class="reg-actions">
+      <input id="formationSearch" class="reg-search" type="search" placeholder="Rechercher dans le registre…">
+      <a class="btn-export" href="#" onclick="alert('Exporter à brancher (CSV/PDF)'); return false;">⬇️ Exporter</a>
+    </div>
+  </div>
+
+  {# ✅ Compatible pagination : page_obj (new) ou last_formations (old) #}
+  {% if page_obj and page_obj.object_list or last_formations %}
+
+    <div class="table-scroll">
+      <table class="reg-table" id="formationsTable">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Type</th>
+            <th class="hide-md">Description</th>
+            <th class="hide-sm">Statut</th>
+            <th>Habilitations obtenues</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% if page_obj %}
+            {% for f in page_obj %}
+              <tr>
+                <td style="white-space:nowrap; font-weight:900;">
+                  F-{{ f.id|stringformat:"04d" }}
+                </td>
+
+                <td>
+                  <div class="type-pill">
+                    {% cycle "ico-blue" "ico-green" "ico-orange" "ico-purple" "ico-slate" as tcol silent %}
+                    <span class="type-ico {{ tcol }}">🎓</span>
+                    <div>
+                      <div style="font-weight:900;">{{ f.nom }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="hide-md">
+                  <div class="truncate" style="max-width:620px;">
+                    {{ f.description|default:"—" }}
+                  </div>
+                </td>
+
+                <td class="hide-sm">
+                  {% if f.actif %}
+                    <span class="badgex b-ok">Conforme (Actif)</span>
+                  {% else %}
+                    <span class="badgex b-bad">Non Conforme (Inactif)</span>
+                  {% endif %}
+                </td>
+
+                <td class="hab-cell">
+                  {% if f.habilitations_obtenues and f.habilitations_obtenues|length > 0 %}
+                    <div class="hab-wrap">
+                      <button class="hab-nav" type="button" data-dir="-1" data-target="habTrack_{{ f.id }}">‹</button>
+
+                      <div class="hab-track" id="habTrack_{{ f.id }}">
+                        {% for h in f.habilitations_obtenues %}
+                          <span class="chip chip-warn" title="{{ h.nom }}">
+                            <span class="hab-ico">🪪</span>{{ h.nom }}
+                          </span>
+                        {% endfor %}
+                      </div>
+
+                      <button class="hab-nav" type="button" data-dir="1" data-target="habTrack_{{ f.id }}">›</button>
+                    </div>
+                  {% else %}
+                    <span class="chip chip-muted">— Aucune</span>
+                  {% endif %}
+                </td>
+
+                <td style="text-align:right;">
+                  <div class="row-actions">
+                    <a class="icon-btn" href="{% url 'permis:formation_modifier' f.id %}" title="Modifier">✏️</a>
+                    <a class="icon-btn" href="#" onclick="alert('Créer session liée'); return false;" title="Créer session">➕</a>
+                    <a class="icon-btn primary" href="#" onclick="alert('Voir détail'); return false;" title="Voir">👁️</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            {% for f in last_formations %}
+              <tr>
+                <td style="white-space:nowrap; font-weight:900;">
+                  F-{{ f.id|stringformat:"04d" }}
+                </td>
+
+                <td>
+                  <div class="type-pill">
+                    {% cycle "ico-blue" "ico-green" "ico-orange" "ico-purple" "ico-slate" as tcol silent %}
+                    <span class="type-ico {{ tcol }}">🎓</span>
+                    <div>
+                      <div style="font-weight:900;">{{ f.nom }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="hide-md">
+                  <div class="truncate" style="max-width:620px;">
+                    {{ f.description|default:"—" }}
+                  </div>
+                </td>
+
+                <td class="hide-sm">
+                  {% if f.actif %}
+                    <span class="badgex b-ok">Conforme (Actif)</span>
+                  {% else %}
+                    <span class="badgex b-bad">Non Conforme (Inactif)</span>
+                  {% endif %}
+                </td>
+
+                <td class="hab-cell">
+                  {% if f.habilitations_obtenues and f.habilitations_obtenues|length > 0 %}
+                    <div class="hab-wrap">
+                      <button class="hab-nav" type="button" data-dir="-1" data-target="habTrack_{{ f.id }}">‹</button>
+
+                      <div class="hab-track" id="habTrack_{{ f.id }}">
+                        {% for h in f.habilitations_obtenues %}
+                          <span class="chip chip-warn" title="{{ h.nom }}">
+                            <span class="hab-ico">🪪</span>{{ h.nom }}
+                          </span>
+                        {% endfor %}
+                      </div>
+
+                      <button class="hab-nav" type="button" data-dir="1" data-target="habTrack_{{ f.id }}">›</button>
+                    </div>
+                  {% else %}
+                    <span class="chip chip-muted">— Aucune</span>
+                  {% endif %}
+                </td>
+
+                <td style="text-align:right;">
+                  <div class="row-actions">
+                    <a class="icon-btn" href="{% url 'permis:formation_modifier' f.id %}" title="Modifier">✏️</a>
+                    <a class="icon-btn" href="#" onclick="alert('Créer session liée'); return false;" title="Créer session">➕</a>
+                    <a class="icon-btn primary" href="#" onclick="alert('Voir détail'); return false;" title="Voir">👁️</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {# ✅ Pagination uniquement si page_obj existe #}
+    {% if page_obj %}
+      <div class="reg-foot">
+        <div class="muted">
+          Affichage :
+          <b>{{ page_obj.start_index }}–{{ page_obj.end_index }}</b>
+          sur <b>{{ page_obj.paginator.count }}</b>
+        </div>
+
+        <div class="pager">
+          {% if page_obj.has_previous %}
+            <a class="page-pill" href="?page=1&per_page={{ per_page }}">«</a>
+            <a class="page-pill" href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}">‹</a>
+          {% else %}
+            <div class="page-pill" style="opacity:.45;">«</div>
+            <div class="page-pill" style="opacity:.45;">‹</div>
+          {% endif %}
+
+          <div class="page-pill" style="background:#eef2ff; border-color:#c7d2fe; color:#1e40af;">
+            {{ page_obj.number }}
+          </div>
+
+          {% if page_obj.has_next %}
+            <a class="page-pill" href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}">›</a>
+            <a class="page-pill" href="?page={{ page_obj.paginator.num_pages }}&per_page={{ per_page }}">»</a>
+          {% else %}
+            <div class="page-pill" style="opacity:.45;">›</div>
+            <div class="page-pill" style="opacity:.45;">»</div>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="reg-foot">
+        <div class="muted">Affichage : <b>{{ last_formations|length }}</b> lignes</div>
+        <div class="pager">
+          <div class="page-pill" style="opacity:.45;">‹</div>
+          <div class="page-pill" style="background:#eef2ff; border-color:#c7d2fe; color:#1e40af;">1</div>
+          <div class="page-pill" style="opacity:.45;">›</div>
+        </div>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div style="padding:14px;">
+      <div class="notice">Aucune formation. Clique sur <b>+ Nouvelle formation</b>.</div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // ✅ recherche registre (2 champs : top + table)
+  (function(){
+    const inputTop = document.getElementById("formationSearchTop");
+    const input = document.getElementById("formationSearch");
+    const table = document.getElementById("formationsTable");
+    if(!table) return;
+
+    function filter(q){
+      q = (q || "").toLowerCase().trim();
+      table.querySelectorAll("tbody tr").forEach(tr => {
+        tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
+      });
+    }
+
+    if(inputTop){
+      inputTop.addEventListener("input", function(){
+        filter(this.value);
+        if(input) input.value = this.value;
+      });
+    }
+    if(input){
+      input.addEventListener("input", function(){
+        filter(this.value);
+        if(inputTop) inputTop.value = this.value;
+      });
+    }
+  })();
+
+  // ✅ carrousel habilitations (flèches)
+  (function(){
+    document.querySelectorAll(".hab-nav").forEach(btn => {
+      btn.addEventListener("click", function(){
+        const dir = parseInt(this.dataset.dir || "1", 10);
+        const track = document.getElementById(this.dataset.target);
+        if(!track) return;
+        track.scrollBy({ left: dir * 260, behavior: "smooth" });
+      });
+    });
+  })();
+</script>
+
+{% endblock %}

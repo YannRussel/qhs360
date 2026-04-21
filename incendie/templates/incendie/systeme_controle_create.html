@@ -1,0 +1,150 @@
+{% extends "core/base.html" %}
+{% block title %}Nouveau contrôle système — QHSE360{% endblock %}
+{% block content %}
+<style>
+  :root{ --brand:#0b3a6a; --card:#fff; --border:#e6ebf2; --muted:#64748b; --shadow:0 10px 28px rgba(2,6,23,.07); }
+  .wrap{max-width:1200px;margin:18px auto;padding:18px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+  .title{font-size:22px;font-weight:950;color:var(--brand)}
+  label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin-bottom:6px}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+  .full{grid-column:1/-1}
+  .input,.select,.textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .textarea{min-height:90px;resize:vertical}
+  .section{margin-top:14px}
+  .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+  .chk{display:flex;gap:10px;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;text-decoration:none;font-weight:900;color:#0f172a;cursor:pointer}
+  .btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+</style>
+
+<div class="wrap">
+  <div class="card">
+    <div class="title">➕ Nouveau contrôle Alarme / Désenfumage</div>
+    <p style="color:var(--muted);margin:6px 0 0">Saisie checklist + statut.</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="grid">
+        <div>
+          <label>Site *</label>
+          <select class="select" name="site" id="siteSelect" required>
+            <option value="">— Choisir —</option>
+            {% for s in sites %}<option value="{{ s.id }}">{{ s.nom }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Zone (automatique)</label>
+          <select class="select" name="zone" id="zoneSelect" disabled>
+            <option value="">— Choisir un site d’abord —</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Type système</label>
+          <select class="select" name="type_systeme">
+            <option value="alarme_desenfumage" selected>Alarme + Désenfumage</option>
+            <option value="alarme">Alarme</option>
+            <option value="desenfumage">Désenfumage</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Date contrôle</label>
+          <input class="input" type="date" name="date_controle">
+        </div>
+
+        <div class="full">
+          <label class="chk" style="margin:0">
+            <input type="checkbox" name="presence_responsable_securite"> Présence du responsable sécurité
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="title" style="font-size:16px;margin-top:8px;color:#0f172a">🚨 Checklist alarme</div>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" name="a_sirenes_ok" checked> Sirènes / diffusion OK</label>
+          <label class="chk"><input type="checkbox" name="a_dm_accessibles_ok" checked> DM accessibles</label>
+          <label class="chk"><input type="checkbox" name="a_voyants_ok" checked> Voyants / signalisation OK</label>
+          <label class="chk"><input type="checkbox" name="a_detection_auto_ok" checked> Détection auto OK</label>
+          <label class="chk"><input type="checkbox" name="a_tableau_ok" checked> Tableau / centrale OK</label>
+          <label class="chk"><input type="checkbox" name="a_aucun_defaut" checked> Aucun défaut apparent</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="title" style="font-size:16px;margin-top:8px;color:#0f172a">🌬️ Checklist désenfumage</div>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" name="d_ouvrants_ok" checked> Ouvrants / exutoires OK</label>
+          <label class="chk"><input type="checkbox" name="d_commandes_ok" checked> Commandes OK</label>
+          <label class="chk"><input type="checkbox" name="d_alimentation_ok" checked> Alimentation OK</label>
+          <label class="chk"><input type="checkbox" name="d_test_ok" checked> Tests fonctionnels OK</label>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <div>
+          <label>Statut</label>
+          <select class="select" name="statut">
+            <option value="conforme" selected>Conforme</option>
+            <option value="nc">Non conforme</option>
+            <option value="na">Non applicable</option>
+          </select>
+        </div>
+        <div class="full">
+          <label>Observations</label>
+          <textarea class="textarea" name="observation" placeholder="Détails, anomalies, actions..."></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn" href="{% url 'incendie:systemes_list' %}">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  async function loadZonesForSite(siteId, zoneSelect) {
+    zoneSelect.innerHTML = '';
+    zoneSelect.disabled = true;
+
+    if (!siteId) {
+      zoneSelect.innerHTML = '<option value="">— Choisir un site d’abord —</option>';
+      return;
+    }
+
+    zoneSelect.innerHTML = '<option value="">Chargement...</option>';
+
+    try {
+      const res = await fetch("{% url 'incendie:zones_by_site' %}?site=" + encodeURIComponent(siteId));
+      const data = await res.json();
+      const zones = data.zones || [];
+
+      zoneSelect.innerHTML = '<option value="">— Aucune zone / Non défini —</option>';
+      zones.forEach(z => {
+        const opt = document.createElement('option');
+        opt.value = z.id;
+        opt.textContent = z.nom;
+        zoneSelect.appendChild(opt);
+      });
+
+      zoneSelect.disabled = false;
+    } catch (e) {
+      zoneSelect.innerHTML = '<option value="">Erreur de chargement des zones</option>';
+      zoneSelect.disabled = false;
+    }
+  }
+
+  (function initSiteZone() {
+    const siteSelect = document.getElementById('siteSelect');
+    const zoneSelect = document.getElementById('zoneSelect');
+    siteSelect.addEventListener('change', () => loadZonesForSite(siteSelect.value, zoneSelect));
+  })();
+</script>
+{% endblock %}

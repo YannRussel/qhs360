@@ -1,0 +1,72 @@
+{% extends "core/base.html" %}
+{% block title %}Alarme & désenfumage — QHSE360{% endblock %}
+{% block content %}
+<style>
+  :root{ --brand:#0b3a6a; --card:#fff; --border:#e6ebf2; --muted:#64748b; --shadow:0 10px 28px rgba(2,6,23,.07); }
+  .wrap{max-width:1500px;margin:18px auto;padding:18px}
+  .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .title{font-size:24px;font-weight:950;color:var(--brand)}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .input,.select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;text-decoration:none;font-weight:900;color:#0f172a}
+  table{width:100%;border-collapse:separate;border-spacing:0 10px}
+  td,th{padding:12px}
+  th{color:var(--muted);font-size:12px;text-align:left}
+  tr.row{background:var(--card);box-shadow:var(--shadow);border-radius:14px}
+  tr.row td:first-child{border-top-left-radius:14px;border-bottom-left-radius:14px}
+  tr.row td:last-child{border-top-right-radius:14px;border-bottom-right-radius:14px}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="title">🚨 Contrôles systèmes (alarme / désenfumage)</div>
+      <div style="color:var(--muted)">Fiches + DM + détecteurs.</div>
+    </div>
+
+    <div class="filters">
+      <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select class="select" name="site">
+          <option value="">Tous les sites</option>
+          {% for s in sites %}
+            <option value="{{ s.id }}" {% if site_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+          {% endfor %}
+        </select>
+
+        <select class="select" name="type">
+          <option value="">Tous types</option>
+          <option value="alarme" {% if type == "alarme" %}selected{% endif %}>Alarme</option>
+          <option value="desenfumage" {% if type == "desenfumage" %}selected{% endif %}>Désenfumage</option>
+          <option value="alarme_desenfumage" {% if type == "alarme_desenfumage" %}selected{% endif %}>Alarme + Désenfumage</option>
+        </select>
+
+        <button class="btn" type="submit">Filtrer</button>
+      </form>
+
+      <a class="btn" href="{% url 'incendie:systeme_controle_create' %}">➕ Nouveau contrôle</a>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Site</th><th>Zone</th><th>Statut</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in controles %}
+      <tr class="row">
+        <td><b>{{ c.date_controle }}</b></td>
+        <td>{{ c.get_type_systeme_display }}</td>
+        <td>{{ c.site.nom }}</td>
+        <td>{{ c.zone.nom|default:"—" }}</td>
+        <td>{{ c.statut|upper }}</td>
+        <td><a class="btn" href="{% url 'incendie:systeme_controle_detail' c.id %}">Détails</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="color:var(--muted)">Aucun contrôle.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

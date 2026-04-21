@@ -1,0 +1,141 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .register{ border:1px solid var(--border); border-radius:18px; overflow:hidden; background:#fff; box-shadow:var(--shadow-soft); }
+  .register-head{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 14px; background:linear-gradient(180deg,#fff,#f6f8fc); border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .reg-badge{
+    display:inline-flex; align-items:center; gap:8px; padding:8px 10px;
+    border-radius:12px; background:#eef2ff; border:1px solid #c7d2fe; color:#1e40af;
+    font-weight:900; font-size:12.5px;
+  }
+  .reg-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .reg-search{
+    border:1px solid var(--border); background:#fff; border-radius:12px; padding:10px 12px;
+    outline:none; min-width:320px; font-family:inherit; font-weight:800;
+  }
+  .reg-search:focus{ border-color:#b6c6da; box-shadow:0 0 0 4px rgba(31,106,165,.12); }
+  .reg-select{
+    border:1px solid var(--border); background:#fff; border-radius:12px; padding:10px 12px;
+    outline:none; font-family:inherit; font-weight:900;
+  }
+  .table-scroll{ max-height:72vh; overflow:auto; scrollbar-width:none; -ms-overflow-style:none; }
+  .table-scroll::-webkit-scrollbar{ width:0;height:0; }
+
+  .reg-table{ width:100%; border-collapse:separate; border-spacing:0; }
+  .reg-table thead th{
+    position:sticky; top:0; z-index:1;
+    background:#f1f5f9; border-bottom:1px solid var(--border);
+    padding:12px; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.5px; color:#334155;
+  }
+  .reg-table tbody td{ padding:12px; border-bottom:1px solid var(--border); font-size:13.5px; vertical-align:middle; }
+  .reg-table tbody tr:nth-child(even){ background:#fbfdff; }
+  .reg-table tbody tr:hover{ background:#f1f7ff; }
+
+  .badgex{
+    display:inline-flex; align-items:center; padding:7px 11px; border-radius:12px;
+    font-weight:900; font-size:12.5px; border:1px solid transparent; white-space:nowrap;
+  }
+  .b-ok{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .b-warn{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .b-info{ background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+  .b-bad{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+
+  .row-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .icon-btn{
+    width:34px;height:34px; border-radius:12px; border:1px solid var(--border); background:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:900; text-decoration:none; color:#0f172a;
+    transition:.12s;
+  }
+  .icon-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .icon-btn.primary{ background:linear-gradient(135deg,#0b3a6a,#1f6aa5); color:#fff; border-color:rgba(255,255,255,.12); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-bottom:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+    <div>
+      <h2 style="margin:0; font-weight:900;">🗓️ {{ titre }}</h2>
+      <div class="help">Organisation : <b>{{ organisation.nom }}</b></div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-soft" href="{% url 'permis:formation_dashboard' %}">↩ Dashboard</a>
+      <a class="btn btn-primary" href="{% url 'permis:session_creer' %}">+ Nouvelle session</a>
+    </div>
+  </div>
+</div>
+
+<div class="register">
+  <div class="register-head">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span class="reg-badge">📘 Registre des sessions</span>
+      {% if sessions %}<span class="badgex b-info">Total : {{ sessions|length }}</span>{% endif %}
+    </div>
+
+    <div class="reg-actions">
+      <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input class="reg-search" name="q" value="{{ q }}" placeholder="Rechercher (formation, lieu, titre)…">
+        <select class="reg-select" name="statut">
+          <option value="">Tous statuts</option>
+          {% for k,l in statuts %}
+            <option value="{{ k }}" {% if statut == k %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-ghost" type="submit">Filtrer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="reg-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Formation</th>
+          <th>Début</th>
+          <th>Durée</th>
+          <th>Statut</th>
+          <th>Intervenants</th>
+          <th>Participants</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+          <tr>
+            <td style="font-weight:900;">S-{{ s.id|stringformat:"04d" }}</td>
+            <td style="font-weight:900;">{{ s.formation.nom }}{% if s.titre %}<div class="help">{{ s.titre }}</div>{% endif %}</td>
+            <td>{{ s.date_debut|date:"d/m/Y H:i" }}</td>
+            <td>{% if s.duree_minutes %}{{ s.duree_minutes }} min{% else %}—{% endif %}</td>
+
+            <td>
+              {% if s.statut == "planifiee" %}<span class="badgex b-info">Planifiée</span>
+              {% elif s.statut == "encours" %}<span class="badgex b-warn">En cours</span>
+              {% elif s.statut == "terminee" %}<span class="badgex b-ok">Terminée</span>
+              {% else %}<span class="badgex b-bad">Annulée</span>{% endif %}
+            </td>
+
+            <td>{{ s.nb_intervenants }}</td>
+            <td>{{ s.nb_participants }}</td>
+
+            <td style="text-align:right;">
+              <div class="row-actions">
+                <a class="icon-btn primary" href="{% url 'permis:session_detail' s.id %}" title="Ouvrir">👁️</a>
+                <a class="icon-btn" href="{% url 'permis:session_participants' s.id %}" title="Participants">👥</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="notice">Aucune session pour le moment.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>{{ titre }}</h2>
+    <p>Gère les prestataires affectés au site et les zones autorisées.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-ghost" href="{% url 'sites:detail' pk=site.id %}">← Retour au site</a>
+  </div>
+</div>
+
+{# Messages #}
+{% if messages %}
+  <div style="margin-bottom:14px;">
+    {% for message in messages %}
+      <div class="notice" style="margin-bottom:10px; {% if message.tags == 'error' %}border-color:#fecaca;background:#fff1f2;color:#991b1b;{% elif message.tags == 'success' %}border-color:#bbf7d0;background:#f0fdf4;color:#166534;{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- =================== AJOUT AFFECTATION =================== -->
+<div class="panel" style="margin-bottom:16px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;">
+    <div style="font-weight:900;">➕ Ajouter une affectation</div>
+    <div class="help">Zones vides = tout le site</div>
+  </div>
+
+<form method="post" action="{% url 'sites:affectation_creer' site_pk=site.id %}">
+
+    {% csrf_token %}
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      <div class="field">
+        <label>Prestataire *</label>
+        <select name="prestataire_id" required>
+          <option value="">— Choisir —</option>
+          {% for p in prestataires %}
+            <option value="{{ p.id }}">{{ p.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Statut</label>
+        <label style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <input type="checkbox" name="actif" checked>
+          Actif
+        </label>
+        <div class="help">Décoche si affectation inactive.</div>
+      </div>
+
+      <div class="field" style="grid-column:1/-1;">
+        <label>Zones (optionnel)</label>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          {% for z in zones %}
+            <label class="badge" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" name="zones_ids" value="{{ z.id }}">
+              {{ z.nom }}
+            </label>
+          {% empty %}
+            <div class="help">Aucune zone active pour ce site (donc tout le site).</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top:14px; display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" type="submit">💾 Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<!-- =================== LISTE AFFECTATIONS =================== -->
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;">
+    <div style="font-weight:900;">Affectations existantes</div>
+    <div class="help">Modifier zones / actif puis enregistrer.</div>
+  </div>
+
+  {% if affectations %}
+    <div style="display:grid; grid-template-columns:1fr; gap:12px;">
+      {% for a in affectations %}
+        <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div style="min-width:0;">
+              <div style="font-weight:900;">
+                👷 {{ a.prestataire.nom }}
+                {% if a.actif %}
+                  <span class="badge badge-success" style="margin-left:8px;">Actif</span>
+                {% else %}
+                  <span class="badge badge-muted" style="margin-left:8px;">Inactif</span>
+                {% endif %}
+              </div>
+              <div class="help" style="margin-top:4px;">
+                {% if a.zones.count %}
+                  Zones : {% for z in a.zones.all %}<span class="badge" style="margin-right:6px;">📍 {{ z.nom }}</span>{% endfor %}
+                {% else %}
+                  Zones : <b>Tout le site</b>
+                {% endif %}
+              </div>
+            </div>
+
+            <form method="post" action="{% url 'sites:affectation_supprimer' pk=a.id %}">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit" onclick="return confirm('Supprimer cette affectation ?')">
+                Supprimer
+              </button>
+            </form>
+          </div>
+
+          <hr style="margin:12px 0; border:none; border-top:1px solid var(--border);">
+
+          <!-- FORM UPDATE -->
+          <form method="post" action="{% url 'sites:affectation_modifier' pk=a.id %}">
+            {% csrf_token %}
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+              <div class="field">
+                <label>Actif</label>
+                <label style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                  <input type="checkbox" name="actif" {% if a.actif %}checked{% endif %}>
+                  Actif
+                </label>
+                <div class="help">Décoche si ce prestataire ne doit plus intervenir.</div>
+              </div>
+
+              <div class="field">
+                <label>Règle</label>
+                <div class="help" style="margin-top:8px;">
+                  Si tu ne coches aucune zone → <b>tout le site</b>.
+                </div>
+              </div>
+
+              <div class="field" style="grid-column:1/-1;">
+                <label>Zones</label>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                  {% for z in zones %}
+                    <label class="badge" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                      <input
+                        type="checkbox"
+                        name="zones_ids"
+                        value="{{ z.id }}"
+                        {% if z in a.zones.all %}checked{% endif %}
+                      >
+                      {{ z.nom }}
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="actions" style="margin-top:12px; display:flex; justify-content:flex-end;">
+              <button class="btn btn-primary" type="submit">💾 Mettre à jour</button>
+            </div>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="notice">Aucune affectation pour ce site.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

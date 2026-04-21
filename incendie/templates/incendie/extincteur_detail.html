@@ -1,0 +1,144 @@
+{% extends "core/base.html" %}
+{% block title %}Extincteur {{ ext.numero }} — QHSE360{% endblock %}
+{% block content %}
+<style>
+  :root{ --brand:#0b3a6a; --bg:#f4f6f9; --card:#fff; --border:#e6ebf2; --muted:#64748b; --shadow:0 10px 28px rgba(2,6,23,.07); --danger:#dc2626; --ok:#059669;}
+  .wrap{max-width:1400px;margin:18px auto;padding:18px}
+  .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .title{font-size:22px;font-weight:950;color:var(--brand)}
+  .btn{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;text-decoration:none;font-weight:900;color:#0f172a;cursor:pointer}
+  .grid{display:grid;grid-template-columns: 1.1fr .9fr;gap:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+  .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+  .m{background:#f8fafc;border:1px dashed var(--border);border-radius:14px;padding:10px}
+  .k{font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+  .v{font-weight:900;margin-top:4px}
+  label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin-bottom:6px}
+  .input,.select,.textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .textarea{min-height:90px;resize:vertical}
+  .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+  .chk{display:flex;gap:10px;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px}
+  .table{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:10px}
+  .table th{color:var(--muted);font-size:12px;text-align:left}
+  .table td,.table th{padding:12px}
+  tr.row{background:var(--card);box-shadow:var(--shadow);border-radius:14px}
+  tr.row td:first-child{border-top-left-radius:14px;border-bottom-left-radius:14px}
+  tr.row td:last-child{border-top-right-radius:14px;border-bottom-right-radius:14px}
+  .pill{padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px;display:inline-block}
+  .pill-ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  .pill-nc{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">🧯 Extincteur <span style="color:#0f172a">{{ ext.numero }}</span></div>
+      <div style="color:var(--muted)">Détails + historique des vérifications.</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="btn" href="{% url 'incendie:extincteurs_list' %}">← Retour</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="k">Informations extincteur</div>
+
+      <div class="meta">
+        <div class="m"><div class="k">Site</div><div class="v">{{ ext.site.nom }}</div></div>
+        <div class="m"><div class="k">Zone</div><div class="v">{{ ext.zone.nom|default:"—" }}</div></div>
+        <div class="m"><div class="k">Type</div><div class="v">{{ ext.type_extincteur|default:"—" }}</div></div>
+        <div class="m"><div class="k">Capacité</div><div class="v">{{ ext.capacite|default:"—" }}</div></div>
+        <div class="m"><div class="k">Emplacement</div><div class="v">{{ ext.emplacement }}</div></div>
+        <div class="m"><div class="k">Marque</div><div class="v">{{ ext.marque|default:"—" }}</div></div>
+        <div class="m"><div class="k">Série</div><div class="v">{{ ext.numero_serie|default:"—" }}</div></div>
+        <div class="m"><div class="k">Année</div><div class="v">{{ ext.annee_fabrication|default:"—" }}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="k">Nouvelle vérification</div>
+
+      <form method="post" action="{% url 'incendie:extincteur_verifier' ext.id %}">
+        {% csrf_token %}
+
+        <div style="margin-top:10px">
+          <label>Date vérification</label>
+          <input class="input" type="date" name="date_verification">
+        </div>
+
+        <div class="checks">
+          <label class="chk"><input type="checkbox" name="pression_ok" checked> Pression OK</label>
+          <label class="chk"><input type="checkbox" name="scelle_ok" checked> Scellé OK</label>
+          <label class="chk"><input type="checkbox" name="tuyau_ok" checked> Tuyau OK</label>
+          <label class="chk"><input type="checkbox" name="goupille_ok" checked> Goupille OK</label>
+          <label class="chk"><input type="checkbox" name="accessibilite_ok" checked> Accessibilité OK</label>
+          <label class="chk"><input type="checkbox" name="signalisation_ok" checked> Signalisation OK</label>
+          <label class="chk"><input type="checkbox" name="corps_ok" checked> Corps / état général OK</label>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Statut</label>
+          <select class="select" name="statut">
+            <option value="conforme" selected>Conforme</option>
+            <option value="nc">Non conforme</option>
+            <option value="na">Non applicable</option>
+          </select>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Observation</label>
+          <textarea class="textarea" name="observation" placeholder="Détails, anomalies, actions à prévoir..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn" style="background:var(--brand);border-color:var(--brand);color:#fff" type="submit">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="k">Historique des vérifications</div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Checklist</th>
+          <th>Observation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in verifs %}
+        <tr class="row">
+          <td><b>{{ v.date_verification }}</b></td>
+          <td>
+            {% if v.statut == "conforme" %}
+              <span class="pill pill-ok">CONFORME</span>
+            {% elif v.statut == "nc" %}
+              <span class="pill pill-nc">NON CONFORME</span>
+            {% else %}
+              <span class="pill">N/A</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--muted)">
+            {% for key,val in v.checklist.items %}
+              {% if val %}✅{% else %}❌{% endif %} {{ key }}<br>
+            {% empty %}
+              —
+            {% endfor %}
+          </td>
+          <td>{{ v.observation|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="color:var(--muted)">Aucune vérification enregistrée.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

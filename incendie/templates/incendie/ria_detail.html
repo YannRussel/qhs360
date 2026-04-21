@@ -1,0 +1,388 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}RIA — {{ ria.numero }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 10px 28px rgba(2,6,23,.08);
+    --green:#16a34a; --red:#ef4444; --orange:#f97316; --blue:#2563eb;
+  }
+  body{ font-family:Poppins,system-ui; background:var(--bg); color:var(--text); }
+
+  .wrap{ max-width:1400px; margin:18px auto; padding:0 16px; }
+
+  /* ✅ header propre (plus d’écrits qui se confondent) */
+  .hero{
+    border-radius:18px;
+    padding:16px;
+    color:#fff;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.08)),
+      linear-gradient(135deg, #0b3a6a 0%, #072b50 70%, #061f3a 100%);
+    box-shadow:0 18px 44px rgba(2,6,23,.14);
+  }
+  .hero-top{ display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:flex-start; }
+  .hero h2{ margin:0; font-size:20px; font-weight:900; display:flex; gap:10px; align-items:center; }
+  .meta{
+    margin-top:10px;
+    display:flex; gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    max-width:100%;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.18);
+    font-weight:800;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  .chip i{ opacity:.95; }
+  .chip b{ font-weight:900; }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    height:40px; padding:0 12px;
+    border-radius:12px;
+    font-weight:900; font-size:12px;
+    text-decoration:none; cursor:pointer;
+    border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.95);
+    color:#0f172a;
+    box-shadow:0 10px 20px rgba(0,0,0,.12);
+    white-space:nowrap;
+  }
+  .btn.ghost{ background:transparent; color:#fff; box-shadow:none; }
+
+  .grid{
+    margin-top:12px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+    align-items:start;
+  }
+  @media(max-width:1100px){ .grid{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card-h{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:linear-gradient(180deg, rgba(11,58,106,.06), rgba(11,58,106,0));
+    font-weight:900;
+    color:var(--brand);
+  }
+  .card-b{ padding:14px; }
+
+  .row{ display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px dashed #eef2f7; }
+  .row:last-child{ border-bottom:none; }
+  .k{ color:var(--muted); font-weight:900; font-size:12px; }
+  .v{ font-weight:900; text-align:right; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media(max-width:700px){ .grid2{ grid-template-columns:1fr; } }
+
+  label{ display:block; font-size:12px; font-weight:900; color:var(--muted); margin-bottom:6px; }
+  input, select, textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:800;
+    outline:none;
+    background:#fff;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:rgba(31,106,165,.45);
+    box-shadow:0 0 0 4px rgba(31,106,165,.12);
+  }
+
+  .checkgrid{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  @media(max-width:700px){ .checkgrid{ grid-template-columns:1fr; } }
+
+  .checkbox{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 12px;
+    background:#fff;
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .checkbox input{ width:auto; margin-top:2px; }
+  .checkbox .t{ font-weight:900; }
+  .checkbox .s{ color:var(--muted); font-weight:800; font-size:12px; margin-top:4px; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:11px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .ok{ background:rgba(22,163,74,.12); color:#166534; border-color:rgba(22,163,74,.18); }
+  .bad{ background:rgba(239,68,68,.12); color:#991b1b; border-color:rgba(239,68,68,.18); }
+  .warn{ background:rgba(249,115,22,.14); color:#9a3412; border-color:rgba(249,115,22,.22); }
+
+  .history{
+    margin-top:12px;
+  }
+
+  .item{
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .item-h{
+    padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    cursor:pointer;
+    background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+  }
+  .item-h .left{ display:flex; flex-direction:column; gap:4px; }
+  .item-h .date{ font-weight:900; }
+  .item-h .by{ color:var(--muted); font-weight:800; font-size:12px; }
+
+  .item-b{
+    display:none;
+    padding:12px 14px;
+    border-top:1px solid var(--border);
+    background:#fff;
+  }
+  .item.open .item-b{ display:block; }
+
+  .mini{ color:var(--muted); font-weight:800; font-size:12px; }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-top">
+      <div style="min-width:260px; max-width:100%;">
+        <h2><i class="fa-solid fa-hose-reel"></i> RIA — {{ ria.numero }}</h2>
+
+        <div class="meta">
+          <span class="chip"><i class="fa-solid fa-industry"></i> Site : <b>{{ ria.site.nom }}</b></span>
+          <span class="chip"><i class="fa-solid fa-location-dot"></i> Zone : <b>{% if ria.zone %}{{ ria.zone.nom }}{% else %}—{% endif %}</b></span>
+          <span class="chip"><i class="fa-solid fa-map-pin"></i> Localisation : <b>{{ ria.localisation }}</b></span>
+          {% if ria.actif %}
+            <span class="chip"><i class="fa-solid fa-circle-check"></i> <b>Actif</b></span>
+          {% else %}
+            <span class="chip"><i class="fa-solid fa-circle-xmark"></i> <b>Inactif</b></span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn ghost" href="{% url 'incendie:ria_list' %}">
+          <i class="fa-solid fa-arrow-left"></i> Retour liste RIA
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ✅ Fiche RIA -->
+    <div class="card">
+      <div class="card-h">
+        <span><i class="fa-solid fa-circle-info"></i> Fiche équipement</span>
+      </div>
+      <div class="card-b">
+        <div class="row"><div class="k">Type RIA</div><div class="v">{{ ria.type_ria|default:"—" }}</div></div>
+        <div class="row"><div class="k">Diamètre tuyau</div><div class="v">{{ ria.diametre_tuyau|default:"—" }}</div></div>
+        <div class="row"><div class="k">Longueur tuyau</div><div class="v">{{ ria.longueur_tuyau|default:"—" }}</div></div>
+        <div class="row"><div class="k">Pression nominale</div><div class="v">{{ ria.pression_nominale|default:"—" }}</div></div>
+        <div class="row"><div class="k">Marque</div><div class="v">{{ ria.marque|default:"—" }}</div></div>
+        <div class="row"><div class="k">Année installation</div><div class="v">{{ ria.annee_installation|default:"—" }}</div></div>
+      </div>
+    </div>
+
+    <!-- ✅ Form vérification -->
+    <div class="card">
+      <div class="card-h">
+        <span><i class="fa-solid fa-clipboard-check"></i> Nouvelle vérification</span>
+        <span class="pill warn"><i class="fa-solid fa-bolt"></i> RIA</span>
+      </div>
+      <div class="card-b">
+        <form method="post" action="{% url 'incendie:ria_verifier' ria.pk %}">
+          {% csrf_token %}
+
+          <div class="grid2">
+            <div>
+              <label>Date de vérification</label>
+              <input type="date" name="date_verification" required>
+            </div>
+            <div>
+              <label>Statut</label>
+              <select name="statut">
+                <option value="conforme" selected>Conforme</option>
+                <option value="non_conforme">Non conforme</option>
+                <option value="a_surveiller">À surveiller</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Pression mesurée</label>
+            <input type="text" name="pression_mesuree" placeholder="Ex: 4.2 bar">
+          </div>
+
+          <div style="margin-top:10px;">
+            <div class="checkbox">
+              <input type="checkbox" name="etancheite_ok" id="etancheite_ok">
+              <div>
+                <div class="t">Étanchéité OK</div>
+                <div class="s">Aucun suintement / fuite au test</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="checkgrid">
+            <div>
+              <label>Checklist visuelle</label>
+              <div class="checkbox"><input type="checkbox" name="v_accessibilite_ok"><div><div class="t">Accessibilité OK</div><div class="s">RIA accessible</div></div></div>
+              <div class="checkbox" style="margin-top:8px;"><input type="checkbox" name="v_signalisation_ok"><div><div class="t">Signalisation OK</div><div class="s">Pictos présents</div></div></div>
+              <div class="checkbox" style="margin-top:8px;"><input type="checkbox" name="v_etat_coffret_ok"><div><div class="t">Coffret OK</div><div class="s">Porte / vitre / état</div></div></div>
+              <div class="checkbox" style="margin-top:8px;"><input type="checkbox" name="v_tuyau_ok"><div><div class="t">Tuyau OK</div><div class="s">Pas de fissure / bon état</div></div></div>
+            </div>
+
+            <div>
+              <label>Checklist fonctionnelle</label>
+              <div class="checkbox"><input type="checkbox" name="f_ouverture_vanne_ok"><div><div class="t">Ouverture vanne OK</div><div class="s">Vanne manoeuvrable</div></div></div>
+              <div class="checkbox" style="margin-top:8px;"><input type="checkbox" name="f_debit_ok"><div><div class="t">Débit OK</div><div class="s">Débit satisfaisant</div></div></div>
+              <div class="checkbox" style="margin-top:8px;"><input type="checkbox" name="f_lance_ok"><div><div class="t">Lance OK</div><div class="s">Jet / réglage correct</div></div></div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Commentaire</label>
+            <textarea name="commentaire" rows="3" placeholder="Observations…"></textarea>
+          </div>
+
+          <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+            <button class="btn" type="submit" style="border:none;">
+              <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ✅ Historique détaillé -->
+  <div class="history card">
+    <div class="card-h">
+      <span><i class="fa-solid fa-clock-rotate-left"></i> Historique des vérifications</span>
+      <span class="pill warn"><i class="fa-solid fa-list"></i> {{ verifs|length }}</span>
+    </div>
+
+    <div class="card-b" style="display:flex; flex-direction:column; gap:10px;">
+      {% for v in verifs %}
+        <div class="item" data-acc>
+          <div class="item-h" onclick="toggleAcc(this.parentElement)">
+            <div class="left">
+              <div class="date"><i class="fa-regular fa-calendar"></i> {{ v.date_verification|date:"d/m/Y" }}</div>
+              <div class="by"><i class="fa-solid fa-user-check"></i> {{ v.verifie_par|default:"—" }}</div>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+              {% if v.statut == "conforme" %}
+                <span class="pill ok"><i class="fa-solid fa-circle-check"></i> Conforme</span>
+              {% elif v.statut == "non_conforme" %}
+                <span class="pill bad"><i class="fa-solid fa-circle-xmark"></i> Non conforme</span>
+              {% else %}
+                <span class="pill warn"><i class="fa-solid fa-triangle-exclamation"></i> À surveiller</span>
+              {% endif %}
+              <span class="pill" style="background:#f1f5f9;border-color:var(--border);color:#0f172a;">
+                <i class="fa-solid fa-chevron-down"></i> Détails
+              </span>
+            </div>
+          </div>
+
+          <div class="item-b">
+            <div class="grid2">
+              <div>
+                <div class="k">Pression mesurée</div>
+                <div class="v" style="text-align:left;">{{ v.pression_mesuree|default:"—" }}</div>
+              </div>
+              <div>
+                <div class="k">Étanchéité</div>
+                <div class="v" style="text-align:left;">
+                  {% if v.etancheite_ok %}
+                    <span class="pill ok"><i class="fa-solid fa-droplet"></i> OK</span>
+                  {% else %}
+                    <span class="pill bad"><i class="fa-solid fa-droplet-slash"></i> KO</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;" class="grid2">
+              <div>
+                <div class="k">Checklist visuelle</div>
+                <div class="mini" style="margin-top:6px;">
+                  Accessibilité: <b>{{ v.checklist_visuelle.accessibilite_ok|yesno:"OK,KO" }}</b> ·
+                  Signalisation: <b>{{ v.checklist_visuelle.signalisation_ok|yesno:"OK,KO" }}</b> ·
+                  Coffret: <b>{{ v.checklist_visuelle.etat_coffret_ok|yesno:"OK,KO" }}</b> ·
+                  Tuyau: <b>{{ v.checklist_visuelle.tuyau_ok|yesno:"OK,KO" }}</b>
+                </div>
+              </div>
+
+              <div>
+                <div class="k">Checklist fonctionnelle</div>
+                <div class="mini" style="margin-top:6px;">
+                  Vanne: <b>{{ v.checklist_fonctionnelle.ouverture_vanne_ok|yesno:"OK,KO" }}</b> ·
+                  Débit: <b>{{ v.checklist_fonctionnelle.debit_ok|yesno:"OK,KO" }}</b> ·
+                  Lance: <b>{{ v.checklist_fonctionnelle.lance_ok|yesno:"OK,KO" }}</b>
+                </div>
+              </div>
+            </div>
+
+            {% if v.commentaire %}
+              <div style="margin-top:10px;">
+                <div class="k">Commentaire</div>
+                <div style="font-weight:800; margin-top:6px;">{{ v.commentaire|linebreaksbr }}</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="mini">Aucune vérification enregistrée pour ce RIA.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleAcc(el){
+    const isOpen = el.classList.contains("open");
+    document.querySelectorAll("[data-acc].open").forEach(x => x.classList.remove("open"));
+    if(!isOpen) el.classList.add("open");
+  }
+</script>
+{% endblock %}

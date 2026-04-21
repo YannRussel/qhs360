@@ -1,0 +1,484 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Suivi & clôture — {{ ev }}{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --accent:#1f6aa5;
+    --bg:#f4f6f9;
+    --card:#fff;
+    --border:#e6ebf2;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+
+    --shadow:0 12px 30px rgba(2,6,23,.08);
+    --shadow-soft:0 8px 22px rgba(15,23,42,.06);
+    --radius:16px;
+  }
+
+  *{ box-sizing:border-box; }
+  body{ font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+  .wrap{ max-width:1400px; margin:0 auto; padding:18px 18px 34px; }
+
+  .breadcrumb{
+    font-size:12px; color:var(--muted); margin-bottom:8px;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .breadcrumb a{ color:var(--brand); text-decoration:none; font-weight:800; }
+  .breadcrumb .sep{ opacity:.6; }
+
+  .header{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:14px; flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .header h1{
+    margin:0; font-size:28px; font-weight:900; color:var(--text);
+  }
+
+  .btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:900;
+    color:var(--text);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:var(--shadow-soft);
+  }
+  .btn.green{ background:#5b7d3b; border-color:#5b7d3b; color:#fff; }
+  .btn.blue{ background:#2b6cb0; border-color:#2b6cb0; color:#fff; }
+  .btn.ghost{ background:transparent; box-shadow:none; }
+
+  .tabs{
+    display:flex; gap:10px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+    padding-bottom:10px;
+    margin:12px 0 14px;
+  }
+  .tab{
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-bottom-color:transparent;
+    border-radius:12px;
+    background:#fff;
+    font-weight:900;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .tab.active{
+    color:var(--text);
+    background:rgba(31,106,165,.06);
+    border-color:rgba(31,106,165,.25);
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .card .hd{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    font-weight:900;
+    color:var(--text);
+    background:linear-gradient(180deg, rgba(11,58,106,.05), transparent);
+  }
+  .card .bd{ padding:14px; }
+
+  .section-title{
+    display:flex; align-items:center; gap:10px;
+    font-weight:900; color:var(--brand);
+    margin:0 0 10px;
+    font-size:16px;
+  }
+  .grid2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width: 950px){ .grid2{ grid-template-columns:1fr; } }
+
+  .kv{
+    display:grid;
+    grid-template-columns: 140px 1fr;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid rgba(230,235,242,.9);
+  }
+  .kv:last-child{ border-bottom:none; }
+  .k{ color:var(--muted); font-size:12px; font-weight:900; }
+  .v{ color:var(--text); font-size:13px; font-weight:800; }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-size:12px; color:var(--muted);
+    font-weight:900; padding:10px 10px;
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:10px 10px;
+    border-bottom:1px solid rgba(230,235,242,.9);
+    vertical-align:middle;
+    font-size:13px;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .badge.type.corrective{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.25); color:#925a00; }
+  .badge.type.preventive{ background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.25); color:#1d4ed8; }
+
+  .badge.status.realisee{ background:rgba(22,163,74,.12); border-color:rgba(22,163,74,.25); color:#166534; }
+  .badge.status.en_cours{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.25); color:#925a00; }
+  .badge.status.a_faire{ background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.25); color:#1d4ed8; }
+  .badge.status.retard{ background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.25); color:#b91c1c; }
+
+  .pane{ display:none; }
+  .pane.active{ display:block; }
+
+  .field label{
+    display:block; font-size:12px; font-weight:900; color:var(--text);
+    margin-bottom:6px;
+  }
+  .field input, .field textarea, .field select{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    outline:none;
+    font-family:inherit;
+    font-size:13px;
+    background:#fff;
+  }
+  .field textarea{ min-height:100px; resize:vertical; }
+
+  .inline{
+    display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+  }
+
+  .footer-actions{
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    margin-top:12px;
+  }
+
+  .bigbtn{
+    padding:12px 18px;
+    border-radius:14px;
+    font-weight:900;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    color:#fff;
+  }
+  .bigbtn.blue{ background:#2b6cb0; }
+  .bigbtn.gray{ background:#64748b; }
+</style>
+
+<div class="wrap">
+
+  <div class="breadcrumb">
+    <a href="#"><i class="fa-solid fa-star"></i></a>
+    <span>Accidents du Travail & Incidents</span>
+    <span class="sep">›</span>
+    <b style="color:var(--brand)">Suivi & clôture</b>
+  </div>
+
+  <div class="header">
+    <div>
+      <h1>Suivi & clôture : {{ ev.get_type_evenement_display }} n° {{ ev.reference|default:"EVT-" }}{{ ev.id }}</h1>
+    </div>
+    <div class="inline">
+      <a class="btn" href="{% url 'evenements:evenement_detail' ev.id %}"><i class="fa-solid fa-folder-open"></i> Ouvrir l’événement</a>
+      <a class="btn" href="#"><i class="fa-solid fa-file-export"></i> Exporter</a>
+
+      <form method="post" action="{% url 'evenements:suivi_cloture' ev.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_cloture">
+        <button class="btn green" type="submit"><i class="fa-solid fa-lock"></i> Clôture</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button type="button" class="tab active" data-tab="declaration">Déclaration</button>
+    <button type="button" class="tab" data-tab="enquete">Enquête & analyse</button>
+    <button type="button" class="tab" data-tab="actions">Actions correctives</button>
+  </div>
+
+  <!-- ============ PANE DECLARATION ============ -->
+  <div class="pane active" id="pane-declaration">
+
+    <div class="card">
+      <div class="hd"><span class="section-title">1) Informations générales du dossier</span></div>
+      <div class="bd">
+        <div class="grid2">
+          <div>
+            <div class="kv"><div class="k">Type :</div><div class="v">{{ ev.get_type_evenement_display }}</div></div>
+            <div class="kv"><div class="k">Date :</div><div class="v">{{ ev.date_evenement|date:"d/m/Y" }}</div></div>
+            <div class="kv"><div class="k">Site :</div><div class="v">{{ ev.site }}</div></div>
+            <div class="kv"><div class="k">Zone :</div><div class="v">{% if ev.zone %}{{ ev.zone }}{% else %}—{% endif %}</div></div>
+            <div class="kv"><div class="k">Service :</div><div class="v">{{ ev.service_departement|default:"—" }}</div></div>
+          </div>
+
+          <div>
+            <div class="kv"><div class="k">Date d'ouverture :</div><div class="v">{{ ev.date_ouverture|date:"d/m/Y" }}</div></div>
+            <div class="kv"><div class="k">Date clôture prévue :</div><div class="v">{% if ev.date_cloture_prevue %}{{ ev.date_cloture_prevue|date:"d/m/Y" }}{% else %}—{% endif %}</div></div>
+            <div class="kv"><div class="k">Date clôture :</div><div class="v">{% if ev.date_cloture %}{{ ev.date_cloture|date:"d/m/Y" }}{% else %}—{% endif %}</div></div>
+            <div class="kv"><div class="k">Gravité :</div><div class="v">{% if ev.gravite_apparente %}{{ ev.get_gravite_apparente_display }}{% else %}—{% endif %}</div></div>
+            <div class="kv"><div class="k">Statut :</div>
+              <div class="v">{% if ev.date_cloture %}<span class="badge status realisee">Clôturé</span>{% else %}<span class="badge status en_cours">Ouvert</span>{% endif %}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><span class="section-title">2) Rappel des actions correctives & préventives</span></div>
+      <div class="bd">
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Responsable</th>
+              <th>Délai</th>
+              <th>Statut</th>
+              <th>Date de réalisation</th>
+              <th>Preuves associées</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in actions %}
+            <tr>
+              <td>{{ a.description_action|truncatechars:55 }}</td>
+              <td><span class="badge type {{ a.type_action }}">{{ a.get_type_action_display }}</span></td>
+              <td>{{ a.responsable|default:"—" }}</td>
+              <td>{% if a.delai %}{{ a.delai|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+              <td>
+                <span class="badge status {{ a.statut }}">
+                  {% if a.statut == 'a_faire' %}À faire{% elif a.statut == 'en_cours' %}En cours{% elif a.statut == 'realisee' %}Réalisée{% elif a.statut == 'retard' %}Retard{% else %}Annulée{% endif %}
+                </span>
+              </td>
+              <td>{% if a.date_realisation %}{{ a.date_realisation|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+              <td>
+                {% if a.preuve %}
+                  <a style="font-weight:900; color:var(--brand); text-decoration:none;" target="_blank" href="{{ a.preuve.url }}">
+                    <i class="fa-solid fa-paperclip"></i> {{ a.preuve.name|cut:"evenements/preuves/" }}
+                  </a>
+                {% else %}
+                  <span style="color:var(--muted)">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="color:var(--muted); padding:14px;">Aucune action.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top:10px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+          <div class="badge"><i class="fa-solid fa-list-check"></i> Total actions : <b>{{ actions_count }}</b></div>
+          <div class="badge"><i class="fa-solid fa-check"></i> Réalisées : <b>{{ actions_done }}</b></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ PANE ENQUETE ============ -->
+  <div class="pane" id="pane-enquete">
+    <div class="card">
+      <div class="hd"><span class="section-title">3) Vérification de l’efficacité</span></div>
+      <div class="bd">
+        <form method="post" action="{% url 'evenements:suivi_cloture' ev.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_efficacite">
+
+          <div class="grid2">
+            <div class="field">
+              <label>Date de vérification</label>
+              <input type="date" name="date_verification_efficacite" value="{{ efficacite_date|default:'' }}">
+            </div>
+            <div class="field">
+              <label>Toutes les actions mises en œuvre ont-elles été efficaces ?</label>
+              <div class="inline" style="padding:8px 0;">
+                <label style="font-weight:900;"><input type="radio" name="efficace_globale" value="1" {% if efficace_globale == True %}checked{% endif %}> Oui</label>
+                <label style="font-weight:900;"><input type="radio" name="efficace_globale" value="0" {% if efficace_globale == False %}checked{% endif %}> Non</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:10px;">
+            <label>Commentaires du responsable QHS</label>
+            <textarea name="commentaires_efficacite" placeholder="Bilan, risques résiduels, points restants...">{{ commentaires_efficacite }}</textarea>
+          </div>
+
+          <div class="footer-actions">
+            <div></div>
+            <button class="btn blue" type="submit"><i class="fa-solid fa-circle-check"></i> Valider</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><span class="section-title">4) Décision de clôture</span></div>
+      <div class="bd">
+        <form method="post" action="{% url 'evenements:suivi_cloture' ev.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_decision">
+
+          <div class="field">
+            <label>Décision / justification</label>
+            <textarea name="decision_cloture" placeholder="Après analyse, toutes les actions...">{{ decision_cloture }}</textarea>
+          </div>
+
+          <div class="footer-actions">
+            <div></div>
+            <button class="btn blue" type="submit"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><span class="section-title">5) Validation & signatures</span></div>
+      <div class="bd">
+        <form method="post" action="{% url 'evenements:suivi_cloture' ev.id %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_signatures">
+
+          <div class="grid2">
+            <div class="field">
+              <label>Responsable QHSE</label>
+              <input type="text" name="validation_qhs" value="{{ ev.validation_qhs }}">
+            </div>
+            <div class="field">
+              <label>Direction</label>
+              <input type="text" name="validation_direction" value="{{ ev.validation_direction }}">
+            </div>
+          </div>
+
+          <div style="margin-top:10px;" class="inline">
+            <label style="font-weight:900;">
+              <input type="checkbox" name="decision_finale" value="1" {% if decision_finale %}checked{% endif %}>
+              Décision finale de clôture
+            </label>
+          </div>
+
+          <div class="footer-actions">
+            <a class="bigbtn gray" href="#"><i class="fa-solid fa-rotate-left"></i> Réouvrir le dossier</a>
+            <button class="bigbtn blue" type="submit"><i class="fa-solid fa-lock"></i> Clôturer le dossier</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ PANE ACTIONS ============ -->
+  <div class="pane" id="pane-actions">
+    <div class="card">
+      <div class="hd"><span class="section-title">Actions correctives</span></div>
+      <div class="bd">
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+          <div class="badge"><i class="fa-solid fa-list-check"></i> Total : <b>{{ actions_count }}</b></div>
+          <a class="btn blue" href="#"><i class="fa-solid fa-plus"></i> Ajouter une action</a>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Responsable</th>
+              <th>Délai</th>
+              <th>Statut</th>
+              <th>Preuve</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in actions %}
+            <tr>
+              <td><b>{{ a.numero }}</b></td>
+              <td>{{ a.description_action|truncatechars:70 }}</td>
+              <td><span class="badge type {{ a.type_action }}">{{ a.get_type_action_display }}</span></td>
+              <td>{{ a.responsable|default:"—" }}</td>
+              <td>{% if a.delai %}{{ a.delai|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+              <td>
+                <span class="badge status {{ a.statut }}">
+                  {% if a.statut == 'a_faire' %}À faire{% elif a.statut == 'en_cours' %}En cours{% elif a.statut == 'realisee' %}Réalisée{% elif a.statut == 'retard' %}Retard{% else %}Annulée{% endif %}
+                </span>
+              </td>
+              <td>
+                {% if a.preuve %}
+                  <a style="font-weight:900; color:var(--brand); text-decoration:none;" target="_blank" href="{{ a.preuve.url }}">
+                    <i class="fa-solid fa-paperclip"></i> Fichier
+                  </a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="nowrap">
+                <a class="btn" href="{% url 'evenements:action_edit' a.id %}"><i class="fa-solid fa-pen"></i></a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" style="color:var(--muted); padding:14px;">Aucune action.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll(".tab");
+  const panes = {
+    declaration: document.getElementById("pane-declaration"),
+    enquete: document.getElementById("pane-enquete"),
+    actions: document.getElementById("pane-actions"),
+  };
+  tabs.forEach(t => {
+    t.addEventListener("click", () => {
+      tabs.forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      Object.values(panes).forEach(p => p.classList.remove("active"));
+      panes[t.getAttribute("data-tab")].classList.add("active");
+    });
+  });
+</script>
+{% endblock %}

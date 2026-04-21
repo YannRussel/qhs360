@@ -1,0 +1,20 @@
+<h2>Nouvel abonnement</h2>
+<form method="post">{% csrf_token %}
+  <label>Organisation</label><br>
+  <select name="organisation_id" required>
+    {% for o in organisations %}
+      <option value="{{ o.id }}">{{ o.nom }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Plan</label><br>
+  <select name="plan">
+    <option value="basic">Basic</option>
+    <option value="pro">Pro</option>
+    <option value="entreprise">Entreprise</option>
+  </select><br><br>
+
+  <label><input type="checkbox" name="actif" checked> Actif</label><br><br>
+
+  <button type="submit">Créer</button>
+</form>

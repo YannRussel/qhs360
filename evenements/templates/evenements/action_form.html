@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Modifier action — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 12px 30px rgba(2,6,23,.08);
+  }
+  .wrap{ max-width:1200px; margin:0 auto; padding:26px; font-family:Poppins,system-ui; }
+  .top{ display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+  h2{ margin:0; color:var(--brand); font-weight:900; }
+  .sub{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+        border:1px solid var(--border); background:#fff; text-decoration:none; color:var(--text); font-weight:900; }
+  .btn-primary{ background:linear-gradient(135deg, var(--brand), var(--accent)); border:none; color:#fff; }
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin-top:16px; }
+  .row{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+  label{ font-size:12px; color:var(--muted); font-weight:900; }
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border);
+    outline:none; background:#fff;
+  }
+  textarea{ min-height:120px; resize:vertical; }
+  .line{ height:1px; background:var(--border); margin:12px 0; }
+  .foot{ display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  @media(max-width:900px){ .row{ grid-template-columns:1fr; } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h2><i class="fa-solid fa-screwdriver-wrench"></i> Modifier l’action</h2>
+      <div class="sub">Action #{{ action.numero }} — {{ action.get_type_action_display }} • {{ action.evenement }}</div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn" href="{% url 'evenements:evenement_detail' action.evenement_id %}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="card">
+    {% csrf_token %}
+
+    <div class="row">
+      <div>
+        <label>N°</label>
+        <input name="numero" value="{{ action.numero }}" />
+      </div>
+      <div>
+        <label>Type *</label>
+        <select name="type_action" required>
+          <option value="corrective" {% if action.type_action == "corrective" %}selected{% endif %}>Corrective</option>
+          <option value="preventive" {% if action.type_action == "preventive" %}selected{% endif %}>Préventive</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Priorité</label>
+        <select name="priorite">
+          <option value="" {% if not action.priorite %}selected{% endif %}>—</option>
+          <option value="basse" {% if action.priorite == "basse" %}selected{% endif %}>Basse</option>
+          <option value="moyenne" {% if action.priorite == "moyenne" %}selected{% endif %}>Moyenne</option>
+          <option value="haute" {% if action.priorite == "haute" %}selected{% endif %}>Haute</option>
+          <option value="critique" {% if action.priorite == "critique" %}selected{% endif %}>Critique</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Statut</label>
+        <select name="statut">
+          <option value="a_faire" {% if action.statut == "a_faire" %}selected{% endif %}>À faire</option>
+          <option value="en_cours" {% if action.statut == "en_cours" %}selected{% endif %}>En cours</option>
+          <option value="realisee" {% if action.statut == "realisee" %}selected{% endif %}>Réalisée</option>
+          <option value="retard" {% if action.statut == "retard" %}selected{% endif %}>Retard</option>
+          <option value="annulee" {% if action.statut == "annulee" %}selected{% endif %}>Annulée</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Responsable</label>
+        <input name="responsable" value="{{ action.responsable }}" />
+      </div>
+      <div>
+        <label>Service / Société</label>
+        <input name="service_societe" value="{{ action.service_societe }}" />
+      </div>
+
+      <div>
+        <label>Délai</label>
+        <input type="date" name="delai" value="{% if action.delai %}{{ action.delai|date:'Y-m-d' }}{% endif %}" />
+      </div>
+      <div>
+        <label>Date réalisation</label>
+        <input type="date" name="date_realisation" value="{% if action.date_realisation %}{{ action.date_realisation|date:'Y-m-d' }}{% endif %}" />
+      </div>
+
+      <div>
+        <label>Cause racine</label>
+        <input name="cause_racine" value="{{ action.cause_racine }}" />
+      </div>
+      <div>
+        <label>Commentaires</label>
+        <input name="commentaires" value="{{ action.commentaires }}" />
+      </div>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label>Description *</label>
+      <textarea name="description_action" required>{{ action.description_action }}</textarea>
+    </div>
+
+    <div class="line"></div>
+
+    <div class="row">
+      <div>
+        <label>Preuve (fichier)</label>
+        <input type="file" name="preuve" />
+        {% if action.preuve %}
+          <div style="margin-top:8px;">
+            <a class="btn" style="padding:8px 10px;" href="{{ action.preuve.url }}" target="_blank">
+              <i class="fa-solid fa-download"></i> Ouvrir la preuve actuelle
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <label>Date vérification efficacité</label>
+        <input type="date" name="date_verification_efficacite" value="{% if action.date_verification_efficacite %}{{ action.date_verification_efficacite|date:'Y-m-d' }}{% endif %}" />
+      </div>
+
+      <div>
+        <label>Efficace ?</label>
+        <select name="efficace">
+          <option value="" {% if action.efficace == None %}selected{% endif %}>—</option>
+          <option value="1" {% if action.efficace == True %}selected{% endif %}>Oui</option>
+          <option value="0" {% if action.efficace == False %}selected{% endif %}>Non</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Commentaires efficacité</label>
+        <textarea name="commentaires_efficacite">{{ action.commentaires_efficacite }}</textarea>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

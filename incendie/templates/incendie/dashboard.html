@@ -1,0 +1,275 @@
+{% extends "core/base.html" %}
+{% block title %}Incendie & prévention — QHSE360{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --brand2:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --shadow:0 10px 28px rgba(2,6,23,.08);
+    --radius:16px;
+  }
+
+  .wrap{max-width:1500px;margin:18px auto;padding:18px}
+  .hero{
+    background:linear-gradient(135deg, rgba(11,58,106,.10), rgba(31,106,165,.08));
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:18px 18px;
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+    flex-wrap:wrap;
+  }
+  .hero h1{
+    margin:0; font-size:22px; font-weight:950; color:var(--brand);
+    display:flex; gap:10px; align-items:center;
+  }
+  .hero p{margin:6px 0 0 0; color:var(--muted); font-weight:600}
+  .hero .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:12px;
+    border:1px solid var(--border); background:#fff;
+    text-decoration:none; font-weight:900; color:var(--text);
+    box-shadow:0 6px 16px rgba(2,6,23,.06);
+    transition:.15s;
+  }
+  .btn:hover{transform:translateY(-1px); border-color:#cbd5e1}
+  .btn-primary{
+    background:linear-gradient(135deg, var(--brand), var(--brand2));
+    border-color:transparent; color:#fff;
+  }
+  .btn-primary:hover{filter:brightness(1.03)}
+  .btn-ghost{background:#fff}
+  .btn i{opacity:.95}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(180px, 1fr));
+    gap:12px;
+    margin-top:14px;
+  }
+  @media (max-width:1200px){ .grid{grid-template-columns:repeat(3, minmax(180px, 1fr));} }
+  @media (max-width:720px){ .grid{grid-template-columns:repeat(2, minmax(160px, 1fr));} }
+
+  .kpi{
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:14px;
+    background:var(--card);
+    position:relative;
+    overflow:hidden;
+    min-height:92px;
+  }
+  .kpi::before{
+    content:"";
+    position:absolute; inset:-1px -1px auto -1px;
+    height:7px;
+    background:linear-gradient(90deg, rgba(11,58,106,.9), rgba(31,106,165,.9));
+  }
+  .kpi .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .kpi .label{font-size:12px; color:var(--muted); font-weight:950; text-transform:uppercase; letter-spacing:.05em}
+  .kpi .value{font-size:26px; font-weight:1000; margin-top:6px; color:var(--text)}
+  .kpi .ico{
+    width:44px; height:44px; border-radius:14px;
+    display:grid; place-items:center;
+    background:rgba(31,106,165,.12);
+    color:var(--brand);
+    font-size:18px;
+    flex:0 0 auto;
+  }
+  .kpi .hint{margin-top:4px; font-size:12px; color:var(--muted); font-weight:700}
+
+  /* variations couleurs (comme des tuiles KPI) */
+  .kpi.green .ico{background:rgba(5,150,105,.14); color:#059669}
+  .kpi.green::before{background:linear-gradient(90deg, rgba(5,150,105,.95), rgba(34,197,94,.85))}
+  .kpi.orange .ico{background:rgba(217,119,6,.14); color:#d97706}
+  .kpi.orange::before{background:linear-gradient(90deg, rgba(217,119,6,.95), rgba(245,158,11,.85))}
+  .kpi.red .ico{background:rgba(220,38,38,.12); color:#dc2626}
+  .kpi.red::before{background:linear-gradient(90deg, rgba(220,38,38,.95), rgba(244,63,94,.85))}
+  .kpi.blue .ico{background:rgba(37,99,235,.12); color:#2563eb}
+  .kpi.blue::before{background:linear-gradient(90deg, rgba(37,99,235,.95), rgba(99,102,241,.85))}
+  .kpi.purple .ico{background:rgba(124,58,237,.12); color:#7c3aed}
+  .kpi.purple::before{background:linear-gradient(90deg, rgba(124,58,237,.95), rgba(168,85,247,.85))}
+
+  .section{
+    margin-top:14px;
+    border:1px solid var(--border);
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .section-h{
+    padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(15,23,42,.02), rgba(15,23,42,0));
+  }
+  .section-h .t{
+    font-weight:950; color:var(--text);
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-h .sub{color:var(--muted); font-weight:700; font-size:13px}
+  .quick{
+    padding:14px;
+    display:grid;
+    grid-template-columns:repeat(5, minmax(160px,1fr));
+    gap:10px;
+  }
+  @media (max-width:1200px){ .quick{grid-template-columns:repeat(3, minmax(160px,1fr));} }
+  @media (max-width:720px){ .quick{grid-template-columns:repeat(2, minmax(160px,1fr));} }
+
+  .quick a{
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+    text-decoration:none;
+    color:var(--text);
+    font-weight:900;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:#fff;
+    transition:.15s;
+  }
+  .quick a:hover{transform:translateY(-1px); border-color:#cbd5e1}
+  .quick .l{display:flex; align-items:center; gap:10px}
+  .pill{
+    font-size:12px; font-weight:950;
+    padding:6px 10px; border-radius:999px;
+    background:rgba(11,58,106,.08);
+    color:var(--brand);
+    border:1px solid rgba(11,58,106,.14);
+    white-space:nowrap;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <h1><i class="fa-solid fa-fire-flame-curved"></i> Sécurité incendie & prévention</h1>
+      <p>Registres, contrôles périodiques, anomalies et exercices d’évacuation.</p>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'incendie:registre_controles' %}">
+        <i class="fa-solid fa-table-list"></i> Ouvrir le registre
+      </a>
+      <a class="btn btn-ghost" href="{% url 'incendie:extincteur_create' %}">
+        <i class="fa-solid fa-fire-extinguisher"></i> Ajouter extincteur
+      </a>
+      <a class="btn btn-ghost" href="{% url 'incendie:ria_create' %}">
+        <i class="fa-solid fa-hose-reel"></i> Ajouter RIA
+      </a>
+      <a class="btn btn-ghost" href="{% url 'incendie:systeme_controle_create' %}">
+        <i class="fa-solid fa-bell"></i> Nouveau contrôle système
+      </a>
+      <a class="btn btn-ghost" href="{% url 'incendie:exercice_create' %}">
+        <i class="fa-solid fa-person-running"></i> Nouvel exercice
+      </a>
+      <a class="btn btn-ghost" href="{% url 'incendie:rapport_create' %}">
+        <i class="fa-solid fa-file-signature"></i> Nouveau rapport
+      </a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="kpi green">
+      <div class="row">
+        <div>
+          <div class="label">Extincteurs (inventaire)</div>
+          <div class="value">{{ kpi_extincteurs }}</div>
+          <div class="hint">Suivi & vérifications</div>
+        </div>
+        <div class="ico"><i class="fa-solid fa-fire-extinguisher"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi red">
+      <div class="row">
+        <div>
+          <div class="label">RIA (inventaire)</div>
+          <div class="value">{{ kpi_ria }}</div>
+          <div class="hint">Vérifications mensuelles</div>
+        </div>
+        <div class="ico"><i class="fa-solid fa-hose-reel"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi orange">
+      <div class="row">
+        <div>
+          <div class="label">Contrôles systèmes</div>
+          <div class="value">{{ kpi_systemes }}</div>
+          <div class="hint">Alarme / désenfumage</div>
+        </div>
+        <div class="ico"><i class="fa-solid fa-bell"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi blue">
+      <div class="row">
+        <div>
+          <div class="label">Exercices d’évacuation</div>
+          <div class="value">{{ kpi_exercices }}</div>
+          <div class="hint">Planifiés / inopinés</div>
+        </div>
+        <div class="ico"><i class="fa-solid fa-person-running"></i></div>
+      </div>
+    </div>
+
+    <div class="kpi purple">
+      <div class="row">
+        <div>
+          <div class="label">Rapports incendie</div>
+          <div class="value">{{ kpi_rapports }}</div>
+          <div class="hint">Incidents / exercices</div>
+        </div>
+        <div class="ico"><i class="fa-solid fa-file-lines"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-h">
+      <div>
+        <div class="t"><i class="fa-solid fa-layer-group" style="color:var(--brand)"></i> Accès rapides</div>
+        <div class="sub">Ouvre directement le bon registre.</div>
+      </div>
+      <div>
+        <a class="btn" href="{% url 'incendie:registre_controles' %}">
+          <i class="fa-solid fa-chart-line"></i> Vue registre (style capture)
+        </a>
+      </div>
+    </div>
+
+    <div class="quick">
+      <a href="{% url 'incendie:extincteurs_list' %}">
+        <span class="l"><i class="fa-solid fa-fire-extinguisher" style="color:#059669"></i> Registre extincteurs</span>
+        <span class="pill">Ouvrir</span>
+      </a>
+      <a href="{% url 'incendie:ria_list' %}">
+        <span class="l"><i class="fa-solid fa-hose-reel" style="color:#dc2626"></i> Vérifications RIA</span>
+        <span class="pill">Ouvrir</span>
+      </a>
+      <a href="{% url 'incendie:systemes_list' %}">
+        <span class="l"><i class="fa-solid fa-bell" style="color:#d97706"></i> Alarme & désenfumage</span>
+        <span class="pill">Ouvrir</span>
+      </a>
+      <a href="{% url 'incendie:exercices_list' %}">
+        <span class="l"><i class="fa-solid fa-person-running" style="color:#2563eb"></i> Exercices évacuation</span>
+        <span class="pill">Ouvrir</span>
+      </a>
+      <a href="{% url 'incendie:rapports_list' %}">
+        <span class="l"><i class="fa-solid fa-file-lines" style="color:#7c3aed"></i> Rapports incendie</span>
+        <span class="pill">Ouvrir</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

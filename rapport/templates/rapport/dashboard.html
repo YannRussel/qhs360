@@ -1,0 +1,1062 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}{{ titre_page }}{% endblock %}
+
+{% block content %}
+<style>
+  :root{
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --text:#101828;
+    --muted:#667085;
+    --line:#e6eaf2;
+    --primary:#1f7a5a;
+    --primary-soft:#e9f7f0;
+    --success:#16a34a;
+    --warning:#f59e0b;
+    --danger:#dc2626;
+    --info:#2563eb;
+    --radius:22px;
+    --shadow:0 14px 35px rgba(15,23,42,.07);
+
+    /* Décalage pour éviter que la sidebar passe sous la navbar de base.html */
+    --nav-offset: 92px;
+  }
+
+  .kpi-shell{
+    background:var(--bg);
+    min-height:100vh;
+    padding:24px 20px 28px;
+  }
+
+  .kpi-layout{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+
+  .kpi-sidebar{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+    padding:18px;
+    position:sticky;
+    top:var(--nav-offset);
+    align-self:start;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    color:var(--text);
+    font-size:20px;
+    margin-bottom:18px;
+  }
+
+  .brand-badge{
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    background:linear-gradient(135deg, var(--primary), #36a97b);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+  }
+
+  .org-card{
+    background:linear-gradient(135deg, #0f172a, #1f2937);
+    color:#fff;
+    border-radius:22px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+
+  .org-card small{
+    opacity:.82;
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .org-card h4{
+    margin:0;
+    font-size:18px;
+    font-weight:800;
+  }
+
+  .panorama-links{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:10px;
+    margin-top:14px;
+  }
+
+  .panorama-item{
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:10px 8px;
+    text-align:center;
+  }
+
+  .panorama-icon{
+    display:block;
+    font-size:18px;
+    margin-bottom:4px;
+  }
+
+  .panorama-label{
+    font-size:12px;
+    font-weight:700;
+    opacity:.95;
+  }
+
+  .side-links{
+    display:grid;
+    gap:10px;
+  }
+
+  .side-link{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    color:var(--text);
+    padding:12px 14px;
+    border-radius:16px;
+    border:1px solid transparent;
+    background:#fff;
+    transition:.2s ease;
+    font-weight:600;
+  }
+
+  .side-link:hover{
+    background:var(--primary-soft);
+    border-color:#d7efe5;
+    color:var(--primary);
+    transform:translateY(-1px);
+  }
+
+  .main-board{
+    display:grid;
+    gap:20px;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .topbar h1{
+    margin:0;
+    color:var(--text);
+    font-size:30px;
+    font-weight:800;
+  }
+
+  .topbar p{
+    margin:6px 0 0;
+    color:var(--muted);
+  }
+
+  .top-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .btn-kpi{
+    border:none;
+    border-radius:14px;
+    padding:12px 16px;
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+    transition:.2s ease;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .btn-kpi:hover{
+    transform:translateY(-1px);
+  }
+
+  .btn-primary{
+    background:var(--primary);
+    color:#fff;
+  }
+
+  .btn-light{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+
+  .filters{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+
+  .filters-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:14px;
+  }
+
+  .filters label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+
+  .filters select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px;
+    outline:none;
+    background:#fff;
+  }
+
+  .overview-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:16px;
+  }
+
+  .overview-card{
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:160px;
+    border:1px solid transparent;
+    color:#0f172a;
+  }
+
+  .overview-card.card-sites{
+    background:linear-gradient(135deg, #ecfeff, #cffafe);
+    border-color:#a5f3fc;
+  }
+
+  .overview-card.card-presta{
+    background:linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border-color:#c7d2fe;
+  }
+
+  .overview-card.card-inspections{
+    background:linear-gradient(135deg, #ecfdf3, #dcfce7);
+    border-color:#bbf7d0;
+  }
+
+  .overview-card.card-docs{
+    background:linear-gradient(135deg, #fff7ed, #ffedd5);
+    border-color:#fed7aa;
+  }
+
+  .overview-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+
+  .overview-icon{
+    width:50px;
+    height:50px;
+    border-radius:16px;
+    background:rgba(255,255,255,.7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    box-shadow:0 8px 18px rgba(15,23,42,.08);
+  }
+
+  .overview-title{
+    color:#334155;
+    font-size:14px;
+    font-weight:800;
+  }
+
+  .overview-value{
+    font-size:34px;
+    font-weight:900;
+    color:var(--text);
+    line-height:1;
+  }
+
+  .overview-sub{
+    color:#475467;
+    font-size:13px;
+  }
+
+  .overview-link{
+    margin-top:auto;
+    text-decoration:none;
+    font-weight:800;
+    color:#0f172a;
+  }
+
+  .section-grid-2{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:20px;
+  }
+
+  .section-grid-3{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:20px;
+  }
+
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+
+  .panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:16px;
+  }
+
+  .panel-title{
+    margin:0;
+    color:var(--text);
+    font-size:20px;
+    font-weight:800;
+  }
+
+  .panel-subtitle{
+    margin:5px 0 0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .metric-list{
+    display:grid;
+    gap:12px;
+  }
+
+  .metric-card{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    background:#fff;
+  }
+
+  .metric-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    margin-bottom:8px;
+  }
+
+  .metric-name{
+    font-weight:700;
+    color:var(--text);
+  }
+
+  .metric-value{
+    font-weight:900;
+    color:var(--primary);
+  }
+
+  .progress{
+    width:100%;
+    height:10px;
+    background:#eef2f7;
+    border-radius:999px;
+    overflow:hidden;
+  }
+
+  .progress > span{
+    display:block;
+    height:100%;
+    background:linear-gradient(90deg, var(--primary), #3bb587);
+    border-radius:999px;
+  }
+
+  .metric-hint{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:8px;
+  }
+
+  .alert-list{
+    display:grid;
+    gap:12px;
+  }
+
+  .alert-card{
+    border-radius:18px;
+    padding:14px;
+    color:#fff;
+    box-shadow:0 12px 28px rgba(15,23,42,.12);
+  }
+
+  .alert-danger{background:linear-gradient(135deg, #dc2626, #ef4444);}
+  .alert-warning{background:linear-gradient(135deg, #d97706, #f59e0b);}
+  .alert-info{background:linear-gradient(135deg, #1d4ed8, #3b82f6);}
+  .alert-card a{color:#fff;font-weight:700;text-decoration:underline;}
+
+  .mini-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:14px;
+  }
+
+  .mini-stat{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    background:#fff;
+  }
+
+  .mini-stat .label{
+    color:var(--muted);
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .mini-stat .value{
+    color:var(--text);
+    font-size:28px;
+    font-weight:900;
+    margin-top:6px;
+  }
+
+  .table-wrap{
+    overflow:auto;
+  }
+
+  table.kpi-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 10px;
+  }
+
+  table.kpi-table th{
+    color:var(--muted);
+    font-size:12px;
+    text-align:left;
+    padding:0 10px 8px;
+    font-weight:800;
+  }
+
+  table.kpi-table td{
+    background:#f9fbfd;
+    padding:12px 10px;
+    color:var(--text);
+    border-top:1px solid #edf2f7;
+    border-bottom:1px solid #edf2f7;
+  }
+
+  table.kpi-table tr td:first-child{
+    border-left:1px solid #edf2f7;
+    border-radius:14px 0 0 14px;
+  }
+
+  table.kpi-table tr td:last-child{
+    border-right:1px solid #edf2f7;
+    border-radius:0 14px 14px 0;
+  }
+
+  .badge-status{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .badge-open{background:#fff7ed;color:#c2410c;}
+  .badge-ok{background:#ecfdf3;color:#166534;}
+  .badge-warn{background:#fff7ed;color:#b45309;}
+  .badge-neutral{background:#eef2ff;color:#4338ca;}
+
+  .charts-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:20px;
+  }
+
+  .chart-box{
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:16px;
+    background:#fff;
+    min-height:320px;
+  }
+
+  .chart-box h5{
+    margin:0 0 14px;
+    font-size:16px;
+    color:var(--text);
+    font-weight:800;
+  }
+
+  .chart-canvas-wrap{
+    position:relative;
+    height:240px;
+  }
+
+  @media (max-width: 1200px){
+    .overview-grid{grid-template-columns:repeat(2, minmax(0,1fr));}
+    .section-grid-2,
+    .section-grid-3,
+    .charts-grid{grid-template-columns:1fr;}
+  }
+
+  @media (max-width: 992px){
+    .kpi-layout{grid-template-columns:1fr;}
+    .kpi-sidebar{
+      position:relative;
+      top:0;
+    }
+    .filters-grid{grid-template-columns:1fr 1fr;}
+  }
+
+  @media (max-width: 640px){
+    .overview-grid,
+    .filters-grid,
+    .mini-grid,
+    .panorama-links{grid-template-columns:1fr;}
+    .topbar h1{font-size:24px;}
+  }
+</style>
+
+<div class="kpi-shell">
+  {% if no_org %}
+    <div class="panel">
+      <h2 class="panel-title">Aucune organisation liée</h2>
+      <p class="panel-subtitle">Ton utilisateur n’est lié à aucune organisation.</p>
+    </div>
+  {% else %}
+  <div class="kpi-layout">
+
+    <aside class="kpi-sidebar">
+      <div class="brand">
+        <div class="brand-badge">📊</div>
+        <div>QHSSE KPI</div>
+      </div>
+
+      <div class="org-card">
+        <small>Organisation</small>
+        <h4>{{ organisation.nom }}</h4>
+        <small style="margin-top:10px;">Vue panoramique de tous les modules</small>
+
+        <div class="panorama-links">
+          <div class="panorama-item">
+            <span class="panorama-icon">📍</span>
+            <span class="panorama-label">Sites</span>
+          </div>
+          <div class="panorama-item">
+            <span class="panorama-icon">👷</span>
+            <span class="panorama-label">Prestataires</span>
+          </div>
+          <div class="panorama-item">
+            <span class="panorama-icon">📝</span>
+            <span class="panorama-label">Permis</span>
+          </div>
+          <div class="panorama-item">
+            <span class="panorama-icon">📂</span>
+            <span class="panorama-label">Documents</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-links">
+        {% for item in quick_links %}
+          <a class="side-link" href="{% url item.url %}">
+            <span>{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </aside>
+
+    <main class="main-board">
+
+      <div class="topbar">
+        <div>
+          <h1>{{ titre_page }}</h1>
+          <p>Vue consolidée des opérations QHSSE, sécurité, permis, incendie et documentaire.</p>
+        </div>
+
+        <div class="top-actions">
+          <a class="btn-kpi btn-light" href="{% url 'core:accueil' %}">Retour accueil</a>
+          <a class="btn-kpi btn-primary" href="{% url 'documentaire:list' %}">Ouvrir documentation</a>
+        </div>
+      </div>
+
+      <form method="get" class="filters">
+        <div class="filters-grid">
+          <div>
+            <label>Site</label>
+            <select name="site">
+              <option value="">Tous les sites</option>
+              {% for s in sites %}
+                <option value="{{ s.id }}" {% if filters.site == s.id|stringformat:"s" %}selected{% endif %}>
+                  {{ s.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label>Prestataire</label>
+            <select name="prestataire">
+              <option value="">Tous les prestataires</option>
+              {% for p in prestataires %}
+                <option value="{{ p.id }}" {% if filters.prestataire == p.id|stringformat:"s" %}selected{% endif %}>
+                  {{ p.nom }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label>Période d’activité</label>
+            <select name="period">
+              <option value="7" {% if filters.period == "7" %}selected{% endif %}>7 jours</option>
+              <option value="30" {% if filters.period == "30" %}selected{% endif %}>30 jours</option>
+              <option value="90" {% if filters.period == "90" %}selected{% endif %}>90 jours</option>
+              <option value="180" {% if filters.period == "180" %}selected{% endif %}>180 jours</option>
+              <option value="365" {% if filters.period == "365" %}selected{% endif %}>365 jours</option>
+            </select>
+          </div>
+
+          <div style="display:flex;align-items:flex-end;gap:10px;">
+            <button class="btn-kpi btn-primary" type="submit">Filtrer</button>
+            <a class="btn-kpi btn-light" href="{% url 'rapport:dashboard_kpi' %}">Réinitialiser</a>
+          </div>
+        </div>
+      </form>
+
+      <section class="overview-grid">
+        {% for card in overview_cards %}
+          <div class="overview-card
+            {% if forloop.counter0 == 0 %}card-sites
+            {% elif forloop.counter0 == 1 %}card-presta
+            {% elif forloop.counter0 == 2 %}card-inspections
+            {% else %}card-docs
+            {% endif %}">
+            <div class="overview-top">
+              <div>
+                <div class="overview-title">{{ card.title }}</div>
+                <div class="overview-value">{{ card.value }}</div>
+              </div>
+              <div class="overview-icon">{{ card.icon }}</div>
+            </div>
+            <div class="overview-sub">{{ card.sub }}</div>
+            <a class="overview-link" href="{% url card.url %}">Ouvrir le module →</a>
+          </div>
+        {% endfor %}
+      </section>
+
+      <section class="section-grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Conformité & performance</h3>
+              <p class="panel-subtitle">Lecture rapide des indicateurs transverses</p>
+            </div>
+          </div>
+
+          <div class="metric-list">
+            {% for item in performance_cards %}
+              <div class="metric-card">
+                <div class="metric-row">
+                  <div class="metric-name">{{ item.label }}</div>
+                  <div class="metric-value">{{ item.value }}%</div>
+                </div>
+                <div class="progress"><span style="width: {{ item.value }}%;"></span></div>
+                <div class="metric-hint">{{ item.hint }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Alertes prioritaires</h3>
+              <p class="panel-subtitle">Éléments qui demandent une action rapide</p>
+            </div>
+          </div>
+
+          <div class="alert-list">
+            {% if alerts %}
+              {% for a in alerts %}
+                <div class="alert-card {% if a.level == 'danger' %}alert-danger{% elif a.level == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                  <div style="font-size:13px;opacity:.85;">{{ a.title }}</div>
+                  <div style="font-size:34px;font-weight:900;line-height:1;margin:8px 0;">{{ a.value }}</div>
+                  <div style="font-size:13px;margin-bottom:8px;">{{ a.desc }}</div>
+                  <a href="{% url a.url %}">Voir</a>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="mini-stat">
+                <div class="label">Aucune alerte bloquante</div>
+                <div class="value">0</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <section class="section-grid-3">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Sécurité & inspections</h3>
+              <p class="panel-subtitle">Inspection, NC et actions correctives</p>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-stat"><div class="label">Inspections total</div><div class="value">{{ stats.inspections_total }}</div></div>
+            <div class="mini-stat"><div class="label">Score moyen</div><div class="value">{{ stats.inspections_avg_score }}%</div></div>
+            <div class="mini-stat"><div class="label">NC ouvertes</div><div class="value">{{ stats.nc_open }}</div></div>
+            <div class="mini-stat"><div class="label">Actions en retard</div><div class="value">{{ stats.corrective_overdue }}</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Événements HSE</h3>
+              <p class="panel-subtitle">Accidents, incidents et CAPA</p>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-stat"><div class="label">Accidents</div><div class="value">{{ stats.accidents }}</div></div>
+            <div class="mini-stat"><div class="label">Incidents</div><div class="value">{{ stats.incidents }}</div></div>
+            <div class="mini-stat"><div class="label">Presqu'accidents</div><div class="value">{{ stats.presquaccidents }}</div></div>
+            <div class="mini-stat"><div class="label">CAPA en retard</div><div class="value">{{ stats.capa_retard }}</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Documents & permis</h3>
+              <p class="panel-subtitle">Documents approuvés, habilitations, permis</p>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-stat"><div class="label">Docs approuvés</div><div class="value">{{ stats.docs_approuves }}</div></div>
+            <div class="mini-stat"><div class="label">Docs en retard</div><div class="value">{{ stats.docs_retard }}</div></div>
+            <div class="mini-stat"><div class="label">Permis en attente</div><div class="value">{{ stats.permis_attente }}</div></div>
+            <div class="mini-stat"><div class="label">Hab. bientôt expirées</div><div class="value">{{ stats.hab_bientot }}</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">Répartition visuelle</h3>
+            <p class="panel-subtitle">Lecture graphique des principaux modules</p>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-box">
+            <h5>Statut des inspections</h5>
+            <div class="chart-canvas-wrap">
+              <canvas id="inspectionsChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h5>Types d'événements HSE</h5>
+            <div class="chart-canvas-wrap">
+              <canvas id="evenementsChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h5>Workflow des permis</h5>
+            <div class="chart-canvas-wrap">
+              <canvas id="permisChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h5>Statut documentaire</h5>
+            <div class="chart-canvas-wrap">
+              <canvas id="documentsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid" style="margin-top:20px;">
+          <div class="chart-box">
+            <h5>Conformité incendie</h5>
+            <div class="chart-canvas-wrap">
+              <canvas id="incendieChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h5>Activité récente ({{ filters.period }} jours)</h5>
+            <div class="mini-grid" style="margin-top:20px;">
+              <div class="mini-stat"><div class="label">Inspections</div><div class="value">{{ stats.activity_30_inspections }}</div></div>
+              <div class="mini-stat"><div class="label">Événements</div><div class="value">{{ stats.activity_30_evenements }}</div></div>
+              <div class="mini-stat"><div class="label">Sessions</div><div class="value">{{ stats.activity_30_sessions }}</div></div>
+              <div class="mini-stat"><div class="label">Interventions</div><div class="value">{{ stats.activity_30_interventions }}</div></div>
+              <div class="mini-stat"><div class="label">Versions document</div><div class="value">{{ stats.activity_30_doc_versions }}</div></div>
+              <div class="mini-stat"><div class="label">Rapports incendie</div><div class="value">{{ stats.activity_30_rapports_incendie }}</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-grid-2">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Activité récente</h3>
+              <p class="panel-subtitle">Les derniers éléments importants du système</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="kpi-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Référence / titre</th>
+                  <th>Contexte</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ins in recent_inspections %}
+                <tr>
+                  <td>Inspection</td>
+                  <td>{{ ins.reference|default:"—" }}</td>
+                  <td>{{ ins.site.nom }}{% if ins.prestataire %} • {{ ins.prestataire.nom }}{% endif %}</td>
+                  <td>
+                    <span class="badge-status {% if ins.status == 'open' %}badge-open{% elif ins.status == 'closed' %}badge-ok{% else %}badge-neutral{% endif %}">
+                      {{ ins.get_status_display }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+
+                {% for ev in recent_evenements %}
+                <tr>
+                  <td>Événement</td>
+                  <td>{{ ev.reference|default:"EVT-" }}{{ ev.id }}</td>
+                  <td>{{ ev.site.nom }}{% if ev.prestataire %} • {{ ev.prestataire.nom }}{% endif %}</td>
+                  <td>
+                    <span class="badge-status {% if ev.date_cloture %}badge-ok{% else %}badge-open{% endif %}">
+                      {% if ev.date_cloture %}Clôturé{% else %}Ouvert{% endif %}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">Derniers permis & documents</h3>
+              <p class="panel-subtitle">Visibilité rapide sur la conformité administrative</p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="kpi-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Nom</th>
+                  <th>Détail</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in recent_permis %}
+                <tr>
+                  <td>Permis</td>
+                  <td>{{ p.type_permis.nom }}</td>
+                  <td>{{ p.agent.nom }} {{ p.agent.prenom }}</td>
+                  <td>
+                    <span class="badge-status {% if p.statut == 'valide' %}badge-ok{% elif p.statut == 'refuse' %}badge-warn{% else %}badge-open{% endif %}">
+                      {{ p.get_statut_display }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+
+                {% for d in recent_documents %}
+                <tr>
+                  <td>Document</td>
+                  <td>{{ d.code }}</td>
+                  <td>{{ d.titre|truncatechars:28 }}</td>
+                  <td>
+                    <span class="badge-status {% if d.statut == 'approuve' %}badge-ok{% elif d.est_en_retard_revision %}badge-warn{% else %}badge-neutral{% endif %}">
+                      {{ d.statut|title }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ charts|json_script:"charts-data" }}
+
+<script>
+  const chartsData = JSON.parse(document.getElementById("charts-data").textContent);
+
+  function buildChart(canvasId, type, labels, data, label){
+    const ctx = document.getElementById(canvasId);
+    if(!ctx) return;
+
+    const isBar = type === "bar";
+
+    new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: label,
+          data: data,
+          borderWidth: 1.5,
+          borderRadius: isBar ? 8 : 0,
+          barThickness: isBar ? 18 : undefined,
+          maxBarThickness: isBar ? 22 : undefined,
+          categoryPercentage: isBar ? 0.42 : undefined,
+          barPercentage: isBar ? 0.55 : undefined
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 8,
+            right: 8,
+            bottom: 4,
+            left: 8
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              boxWidth: 12,
+              boxHeight: 12,
+              useBorderRadius: true,
+              borderRadius: 4
+            }
+          }
+        },
+        scales: isBar ? {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 11
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              font: {
+                size: 11
+              }
+            },
+            grid: {
+              color: "rgba(15, 23, 42, 0.06)"
+            }
+          }
+        } : {}
+      }
+    });
+  }
+
+  buildChart(
+    "inspectionsChart",
+    "doughnut",
+    chartsData.inspections.labels,
+    chartsData.inspections.data,
+    "Inspections"
+  );
+
+  buildChart(
+    "evenementsChart",
+    "bar",
+    chartsData.evenements.labels,
+    chartsData.evenements.data,
+    "Événements"
+  );
+
+  buildChart(
+    "permisChart",
+    "pie",
+    chartsData.permis.labels,
+    chartsData.permis.data,
+    "Permis"
+  );
+
+  buildChart(
+    "documentsChart",
+    "bar",
+    chartsData.documents.labels,
+    chartsData.documents.data,
+    "Documents"
+  );
+
+  buildChart(
+    "incendieChart",
+    "doughnut",
+    chartsData.incendie.labels,
+    chartsData.incendie.data,
+    "Incendie"
+  );
+</script>
+{% endblock %}

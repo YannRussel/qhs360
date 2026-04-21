@@ -1,0 +1,757 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Statistiques HSE — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+    --bg:#f4f6fb;
+    --card:#ffffff;
+    --border:#e7edf6;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --radius:18px;
+    --shadow:0 14px 34px rgba(2,6,23,.08);
+
+    --blue:#3b82f6;
+    --teal:#14b8a6;
+    --amber:#f59e0b;
+    --rose:#fb7185;
+    --violet:#8b5cf6;
+    --emerald:#22c55e;
+
+    --soft-blue: rgba(59,130,246,.12);
+    --soft-teal: rgba(20,184,166,.12);
+    --soft-amber: rgba(245,158,11,.14);
+    --soft-rose: rgba(251,113,133,.12);
+    --soft-violet: rgba(139,92,246,.12);
+    --soft-emerald: rgba(34,197,94,.12);
+  }
+
+  *{ box-sizing:border-box; }
+  body{ background: var(--bg); }
+  .wrap{ max-width: 1500px; margin: 0 auto; padding: 22px; font-family: Poppins, system-ui; color: var(--text); }
+
+  /* Header */
+  .head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(11,58,106,.08), rgba(31,106,165,.03));
+    border: 1px solid var(--border);
+  }
+  .title{
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .title h1{
+    margin:0;
+    font-size: 30px;
+    letter-spacing: -0.3px;
+    font-weight: 900;
+    color: var(--brand);
+    display:flex; align-items:center; gap:10px;
+  }
+  .crumbs{ color: var(--muted); font-weight: 700; font-size: 13px; }
+  .meta{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow: 0 10px 22px rgba(2,6,23,.04);
+  }
+
+  .head-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border:1px solid var(--border);
+    background:#fff;
+    text-decoration:none;
+    color: var(--text);
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(2,6,23,.05);
+    transition:.15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-primary{
+    border:none;
+    color:#fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+  }
+  .btn-ghost{
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Layout grid */
+  .grid{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.15fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  .row2{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 14px;
+  }
+
+  .row3{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media(max-width: 1100px){
+    .grid{ grid-template-columns: 1fr; }
+    .row2{ grid-template-columns: 1fr; }
+    .row3{ grid-template-columns: 1fr; }
+  }
+
+  /* Card */
+  .card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card-h{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(148,163,184,.18), rgba(248,250,252,1));
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  }
+  .card-h b{
+    font-weight: 900;
+    letter-spacing: -0.2px;
+  }
+  .card-b{ padding: 14px; }
+
+  /* KPI blocks inside card */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .kpi{
+    border:1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(2,6,23,.04);
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .ico{
+    width:44px; height:44px;
+    border-radius: 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .kpi .v{ font-size: 22px; font-weight: 900; line-height: 1; }
+  .kpi .l{ color: var(--muted); font-weight: 800; font-size: 12px; margin-top: 4px; }
+
+  .ico.blue{ background: var(--soft-blue); color: var(--blue); }
+  .ico.teal{ background: var(--soft-teal); color: var(--teal); }
+  .ico.amber{ background: var(--soft-amber); color: var(--amber); }
+  .ico.rose{ background: var(--soft-rose); color: var(--rose); }
+  .ico.violet{ background: var(--soft-violet); color: var(--violet); }
+  .ico.emerald{ background: var(--soft-emerald); color: var(--emerald); }
+
+  .big{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .big .main{
+    display:flex; gap:12px; align-items:center;
+  }
+  .big .main .num{
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.6px;
+  }
+  .big .main .txt{
+    display:flex; flex-direction:column;
+  }
+  .big .main .txt .t{
+    font-weight: 900;
+    letter-spacing: -0.2px;
+  }
+  .big .main .txt .s{
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  /* Mini bars */
+  .spark{
+    display:flex; align-items:flex-end; gap:5px;
+    height: 44px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    border:1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(2,6,23,.04);
+    min-width: 170px;
+  }
+  .spark span{
+    display:block;
+    width: 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(59,130,246,.25));
+  }
+
+  /* Donut (conic-gradient) */
+  .donut-wrap{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .donut{
+    --p: 0;
+    width: 118px; height: 118px;
+    border-radius: 50%;
+    background:
+      conic-gradient(var(--teal) calc(var(--p)*1%), rgba(148,163,184,.25) 0);
+    display:grid; place-items:center;
+    position:relative;
+    box-shadow: 0 14px 28px rgba(2,6,23,.10);
+  }
+  .donut:after{
+    content:"";
+    position:absolute;
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--border);
+  }
+  .donut .center{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    line-height:1.1;
+  }
+  .donut .center .p{ font-weight: 900; font-size: 20px; }
+  .donut .center .s{ color: var(--muted); font-weight: 800; font-size: 11px; }
+
+  .legend{
+    display:flex; flex-direction:column; gap:8px;
+    min-width: 220px;
+  }
+  .leg{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 10px 12px;
+    border:1px solid var(--border);
+    border-radius: 14px;
+    background:#fff;
+    box-shadow: 0 10px 20px rgba(2,6,23,.04);
+    font-weight: 900;
+  }
+  .leg .left{ display:flex; align-items:center; gap:10px; color: var(--text); }
+  .dot{ width:10px; height:10px; border-radius:50%; }
+  .dot.teal{ background: var(--teal); }
+  .dot.blue{ background: var(--blue); }
+  .dot.rose{ background: var(--rose); }
+  .dot.amber{ background: var(--amber); }
+  .muted{ color: var(--muted); font-weight: 800; }
+
+  /* Analysis block */
+  .analysis{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .analysis ul{
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .analysis li{ margin: 7px 0; color: #0f172a; }
+  .analysis .empty{
+    padding: 12px;
+    border:1px dashed rgba(148,163,184,.65);
+    border-radius: 14px;
+    color: var(--muted);
+    font-weight: 800;
+    background: rgba(255,255,255,.6);
+  }
+
+  /* Footer CTA */
+  .footer{
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .footer .left{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    font-weight: 900;
+    color: var(--brand);
+  }
+  .footer .right{ display:flex; gap:10px; flex-wrap:wrap; }
+</style>
+
+<div class="wrap">
+
+  <div class="head">
+    <div class="title">
+      <div class="crumbs">
+        QHS360 <i class="fa-solid fa-angle-right"></i>
+        Tableau de bord <i class="fa-solid fa-angle-right"></i>
+        <b>Statistiques HSE</b>
+      </div>
+
+      <h1>
+        <i class="fa-solid fa-chart-pie"></i>
+        Statistiques HSE
+      </h1>
+
+      <div class="meta">
+        <span class="chip"><i class="fa-regular fa-calendar"></i> Période : <b>{{ st.periode_label }}</b></span>
+        <span class="chip"><i class="fa-solid fa-location-dot"></i> Site : <b>{% if st.site %}{{ st.site.nom }}{% else %}Tous{% endif %}</b></span>
+        <span class="chip"><i class="fa-solid fa-user-shield"></i> QHS : <b>{{ st.responsable_qhs|default:"—" }}</b></span>
+      </div>
+    </div>
+
+    <div class="head-actions">
+      <a class="btn btn-ghost" href="{% url 'evenements:stats_list' %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour
+      </a>
+      <a class="btn" href="#">
+        <i class="fa-solid fa-pen"></i> Modifier
+      </a>
+      <a class="btn btn-primary" href="{% url 'evenements:stats_create' %}">
+        <i class="fa-solid fa-plus"></i> Nouveau
+      </a>
+      <a class="btn" href="#" title="à brancher plus tard (PDF/rapport)">
+        <i class="fa-solid fa-file-lines"></i> Rapports
+      </a>
+    </div>
+  </div>
+
+  <!-- Ligne 1 : 3 cartes principales -->
+  <div class="grid">
+
+    <!-- 1) Indicateurs Accidents -->
+    <div class="card">
+      <div class="card-h">
+        <b>1) Indicateurs Accidents du Travail</b>
+        <span class="muted"><i class="fa-regular fa-circle-check"></i> Synthèse</span>
+      </div>
+
+      <div class="card-b">
+        <div class="big">
+          <div class="main">
+            <div class="ico blue"><i class="fa-solid fa-helmet-safety"></i></div>
+            <div class="txt">
+              <div class="num">{{ st.nb_accidents_total }}</div>
+              <div class="s">Accidents du travail</div>
+            </div>
+          </div>
+
+          <div class="kpi" style="min-width:260px;">
+            <div class="ico amber"><i class="fa-solid fa-bandage"></i></div>
+            <div>
+              <div class="v">{{ st.nb_accidents_avec_arret }}</div>
+              <div class="l">Avec arrêt • {{ st.nb_jours_perdus }} jours perdus</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico teal"><i class="fa-solid fa-gauge-high"></i></div>
+            <div>
+              <div class="v">TF {{ st.tf }}</div>
+              <div class="l">Taux de Fréquence</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico rose"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div>
+              <div class="v">TG {{ st.tg }}</div>
+              <div class="l">Taux de Gravité</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico emerald"><i class="fa-solid fa-circle-minus"></i></div>
+            <div>
+              <div class="v">{{ st.nb_accidents_sans_arret }}</div>
+              <div class="l">Sans arrêt</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico violet"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div>
+              <div class="v">{{ st.repartition_par_gravite|default:"—" }}</div>
+              <div class="l">Répartition gravité (texte)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2) Incidents & Presqu’accidents -->
+    <div class="card">
+      <div class="card-h">
+        <b>2) Incidents & Presqu’accidents</b>
+        <span class="muted"><i class="fa-solid fa-chart-line"></i> Tendance</span>
+      </div>
+
+      <div class="card-b">
+        <div class="big">
+          <div class="main">
+            <div class="ico amber"><i class="fa-solid fa-lightbulb"></i></div>
+            <div class="txt">
+              <div class="num">{{ st.nb_incidents }}</div>
+              <div class="s">Incidents déclarés</div>
+            </div>
+          </div>
+
+          <!-- Mini “sparkline” visuelle -->
+          <div class="spark" aria-label="Mini graphe">
+            <span style="height:12px"></span>
+            <span style="height:22px"></span>
+            <span style="height:16px"></span>
+            <span style="height:30px"></span>
+            <span style="height:20px"></span>
+            <span style="height:38px"></span>
+            <span style="height:26px"></span>
+            <span style="height:42px"></span>
+            <span style="height:28px"></span>
+            <span style="height:36px"></span>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico blue"><i class="fa-solid fa-bullhorn"></i></div>
+            <div>
+              <div class="v">{{ st.taux_declaration }}%</div>
+              <div class="l">Taux de déclaration</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico violet"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div>
+              <div class="v">{{ st.nb_presquaccidents }}</div>
+              <div class="l">Presqu’accidents</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+        <div class="kpi">
+          <div class="ico teal"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div>
+            <div class="v">{{ st.tendance_vs_periode_precedente|default:"—" }}</div>
+            <div class="l">Tendance vs période précédente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3) Actions Correctives & Préventives -->
+    <div class="card">
+      <div class="card-h">
+        <b>3) Actions Correctives & Préventives</b>
+        <span class="muted"><i class="fa-solid fa-list-check"></i> CAPA</span>
+      </div>
+
+      <div class="card-b">
+        <div class="donut-wrap">
+          <div class="donut" style="--p:{{ st.taux_cloture_actions|default:0 }};">
+            <div class="center">
+              <div class="p">{{ st.taux_cloture_actions|default:0 }}%</div>
+              <div class="s">Clôture</div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <div class="leg">
+              <div class="left"><span class="dot teal"></span> Clôturées</div>
+              <div>{{ st.nb_actions_cloturees }}</div>
+            </div>
+            <div class="leg">
+              <div class="left"><span class="dot blue"></span> Ouvertes</div>
+              <div>{{ st.nb_actions_ouvertes }}</div>
+            </div>
+            <div class="leg">
+              <div class="left"><span class="dot rose"></span> En retard</div>
+              <div>{{ st.nb_actions_en_retard }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <a class="btn btn-primary" href="{% url 'evenements:actions_suivi' %}" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-eye"></i> Voir les détails des actions
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Ligne 2 : Incidents (large) + Analyse (droite) -->
+  <div class="row2">
+
+    <div class="card">
+      <div class="card-h">
+        <b>2) Incidents & Presqu’accidents</b>
+        <span class="muted"><i class="fa-solid fa-bars-staggered"></i> Vue détaillée</span>
+      </div>
+      <div class="card-b">
+        <div class="big">
+          <div class="main">
+            <div class="ico amber"><i class="fa-solid fa-lightbulb"></i></div>
+            <div class="txt">
+              <div class="num">{{ st.nb_incidents }}</div>
+              <div class="s">Incidents déclarés</div>
+            </div>
+          </div>
+
+          <div class="kpi" style="min-width:260px;">
+            <div class="ico violet"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <div class="v">{{ st.nb_presquaccidents }}</div>
+              <div class="l">Presqu’accidents</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <!-- Grand mini chart -->
+        <div style="display:flex; gap:10px; align-items:flex-end; height:120px; padding: 12px; border:1px solid var(--border); border-radius:14px; background:#fff; box-shadow:0 10px 20px rgba(2,6,23,.04);">
+          <div style="width:18px;height:30px;border-radius:10px;background:linear-gradient(180deg, rgba(59,130,246,.95), rgba(59,130,246,.18));"></div>
+          <div style="width:18px;height:48px;border-radius:10px;background:linear-gradient(180deg, rgba(20,184,166,.95), rgba(20,184,166,.18));"></div>
+          <div style="width:18px;height:40px;border-radius:10px;background:linear-gradient(180deg, rgba(245,158,11,.95), rgba(245,158,11,.18));"></div>
+          <div style="width:18px;height:70px;border-radius:10px;background:linear-gradient(180deg, rgba(59,130,246,.95), rgba(59,130,246,.18));"></div>
+          <div style="width:18px;height:58px;border-radius:10px;background:linear-gradient(180deg, rgba(20,184,166,.95), rgba(20,184,166,.18));"></div>
+          <div style="width:18px;height:82px;border-radius:10px;background:linear-gradient(180deg, rgba(245,158,11,.95), rgba(245,158,11,.18));"></div>
+          <div style="width:18px;height:64px;border-radius:10px;background:linear-gradient(180deg, rgba(59,130,246,.95), rgba(59,130,246,.18));"></div>
+          <div style="width:18px;height:92px;border-radius:10px;background:linear-gradient(180deg, rgba(20,184,166,.95), rgba(20,184,166,.18));"></div>
+          <div style="width:18px;height:76px;border-radius:10px;background:linear-gradient(180deg, rgba(245,158,11,.95), rgba(245,158,11,.18));"></div>
+          <div style="flex:1;"></div>
+          <div class="muted" style="font-size:12px; font-weight:900;">
+            {{ st.tendance_vs_periode_precedente|default:"Tendance —" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <b>Analyse HSE</b>
+        <span class="muted"><i class="fa-solid fa-clipboard-list"></i> Points clés</span>
+      </div>
+      <div class="card-b">
+        <div class="analysis">
+          {% if st.analyse_commentaires %}
+            <ul>
+              {% for line in st.analyse_commentaires.splitlines %}
+                {% if line %}
+                  <li>{{ line }}</li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="empty">
+              <i class="fa-regular fa-note-sticky"></i>
+              Aucun commentaire d’analyse pour cette période.
+            </div>
+          {% endif %}
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <a class="btn btn-primary" href="{% url 'evenements:actions_suivi' %}" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-eye"></i> Voir les détails des actions
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Ligne 3 : Lien formations/habilitations/permis + CAPA activités + Analyse (mini) -->
+  <div class="row3">
+
+    <div class="card">
+      <div class="card-h">
+        <b>Lien avec Formations, Habilitations & Permis</b>
+        <span class="muted"><i class="fa-solid fa-link"></i> Corrélations</span>
+      </div>
+      <div class="card-b">
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="ico emerald"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div>
+              <div class="v">{{ st.accidents_formation_expiree }}</div>
+              <div class="l">Accidents • formation expirée</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico blue"><i class="fa-solid fa-id-card"></i></div>
+            <div>
+              <div class="v">{{ st.accidents_habilitation_manquante }}</div>
+              <div class="l">Accidents • habilitation manquante</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico rose"><i class="fa-solid fa-file-signature"></i></div>
+            <div>
+              <div class="v">{{ st.accidents_permis_non_conforme }}</div>
+              <div class="l">Accidents • permis non conforme</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico amber"><i class="fa-solid fa-bullseye"></i></div>
+            <div>
+              <div class="v">{{ st.actions_formation_habilitation_declenchees }}</div>
+              <div class="l">Actions déclenchées</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <a class="btn" href="{% url 'evenements:actions_suivi' %}" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-arrow-right"></i> Voir les détails des actions
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <b>Actions (activité)</b>
+        <span class="muted"><i class="fa-solid fa-sliders"></i> Résumé</span>
+      </div>
+      <div class="card-b">
+        <div class="donut-wrap">
+          <div class="donut" style="--p:{{ st.taux_cloture_actions|default:0 }};">
+            <div class="center">
+              <div class="p">{{ st.nb_actions_cloturees|default:0 }}</div>
+              <div class="s">Clôturées</div>
+            </div>
+          </div>
+
+          <div class="legend">
+            <div class="leg">
+              <div class="left"><span class="dot amber"></span> Taux clôture</div>
+              <div>{{ st.taux_cloture_actions|default:0 }}%</div>
+            </div>
+            <div class="leg">
+              <div class="left"><span class="dot blue"></span> Ouvertes</div>
+              <div>{{ st.nb_actions_ouvertes }}</div>
+            </div>
+            <div class="leg">
+              <div class="left"><span class="dot rose"></span> En retard</div>
+              <div>{{ st.nb_actions_en_retard }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div class="kpi">
+          <div class="ico violet"><i class="fa-solid fa-note-sticky"></i></div>
+          <div>
+            <div class="v">{{ st.repartition_par_activite|default:"—" }}</div>
+            <div class="l">Répartition par activité (texte)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <b>Analyse HSE</b>
+        <span class="muted"><i class="fa-solid fa-circle-info"></i> Synthèse</span>
+      </div>
+      <div class="card-b">
+        {% if st.repartition_par_site or st.repartition_par_service or st.repartition_par_prestataire %}
+          <div class="kpi" style="margin-bottom:10px;">
+            <div class="ico blue"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div>
+              <div class="v">{{ st.repartition_par_site|default:"—" }}</div>
+              <div class="l">Répartition par site (texte)</div>
+            </div>
+          </div>
+          <div class="kpi" style="margin-bottom:10px;">
+            <div class="ico teal"><i class="fa-solid fa-people-group"></i></div>
+            <div>
+              <div class="v">{{ st.repartition_par_service|default:"—" }}</div>
+              <div class="l">Répartition par service (texte)</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="ico amber"><i class="fa-solid fa-building-user"></i></div>
+            <div>
+              <div class="v">{{ st.repartition_par_prestataire|default:"—" }}</div>
+              <div class="l">Répartition prestataires (texte)</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="analysis">
+            {% if st.analyse_commentaires %}
+              <ul>
+                {% for line in st.analyse_commentaires.splitlines %}
+                  {% if line %}
+                    <li>{{ line }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% else %}
+              <div class="empty">
+                <i class="fa-regular fa-note-sticky"></i>
+                Ajoute un commentaire d’analyse dans le formulaire de stats.
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="left">
+      <i class="fa-solid fa-shield-heart"></i>
+      <span>Tableau de bord HSE — {{ st.periode_label }}</span>
+      <span class="muted">•</span>
+      <span class="muted">Établi par : {{ st.etabli_par|default:"—" }} • Validé par : {{ st.valide_par|default:"—" }}</span>
+    </div>
+    <div class="right">
+      <a class="btn" href="#"><i class="fa-solid fa-pen"></i> Ajuster</a>
+      <a class="btn btn-primary" href="{% url 'evenements:actions_suivi' %}"><i class="fa-solid fa-list-check"></i> Actions</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

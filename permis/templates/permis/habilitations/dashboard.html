@@ -1,0 +1,385 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ===========================
+     KPI
+  ============================ */
+  .kpi-grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; margin-bottom:14px; }
+  @media(max-width:1100px){ .kpi-grid{ grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:700px){ .kpi-grid{ grid-template-columns:1fr;} }
+
+  .kpi{
+    border:none; color:#fff; border-radius:18px; padding:16px;
+    box-shadow:var(--shadow-strong);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .kpi .t{ font-weight:900; opacity:.95; }
+  .kpi .v{ font-weight:900; font-size:32px; margin-top:6px; }
+  .kpi .ico{ font-size:56px; line-height:1; filter: drop-shadow(0 10px 14px rgba(2,6,23,.18)); }
+
+  /* ===========================
+     REGISTER + TOOLBAR
+  ============================ */
+  .register{
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:var(--shadow-soft);
+  }
+  .reg-head{
+    padding:12px 14px;
+    background:linear-gradient(180deg,#fff,#f6f8fc);
+    border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    flex-wrap:wrap;
+  }
+  .reg-title{
+    display:flex; align-items:center; gap:10px;
+    font-weight:900;
+  }
+  .reg-title .icon{
+    width:46px;height:46px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(11,58,106,.12);
+    border:1px solid rgba(11,58,106,.18);
+    font-size:22px;
+  }
+  .muted{ color:var(--muted); font-weight:700; font-size:12.5px; margin-top:2px; }
+
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .f-ctrl{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px 12px;
+    outline:none;
+    font-family:inherit;
+    font-weight:800;
+    background:#fff;
+  }
+  .f-ctrl:focus{ border-color:#b6c6da; box-shadow:0 0 0 4px rgba(31,106,165,.12); }
+
+  /* ===========================
+     TABLE (scroll clean)
+  ============================ */
+  .table-wrap{
+    max-height:72vh;
+    overflow:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .table-wrap::-webkit-scrollbar{ width:0;height:0; }
+
+  .reg-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  .reg-table thead th{
+    position:sticky; top:0; z-index:1;
+    background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+    border-bottom:1px solid var(--border);
+    padding:12px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:#334155;
+    white-space:nowrap;
+  }
+  .reg-table tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+    font-size:13.5px;
+  }
+  .reg-table tbody tr:nth-child(even){ background:#fbfdff; }
+  .reg-table tbody tr:hover{ background:#f1f7ff; }
+
+  /* ===========================
+     ICONS / CHIPS like image
+  ============================ */
+  .cell-flex{ display:flex; align-items:center; gap:10px; min-width:0; }
+
+  .sq{
+    width:34px;height:34px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px; font-weight:900;
+    color:#fff;
+    box-shadow:0 10px 16px rgba(2,6,23,.10);
+    flex:0 0 34px;
+  }
+  .sq-blue{ background:linear-gradient(135deg,#2563eb,#60a5fa); }
+  .sq-green{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+  .sq-amber{ background:linear-gradient(135deg,#f59e0b,#fb923c); }
+  .sq-red{ background:linear-gradient(135deg,#ef4444,#fb7185); }
+  .sq-purple{ background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+  .sq-slate{ background:linear-gradient(135deg,#111827,#334155); }
+
+  .agent-name{ font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:340px; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-weight:900;
+    font-size:12px;
+    white-space:nowrap;
+  }
+
+  .badgeX{
+    display:inline-flex;
+    align-items:center;
+    padding:7px 11px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .b-ok{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .b-exp{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+  .b-soon{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .b-off{ background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+  .b-inf{ background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+
+  .mini{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 10px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#fff;
+    font-weight:900;
+    font-size:12.5px;
+    white-space:nowrap;
+  }
+
+  .actions{ display:flex; gap:8px; justify-content:flex-end; align-items:center; }
+  .icon-btn{
+    width:36px;height:36px; border-radius:12px; border:1px solid var(--border); background:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:900; text-decoration:none; color:#0f172a;
+    transition:.12s;
+  }
+  .icon-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .icon-btn.primary{
+    background:linear-gradient(135deg,#0b3a6a,#1f6aa5);
+    color:#fff;
+    border-color:rgba(255,255,255,.12);
+  }
+
+  @media(max-width:1050px){
+    .hide-md{ display:none; }
+  }
+  @media(max-width:800px){
+    .hide-sm{ display:none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2 style="margin:0; font-weight:900;">🪪 {{ titre }}</h2>
+    <p>Organisation : <b>{{ organisation.nom }}</b> — agents habilités, validité, expirations.</p>
+  </div>
+
+  <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-soft" href="{% url 'permis:formation_dashboard' %}">↩ Formations</a>
+    <a class="btn btn-ghost" href="{% url 'permis:habilitation_dashboard' %}">↻ Actualiser</a>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-grid">
+  <div class="kpi" style="background:linear-gradient(135deg,#0b3a6a,#1f6aa5);">
+    <div><div class="t">Habilitations</div><div class="v">{{ kpi.total }}</div></div>
+    <div class="ico">🪪</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#16a34a,#22c55e);">
+    <div><div class="t">Validées</div><div class="v">{{ kpi.valides }}</div></div>
+    <div class="ico">✅</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#f59e0b,#fb923c);">
+    <div><div class="t">Bientôt expirées</div><div class="v">{{ kpi.bientot }}</div></div>
+    <div class="ico">⏳</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#ef4444,#fb7185);">
+    <div><div class="t">Expirées</div><div class="v">{{ kpi.expires }}</div></div>
+    <div class="ico">⛔</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#111827,#334155);">
+    <div><div class="t">Agents concernés</div><div class="v">{{ kpi.agents }}</div></div>
+    <div class="ico">👷</div>
+  </div>
+</div>
+
+<div class="register">
+  <div class="reg-head">
+    <div class="reg-title">
+      <span class="icon">📋</span>
+      <div>
+        <div style="font-weight:900;">Registre des habilitations</div>
+        <div class="muted">Date de référence : {{ today|date:"d/m/Y" }}</div>
+      </div>
+    </div>
+
+    <form method="get" class="filters">
+      <input class="f-ctrl" name="q" value="{{ filters.q }}" placeholder="Rechercher agent / prestataire / habilitation…" style="min-width:340px;">
+      <select class="f-ctrl" name="hab">
+        <option value="">Toutes habilitations</option>
+        {% for t in types %}
+          <option value="{{ t.id }}" {% if filters.hab|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>
+            {{ t.nom }} ({{ t.nb }})
+          </option>
+        {% endfor %}
+      </select>
+      <select class="f-ctrl" name="statut">
+        <option value="">Tous statuts</option>
+        <option value="valide" {% if filters.statut == "valide" %}selected{% endif %}>Validées</option>
+        <option value="bientot" {% if filters.statut == "bientot" %}selected{% endif %}>Bientôt expirées</option>
+        <option value="expire" {% if filters.statut == "expire" %}selected{% endif %}>Expirées</option>
+        <option value="inactive" {% if filters.statut == "inactive" %}selected{% endif %}>Inactives</option>
+      </select>
+      <button class="btn btn-ghost" type="submit">Filtrer</button>
+    </form>
+  </div>
+
+  <div class="table-wrap">
+    <table class="reg-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th class="hide-md">Prestataire</th>
+          <th>Habilitation</th>
+          <th class="hide-sm">Obtention</th>
+          <th>Expiration</th>
+          <th>Validité</th>
+          <th>Statut</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for it in items %}
+          <tr>
+            <!-- Agent -->
+            <td>
+              <div class="cell-flex">
+                {# carré couleur par statut #}
+                {% if it.badge == "valide" %}
+                  <span class="sq sq-green">👤</span>
+                {% elif it.badge == "bientot" %}
+                  <span class="sq sq-amber">👤</span>
+                {% elif it.badge == "expire" %}
+                  <span class="sq sq-red">👤</span>
+                {% elif it.badge == "illimitee" %}
+                  <span class="sq sq-blue">👤</span>
+                {% else %}
+                  <span class="sq sq-slate">👤</span>
+                {% endif %}
+
+                <div style="min-width:0;">
+                  <div class="agent-name">{{ it.agent }}</div>
+                  <div class="muted">
+                    {% if it.agent.matricule %}Matricule : {{ it.agent.matricule }}{% else %}—{% endif %}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Prestataire -->
+            <td class="hide-md">
+              <div class="cell-flex">
+                <span class="sq sq-purple">🏢</span>
+                <div>
+                  <div style="font-weight:900;">{{ it.agent.prestataire }}</div>
+                  <div class="muted">{{ it.agent.prestataire.telephone|default:"" }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Habilitation -->
+            <td>
+              <div class="cell-flex">
+                {# carré couleur “type habilitation” (cycle) #}
+                {% cycle "sq-blue" "sq-purple" "sq-amber" "sq-green" "sq-red" as habcol silent %}
+                <span class="sq {{ habcol }}">🪪</span>
+                <div style="min-width:0;">
+                  <div style="font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:420px;">
+                    {{ it.type_habilitation.nom }}
+                  </div>
+                  <div class="muted">Habilitation</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Obtention -->
+            <td class="hide-sm">
+              <span class="pill">📅 {{ it.date_obtention|date:"d/m/Y" }}</span>
+            </td>
+
+            <!-- Expiration -->
+            <td>
+              {% if it.date_expiration %}
+                <span class="pill">🗓️ {{ it.date_expiration|date:"d/m/Y" }}</span>
+              {% else %}
+                <span class="badgeX b-inf">∞ Illimitée</span>
+              {% endif %}
+            </td>
+
+            <!-- Validité -->
+            <td>
+              {% if it.date_expiration %}
+                {% if it.days_left < 0 %}
+                  <span class="mini">⛔ {{ it.days_left }} j</span>
+                {% else %}
+                  <span class="mini">⏱️ {{ it.days_left }} j</span>
+                {% endif %}
+              {% else %}
+                <span class="mini">∞</span>
+              {% endif %}
+            </td>
+
+            <!-- Statut -->
+            <td>
+              {% if it.badge == "inactive" %}
+                <span class="badgeX b-off">Inactif</span>
+              {% elif it.badge == "expire" %}
+                <span class="badgeX b-exp">Expiré</span>
+              {% elif it.badge == "bientot" %}
+                <span class="badgeX b-soon">Bientôt</span>
+              {% elif it.badge == "illimitee" %}
+                <span class="badgeX b-inf">Illimitée</span>
+              {% else %}
+                <span class="badgeX b-ok">Valide</span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td style="text-align:right;">
+              <div class="actions">
+                <a class="icon-btn primary" href="#" onclick="alert('À brancher : fiche agent / PDF habilitation');return false;" title="Voir">👁️</a>
+                <a class="icon-btn" href="#" onclick="alert('À brancher : renouveler habilitation');return false;" title="Renouveler">🔁</a>
+                <a class="icon-btn" href="#" onclick="alert('À brancher : désactiver/activer');return false;" title="Activer/Désactiver">⚙️</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8">
+              <div class="notice" style="margin:12px;">Aucune habilitation trouvée avec ces filtres.</div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+{% endblock %}

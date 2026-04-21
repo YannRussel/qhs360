@@ -1,0 +1,407 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>{{ titre }}</h2>
+    <p>Modifier le prestataire, gérer ses documents et ses agents.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">← Retour à la liste</a>
+  </div>
+</div>
+
+<div class="panel" style="max-width:1100px; margin:auto;">
+
+  {% if messages %}
+    <div style="margin-bottom:14px;">
+      {% for message in messages %}
+        <div class="notice" style="margin-bottom:10px; {% if message.tags == 'error' %}border-color:#fecaca;background:#fff1f2;color:#991b1b;{% elif message.tags == 'success' %}border-color:#bbf7d0;background:#f0fdf4;color:#166534;{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <!-- =================== INFOS PRESTATAIRE =================== -->
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+      <div style="font-weight:900; font-size:14px;">Informations du prestataire</div>
+      <div class="help">Les champs marqués * sont obligatoires.</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="field" style="grid-column:1/-1;">
+        <label>Nom du prestataire *</label>
+        <input class="input" type="text" name="nom" required value="{{ data.nom|default:'' }}">
+      </div>
+
+      <div class="field" style="grid-column:1/-1;">
+        <label>Domaine</label>
+        <select name="domaine">
+          <option value="">— Aucun —</option>
+          {% for d in domaines %}
+            <option value="{{ d.id }}" {% if data.domaine_id|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
+              {{ d.nom }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Téléphone</label>
+        <input class="input" type="text" name="telephone" value="{{ data.telephone|default:'' }}">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input class="input" type="email" name="email" value="{{ data.email|default:'' }}">
+      </div>
+
+      <div class="field" style="grid-column:1/-1;">
+        <label>Adresse</label>
+        <textarea class="input" name="adresse" rows="3">{{ data.adresse|default:'' }}</textarea>
+      </div>
+
+      <div class="field" style="grid-column:1/-1;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+          <input type="checkbox" name="actif" {% if data.actif %}checked{% endif %}>
+          Prestataire actif
+        </label>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== DOCUMENTS (EXISTANTS) =================== -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div style="font-weight:900; font-size:14px;">Documents existants</div>
+      <div class="help">Modifie les champs + remplace le fichier si besoin.</div>
+    </div>
+
+    {% if documents %}
+      <div style="display:grid; gap:12px; margin-top:12px;">
+        {% for doc in documents %}
+          <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+            <input type="hidden" name="doc_id[]" value="{{ doc.id }}">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <div style="font-weight:900;">
+                📄 {{ doc.get_type_document_display }}
+                {% if doc.type_document == "autre" and doc.titre %} — {{ doc.titre }}{% endif %}
+              </div>
+
+              <label class="badge" style="cursor:pointer;">
+                <input type="checkbox" name="doc_delete_ids[]" value="{{ doc.id }}">
+                Supprimer
+              </label>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+              <div class="field">
+                <label>Type</label>
+                <select name="doc_type_{{ doc.id }}">
+                  <option value="immatriculation" {% if doc.type_document == "immatriculation" %}selected{% endif %}>Immatriculation</option>
+                  <option value="niu" {% if doc.type_document == "niu" %}selected{% endif %}>NIU</option>
+                  <option value="autre" {% if doc.type_document == "autre" %}selected{% endif %}>Autre</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Actif</label>
+                <label style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                  <input type="hidden" name="doc_actif_{{ doc.id }}" value="0">
+                  <input type="checkbox" name="doc_actif_{{ doc.id }}" value="1" {% if doc.actif %}checked{% endif %}>
+                  Actif
+                </label>
+              </div>
+
+              <div class="field" style="grid-column:1/-1;">
+                <label>Titre (si “Autre”)</label>
+                <input class="input" type="text" name="doc_titre_{{ doc.id }}" value="{{ doc.titre|default:'' }}">
+              </div>
+
+              <div class="field">
+                <label>Date émission</label>
+                <input class="input" type="date" name="doc_date_em_{{ doc.id }}" value="{{ doc.date_emission|date:'Y-m-d' }}">
+              </div>
+
+              <div class="field">
+                <label>Date expiration</label>
+                <input class="input" type="date" name="doc_date_ex_{{ doc.id }}" value="{{ doc.date_expiration|date:'Y-m-d' }}">
+              </div>
+
+              <div class="field" style="grid-column:1/-1;">
+                <label>Description</label>
+                <input class="input" type="text" name="doc_desc_{{ doc.id }}" value="{{ doc.description|default:'' }}">
+              </div>
+
+              <div class="field" style="grid-column:1/-1;">
+                <label>Remplacer le fichier (optionnel)</label>
+                <input class="input" type="file" name="doc_file_{{ doc.id }}">
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="notice" style="margin-top:12px;">Aucun document.</div>
+    {% endif %}
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== AJOUT DOCUMENTS =================== -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+      <div style="font-weight:900; margin-bottom:10px;">➕ Ajouter des documents</div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="field" style="grid-column:1/-1;">
+          <label>Immatriculation (fichier)</label>
+          <input class="input" type="file" name="imm_new_file">
+        </div>
+        <div class="field">
+          <label>Date émission</label>
+          <input class="input" type="date" name="imm_new_date_em">
+        </div>
+        <div class="field">
+          <label>Date expiration</label>
+          <input class="input" type="date" name="imm_new_date_ex">
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Description</label>
+          <input class="input" type="text" name="imm_new_desc">
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="hidden" name="imm_new_actif" value="0">
+            <input type="checkbox" name="imm_new_actif" value="1" checked>
+            Actif
+          </label>
+        </div>
+
+        <hr style="grid-column:1/-1; border:none; border-top:1px solid var(--border); margin:8px 0;">
+
+        <div class="field" style="grid-column:1/-1;">
+          <label>NIU (fichier)</label>
+          <input class="input" type="file" name="niu_new_file">
+        </div>
+        <div class="field">
+          <label>Date émission</label>
+          <input class="input" type="date" name="niu_new_date_em">
+        </div>
+        <div class="field">
+          <label>Date expiration</label>
+          <input class="input" type="date" name="niu_new_date_ex">
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Description</label>
+          <input class="input" type="text" name="niu_new_desc">
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label style="display:flex; align-items:center; gap:10px;">
+            <input type="hidden" name="niu_new_actif" value="0">
+            <input type="checkbox" name="niu_new_actif" value="1" checked>
+            Actif
+          </label>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:14px 0;">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="font-weight:900;">📎 Autres documents (illimité)</div>
+        <button type="button" class="btn btn-ghost" onclick="addOtherDocNew()">+ Ajouter</button>
+      </div>
+
+      <div id="otherDocsNew"></div>
+
+      <template id="otherDocNewTpl">
+        <div class="panel other-doc-new" style="border:1px dashed var(--border); box-shadow:none; margin:10px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:800;">Document</div>
+            <button type="button" class="btn btn-danger" onclick="this.closest('.other-doc-new').remove()">Supprimer</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+            <div class="field" style="grid-column:1/-1;">
+              <label>Titre *</label>
+              <input class="input" type="text" name="autre_new_titre[]" placeholder="Ex: Assurance RC">
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Fichier *</label>
+              <input class="input" type="file" name="autre_new_file[]">
+            </div>
+
+            <div class="field">
+              <label>Date émission</label>
+              <input class="input" type="date" name="autre_new_date_em[]">
+            </div>
+
+            <div class="field">
+              <label>Date expiration</label>
+              <input class="input" type="date" name="autre_new_date_ex[]">
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label>Description</label>
+              <input class="input" type="text" name="autre_new_desc[]">
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <script>
+        function addOtherDocNew(){
+          const tpl = document.getElementById("otherDocNewTpl");
+          document.getElementById("otherDocsNew").appendChild(tpl.content.cloneNode(true));
+        }
+      </script>
+    </div>
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== ✅ AGENTS EXISTANTS =================== -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div style="font-weight:900; font-size:14px;">Agents existants</div>
+      <div class="help">Modifie les agents ou coche “Supprimer”.</div>
+    </div>
+
+    {% if agents %}
+      <div style="display:grid; gap:12px; margin-top:12px;">
+        {% for a in agents %}
+          <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+            <input type="hidden" name="agent_id[]" value="{{ a.id }}">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <div style="font-weight:900;">👤 {{ a.nom }} {{ a.prenom }}</div>
+              <label class="badge" style="cursor:pointer;">
+                <input type="checkbox" name="agent_delete_ids[]" value="{{ a.id }}">
+                Supprimer
+              </label>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+              <div class="field">
+                <label>Nom *</label>
+                <input class="input" type="text" name="agent_nom_{{ a.id }}" value="{{ a.nom }}">
+              </div>
+              <div class="field">
+                <label>Prénom</label>
+                <input class="input" type="text" name="agent_prenom_{{ a.id }}" value="{{ a.prenom|default:'' }}">
+              </div>
+
+              <div class="field">
+                <label>Téléphone</label>
+                <input class="input" type="text" name="agent_tel_{{ a.id }}" value="{{ a.telephone|default:'' }}">
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input class="input" type="email" name="agent_email_{{ a.id }}" value="{{ a.email|default:'' }}">
+              </div>
+
+              <div class="field">
+                <label>Fonction</label>
+                <input class="input" type="text" name="agent_fonction_{{ a.id }}" value="{{ a.fonction|default:'' }}">
+              </div>
+              <div class="field">
+                <label>Matricule</label>
+                <input class="input" type="text" name="agent_matricule_{{ a.id }}" value="{{ a.matricule|default:'' }}">
+              </div>
+
+              <div class="field" style="grid-column:1/-1;">
+                <label style="display:flex; align-items:center; gap:10px;">
+                  <input type="hidden" name="agent_actif_{{ a.id }}" value="0">
+                  <input type="checkbox" name="agent_actif_{{ a.id }}" value="1" {% if a.actif %}checked{% endif %}>
+                  Agent actif
+                </label>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="notice" style="margin-top:12px;">Aucun agent enregistré.</div>
+    {% endif %}
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid var(--border);">
+
+    <!-- =================== ✅ AJOUT AGENTS (illimité) =================== -->
+    <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div style="font-weight:900;">➕ Ajouter des agents</div>
+        <button type="button" class="btn btn-ghost" onclick="addAgentNew()">+ Ajouter</button>
+      </div>
+
+      <div id="agentsNewWrap"></div>
+
+      <template id="agentNewTpl">
+        <div class="panel agent-new" style="border:1px dashed var(--border); box-shadow:none; margin:10px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:800;">Agent</div>
+            <button type="button" class="btn btn-danger" onclick="this.closest('.agent-new').remove()">Supprimer</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+            <div class="field">
+              <label>Nom *</label>
+              <input class="input" type="text" name="agent_new_nom[]" placeholder="Nom">
+            </div>
+            <div class="field">
+              <label>Prénom</label>
+              <input class="input" type="text" name="agent_new_prenom[]" placeholder="Prénom">
+            </div>
+
+            <div class="field">
+              <label>Téléphone</label>
+              <input class="input" type="text" name="agent_new_telephone[]" placeholder="+242 ...">
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input class="input" type="email" name="agent_new_email[]" placeholder="email@...">
+            </div>
+
+            <div class="field">
+              <label>Fonction</label>
+              <input class="input" type="text" name="agent_new_fonction[]" placeholder="Technicien / Chef...">
+            </div>
+            <div class="field">
+              <label>Matricule</label>
+              <input class="input" type="text" name="agent_new_matricule[]" placeholder="Optionnel">
+            </div>
+
+            <div class="field" style="grid-column:1/-1;">
+              <label style="display:flex; align-items:center; gap:10px;">
+                <input type="hidden" name="agent_new_actif_val[]" value="0">
+                <input type="checkbox" name="agent_new_actif_val[]" value="1" checked>
+                Agent actif
+              </label>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <script>
+        function addAgentNew(){
+          const tpl = document.getElementById("agentNewTpl");
+          document.getElementById("agentsNewWrap").appendChild(tpl.content.cloneNode(true));
+        }
+      </script>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions" style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
+      <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">💾 Enregistrer</button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

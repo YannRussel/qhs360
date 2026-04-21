@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion — QHSE360</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root{
+    --brand:#0b3a6a;
+    --brand-dark:#072b50;
+    --accent:#1f6aa5;
+    --bg:#f4f6f9;
+    --border:#d9e1ea;
+    --text:#0f172a;
+    --muted:#667085;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg, var(--brand), var(--brand-dark));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+}
+
+.container{
+    width:420px;
+    background:#ffffff;
+    border-radius:18px;
+    box-shadow:0 25px 50px rgba(2,6,23,.35);
+    overflow:hidden;
+}
+
+.title{
+    background:linear-gradient(180deg, var(--brand), var(--brand-dark));
+    color:#fff;
+    text-align:center;
+    padding:26px 20px;
+}
+
+.title h2{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:0.5px;
+}
+
+.title span{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    opacity:.85;
+    margin-top:6px;
+}
+
+form{
+    padding:30px;
+}
+
+.row{
+    position:relative;
+    margin-bottom:20px;
+}
+
+.row input{
+    width:100%;
+    height:48px;
+    padding-left:55px;
+    padding-right:15px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    font-size:15px;
+    outline:none;
+    transition:.2s;
+}
+
+.row input:focus{
+    border-color:var(--brand);
+    box-shadow:0 0 0 3px rgba(11,58,106,.15);
+}
+
+.row i{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#fff;
+    background:var(--brand);
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+}
+
+.pass{
+    text-align:right;
+    margin-bottom:18px;
+    font-size:13px;
+}
+
+.pass a{
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.pass a:hover{
+    text-decoration:underline;
+}
+
+button{
+    width:100%;
+    height:50px;
+    border:none;
+    border-radius:12px;
+    background:var(--brand);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    background:var(--brand-dark);
+    transform:translateY(-1px);
+}
+
+.footer{
+    text-align:center;
+    font-size:13px;
+    margin-top:18px;
+    color:var(--muted);
+}
+
+.footer a{
+    color:var(--brand);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.footer a:hover{
+    text-decoration:underline;
+}
+
+.alert{
+    background:#fdecea;
+    color:#b42318;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:13px;
+    margin-bottom:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="title">
+        <h2>QHSE360</h2>
+        <span>Connexion sécurisée</span>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert">
+            Numéro ou mot de passe incorrect.
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <i class="fas fa-phone"></i>
+            <input type="text"
+                   name="username"
+                   placeholder="Numéro de téléphone (9 chiffres)"
+                   maxlength="9"
+                   pattern="\d{9}"
+                   inputmode="numeric"
+                   required>
+        </div>
+
+        <div class="row">
+            <i class="fas fa-lock"></i>
+            <input type="password"
+                   name="password"
+                   placeholder="Mot de passe"
+                   required>
+        </div>
+
+        <div class="pass">
+            <a href="#">Mot de passe oublié ?</a>
+        </div>
+
+        <button type="submit">Se connecter</button>
+
+        <div class="footer">
+            Plateforme QHSSE multi-organisation
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

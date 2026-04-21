@@ -1,0 +1,339 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if mode == "edit" %}Modifier{% else %}Nouvel{% endif %} événement — QHSE360
+{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 12px 30px rgba(2,6,23,.08);
+    --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444; --info:#3b82f6;
+  }
+  .wrap{ max-width:1500px; margin:0 auto; padding:26px; font-family:Poppins,system-ui; }
+  .top{ display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+  h2{ margin:0; color:var(--brand); font-weight:900; letter-spacing:.2px; }
+  .sub{ margin:6px 0 0; color:var(--muted); font-weight:600; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+        border:1px solid var(--border); background:#fff; text-decoration:none; color:var(--text); font-weight:900; }
+  .btn-primary{ background:linear-gradient(135deg, var(--brand), var(--accent)); border:none; color:#fff; }
+  .grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:14px; margin-top:16px; }
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; }
+  .card h3{ margin:0 0 10px; font-weight:900; color:#0f172a; font-size:15px; display:flex; align-items:center; gap:10px; }
+  .card h3 i{ color:var(--accent); }
+  .row{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+  .row3{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  label{ font-size:12px; color:var(--muted); font-weight:800; }
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border);
+    outline:none; background:#fff; color:var(--text);
+  }
+  textarea{ min-height:110px; resize:vertical; }
+  .checkgrid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+  .check{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+  .check input{ width:18px; height:18px; }
+  .muted{ color:var(--muted); }
+  .foot{ margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+  @media(max-width:1100px){ .grid{ grid-template-columns:1fr; } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h2>
+        {% if mode == "edit" %}
+          <i class="fa-solid fa-pen-to-square"></i> Modifier l’événement
+        {% else %}
+          <i class="fa-solid fa-plus"></i> Nouvel événement
+        {% endif %}
+      </h2>
+      <div class="sub">Déclaration • Mesures immédiates • Analyse • Suivi & validations</div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn" href="{% url 'evenements:dashboard_evenement' %}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+      {% if mode == "edit" %}
+        <a class="btn" href="{% url 'evenements:evenement_detail' ev.id %}"><i class="fa-solid fa-eye"></i> Détail</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" class="grid">
+    {% csrf_token %}
+
+    <!-- COL 1 -->
+    <div class="card">
+      <h3><i class="fa-solid fa-clipboard-check"></i> Identification & localisation</h3>
+
+      <div class="row">
+        <div class="field">
+          <label>Référence</label>
+          <input name="reference" value="{% if ev %}{{ ev.reference }}{% endif %}" placeholder="Ex: ACC-2026-001" />
+        </div>
+
+        <div class="field">
+          <label>Type d’événement *</label>
+          <select name="type_evenement" required>
+            <option value="">— sélectionner —</option>
+            <option value="accident" {% if ev and ev.type_evenement == "accident" %}selected{% endif %}>Accident du travail</option>
+            <option value="incident" {% if ev and ev.type_evenement == "incident" %}selected{% endif %}>Incident</option>
+            <option value="presquaccident" {% if ev and ev.type_evenement == "presquaccident" %}selected{% endif %}>Presqu’accident</option>
+            <option value="audit" {% if ev and ev.type_evenement == "audit" %}selected{% endif %}>Audit</option>
+            <option value="inspection" {% if ev and ev.type_evenement == "inspection" %}selected{% endif %}>Inspection</option>
+            <option value="autre" {% if ev and ev.type_evenement == "autre" %}selected{% endif %}>Autre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row3">
+        <div class="field">
+          <label>Date *</label>
+          <input type="date" name="date_evenement" required value="{% if ev %}{{ ev.date_evenement|date:'Y-m-d' }}{% else %}{{ today }}{% endif %}" />
+        </div>
+        <div class="field">
+          <label>Heure</label>
+          <input type="time" name="heure" value="{% if ev and ev.heure %}{{ ev.heure|time:'H:i' }}{% endif %}" />
+        </div>
+        <div class="field">
+          <label>Service / Département</label>
+          <input name="service_departement" value="{% if ev %}{{ ev.service_departement }}{% endif %}" placeholder="Ex: Maintenance" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Site *</label>
+          <select name="site" id="siteSelect" required>
+            <option value="">— sélectionner —</option>
+            {% for s in sites %}
+              <option value="{{ s.id }}" {% if ev and ev.site_id == s.id %}selected{% endif %}>{{ s.nom }}</option>
+            {% endfor %}
+          </select>
+          <div class="hint">Le choix du site charge automatiquement les zones.</div>
+        </div>
+
+        <div class="field">
+          <label>Zone</label>
+          <select name="zone" id="zoneSelect">
+            <option value="">—</option>
+            {% for z in zones %}
+              <option value="{{ z.id }}" {% if ev and ev.zone_id == z.id %}selected{% endif %}>{{ z.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Prestataire (optionnel)</label>
+          <select name="prestataire">
+            <option value="">—</option>
+            {% for p in prestataires %}
+              <option value="{{ p.id }}" {% if ev and ev.prestataire_id == p.id %}selected{% endif %}>{{ p.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Lieu précis</label>
+          <input name="lieu_precis" value="{% if ev %}{{ ev.lieu_precis }}{% endif %}" placeholder="Ex: Quai livraison / Local TGBT" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Déclarant (Nom + fonction)</label>
+        <input name="declarant_nom_fonction" value="{% if ev %}{{ ev.declarant_nom_fonction }}{% endif %}" placeholder="Ex: Paul N. (Chef d’équipe)" />
+      </div>
+
+      <div class="field">
+        <label>Description (faits observés)</label>
+        <textarea name="description" placeholder="Décrire l’événement : contexte, actions, conséquences...">{% if ev %}{{ ev.description }}{% endif %}</textarea>
+      </div>
+    </div>
+
+    <!-- COL 2 -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+      <div class="card">
+        <h3><i class="fa-solid fa-heart-pulse"></i> Détails accident / gravité</h3>
+
+        <div class="row">
+          <div class="field">
+            <label>Nature</label>
+            <input name="nature_accident" value="{% if ev %}{{ ev.nature_accident }}{% endif %}" placeholder="Chute, coupure, brûlure, collision..." />
+          </div>
+          <div class="field">
+            <label>Partie du corps</label>
+            <input name="partie_corps" value="{% if ev %}{{ ev.partie_corps }}{% endif %}" placeholder="Main, jambe, tête..." />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Gravité apparente</label>
+            <select name="gravite_apparente">
+              <option value="">—</option>
+              <option value="benin" {% if ev and ev.gravite_apparente == "benin" %}selected{% endif %}>Bénin</option>
+              <option value="sans_arret" {% if ev and ev.gravite_apparente == "sans_arret" %}selected{% endif %}>Sans arrêt</option>
+              <option value="avec_arret" {% if ev and ev.gravite_apparente == "avec_arret" %}selected{% endif %}>Avec arrêt</option>
+              <option value="grave" {% if ev and ev.gravite_apparente == "grave" %}selected{% endif %}>Grave</option>
+              <option value="mortel" {% if ev and ev.gravite_apparente == "mortel" %}selected{% endif %}>Mortel</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Niveau gravité dossier</label>
+            <select name="niveau_gravite_dossier">
+              <option value="">—</option>
+              <option value="faible" {% if ev and ev.niveau_gravite_dossier == "faible" %}selected{% endif %}>Faible</option>
+              <option value="moyen" {% if ev and ev.niveau_gravite_dossier == "moyen" %}selected{% endif %}>Moyen</option>
+              <option value="eleve" {% if ev and ev.niveau_gravite_dossier == "eleve" %}selected{% endif %}>Élevé</option>
+              <option value="critique" {% if ev and ev.niveau_gravite_dossier == "critique" %}selected{% endif %}>Critique</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="checkgrid">
+          <label class="check"><input type="checkbox" name="dommages_materiels" {% if ev and ev.dommages_materiels %}checked{% endif %}> Dommages matériels</label>
+          <label class="check"><input type="checkbox" name="impact_environnemental" {% if ev and ev.impact_environnemental %}checked{% endif %}> Impact environnemental</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-shield-halved"></i> Mesures immédiates</h3>
+        <div class="checkgrid">
+          <label class="check"><input type="checkbox" name="mesures_premiers_secours" {% if ev and ev.mesures_premiers_secours %}checked{% endif %}> Premiers secours</label>
+          <label class="check"><input type="checkbox" name="mesures_mise_en_securite" {% if ev and ev.mesures_mise_en_securite %}checked{% endif %}> Mise en sécurité</label>
+          <label class="check"><input type="checkbox" name="mesures_arret_activite" {% if ev and ev.mesures_arret_activite %}checked{% endif %}> Arrêt activité</label>
+          <label class="check"><input type="checkbox" name="mesures_balisage" {% if ev and ev.mesures_balisage %}checked{% endif %}> Balisage / isolement</label>
+          <label class="check"><input type="checkbox" name="mesures_alerte_hse" {% if ev and ev.mesures_alerte_hse %}checked{% endif %}> Alerte HSE</label>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Autres mesures</label>
+          <input name="mesures_autres" value="{% if ev %}{{ ev.mesures_autres }}{% endif %}" placeholder="Ex: évacuation zone, arrêt machine..." />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-magnifying-glass"></i> Analyse préliminaire (HSE)</h3>
+        <div class="checkgrid">
+          <label class="check"><input type="checkbox" name="analyse_humaine" {% if ev and ev.analyse_humaine %}checked{% endif %}> Humaine</label>
+          <label class="check"><input type="checkbox" name="analyse_technique" {% if ev and ev.analyse_technique %}checked{% endif %}> Technique</label>
+          <label class="check"><input type="checkbox" name="analyse_organisationnelle" {% if ev and ev.analyse_organisationnelle %}checked{% endif %}> Organisationnelle</label>
+          <label class="check"><input type="checkbox" name="analyse_environnementale" {% if ev and ev.analyse_environnementale %}checked{% endif %}> Environnementale</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-folder-check"></i> Suivi & clôture</h3>
+
+        <div class="row">
+          <div class="field">
+            <label>Date ouverture</label>
+            <input type="date" name="date_ouverture" value="{% if ev %}{{ ev.date_ouverture|date:'Y-m-d' }}{% else %}{{ today }}{% endif %}" />
+          </div>
+          <div class="field">
+            <label>Date clôture prévue</label>
+            <input type="date" name="date_cloture_prevue" value="{% if ev and ev.date_cloture_prevue %}{{ ev.date_cloture_prevue|date:'Y-m-d' }}{% endif %}" />
+          </div>
+        </div>
+
+        {% if mode == "edit" %}
+        <div class="row">
+          <div class="field">
+            <label>Date clôture (si clôturé)</label>
+            <input type="date" name="date_cloture" value="{% if ev and ev.date_cloture %}{{ ev.date_cloture|date:'Y-m-d' }}{% endif %}" />
+          </div>
+          <div class="field">
+            <label>Décision clôture validée</label>
+            <select name="dossier_cloture_validee">
+              <option value="">—</option>
+              <option value="1" {% if ev and ev.dossier_cloture_validee == True %}selected{% endif %}>Oui</option>
+              <option value="0" {% if ev and ev.dossier_cloture_validee == False %}selected{% endif %}>Non</option>
+            </select>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-signature"></i> Validations / signatures</h3>
+        <div class="field">
+          <label>Validation déclarant</label>
+          <input name="validation_declarant" value="{% if ev %}{{ ev.validation_declarant }}{% endif %}" placeholder="Nom + date / signature" />
+        </div>
+        <div class="field">
+          <label>Validation hiérarchique</label>
+          <input name="validation_hierarchique" value="{% if ev %}{{ ev.validation_hierarchique }}{% endif %}" placeholder="Nom + date / signature" />
+        </div>
+        <div class="field">
+          <label>Validation HSE</label>
+          <input name="validation_hse" value="{% if ev %}{{ ev.validation_hse }}{% endif %}" placeholder="Nom + date / signature" />
+        </div>
+
+        {% if mode == "edit" %}
+        <div class="field">
+          <label>Validation QHS (suivi/clôture)</label>
+          <input name="validation_qhs" value="{% if ev %}{{ ev.validation_qhs }}{% endif %}" placeholder="Nom + date / signature" />
+        </div>
+        <div class="field">
+          <label>Validation Direction</label>
+          <input name="validation_direction" value="{% if ev %}{{ ev.validation_direction }}{% endif %}" placeholder="Nom + date / signature" />
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="foot" style="grid-column:1/-1;">
+      <button class="btn btn-primary" type="submit">
+        <i class="fa-solid fa-floppy-disk"></i>
+        {% if mode == "edit" %}Enregistrer{% else %}Créer{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  (function(){
+    const siteSelect = document.getElementById("siteSelect");
+    const zoneSelect = document.getElementById("zoneSelect");
+    if(!siteSelect || !zoneSelect) return;
+
+    async function loadZones(siteId){
+      zoneSelect.innerHTML = '<option value="">—</option>';
+      if(!siteId) return;
+
+      try{
+        const url = "{% url 'evenements:api_zones_by_site' %}" + "?site_id=" + encodeURIComponent(siteId);
+        const res = await fetch(url, {headers: {"X-Requested-With":"XMLHttpRequest"}});
+        const data = await res.json();
+        if(!data.ok) return;
+
+        (data.zones || []).forEach(z => {
+          const opt = document.createElement("option");
+          opt.value = z.id;
+          opt.textContent = z.nom;
+          zoneSelect.appendChild(opt);
+        });
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    siteSelect.addEventListener("change", () => loadZones(siteSelect.value));
+
+    // si create et site déjà rempli (rare), charge
+    {% if mode != "edit" %}
+      if(siteSelect.value){ loadZones(siteSelect.value); }
+    {% endif %}
+  })();
+</script>
+{% endblock %}

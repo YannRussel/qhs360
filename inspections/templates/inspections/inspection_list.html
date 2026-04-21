@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% block title %}Inspections — Liste{% endblock %}
+{% block content %}
+<style>
+  .wrap{max-width:1400px;margin:22px auto;padding:0 18px;}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .btn{background:#0b3a6a;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:900;}
+  .panel{background:#fff;border:1px solid #e6ebf2;border-radius:18px;overflow:hidden;box-shadow:0 10px 28px rgba(2,6,23,.08);}
+  table{width:100%;border-collapse:collapse;}
+  th,td{padding:12px;border-bottom:1px solid #e6ebf2;font-size:13px;}
+  th{color:#64748b;font-weight:900;text-transform:uppercase;font-size:11px;letter-spacing:.04em;}
+  .rowlink{color:#0f172a;font-weight:900;text-decoration:none;}
+</style>
+
+<div class="wrap">
+  <div class="bar">
+    <div>
+      <div style="font-size:20px;font-weight:900;">📋 Liste des inspections</div>
+      <div style="color:#64748b;">Recherche + filtre statut.</div>
+    </div>
+    <a class="btn" href="{% url 'inspections:inspection_create' %}">➕ Nouvelle</a>
+  </div>
+
+  {% if no_org %}
+    <div class="panel" style="padding:16px"><b>Ton compte n’est lié à aucune organisation.</b></div>
+  {% else %}
+    <form method="get" class="panel" style="padding:12px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:10px;">
+        <input name="q" value="{{ q }}" placeholder="Rechercher (réf, site, prestataire, template…)" style="padding:11px 12px;border:1px solid #e6ebf2;border-radius:12px;">
+        <select name="status" style="padding:11px 12px;border:1px solid #e6ebf2;border-radius:12px;">
+          <option value="">Tous statuts</option>
+          <option value="open" {% if status == "open" %}selected{% endif %}>Ouvert</option>
+          <option value="closed" {% if status == "closed" %}selected{% endif %}>Clos</option>
+          <option value="draft" {% if status == "draft" %}selected{% endif %}>Brouillon</option>
+          <option value="cancelled" {% if status == "cancelled" %}selected{% endif %}>Annulé</option>
+        </select>
+        <button style="padding:11px 14px;border-radius:12px;border:0;background:#1f6aa5;color:#fff;font-weight:900;">Filtrer</button>
+      </div>
+    </form>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Référence</th><th>Type</th><th>Site/Zone</th><th>Prestataire</th><th>Date</th><th>Statut</th><th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in inspections %}
+          <tr>
+            <td><a class="rowlink" href="{% url 'inspections:inspection_detail' it.pk %}">{{ it.reference }}</a></td>
+            <td style="color:#64748b">{% if it.template %}{{ it.template.nom }}{% else %}{{ it.type_libre }}{% endif %}</td>
+            <td style="color:#64748b">{{ it.site.nom }}{% if it.zone %} / {{ it.zone.nom }}{% endif %}</td>
+            <td style="color:#64748b">{% if it.prestataire %}{{ it.prestataire.nom }}{% else %}—{% endif %}</td>
+            <td style="color:#64748b">{{ it.date|date:"d/m/Y H:i" }}</td>
+            <td style="font-weight:900">{{ it.get_status_display }}</td>
+            <td style="font-weight:900">{% if it.score %}{{ it.score|floatformat:1 }}%{% else %}—{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" style="padding:16px;color:#64748b">Aucun résultat.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

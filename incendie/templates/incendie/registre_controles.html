@@ -1,0 +1,321 @@
+{% extends "core/base.html" %}
+{% block title %}Registre des contrôles incendie — QHSE360{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --brand2:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --shadow:0 10px 28px rgba(2,6,23,.08);
+  }
+
+  .wrap{max-width:1500px;margin:18px auto;padding:18px}
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .title{
+    font-size:18px; font-weight:1000; color:var(--text);
+    display:flex; align-items:center; gap:10px;
+  }
+  .subtitle{color:var(--muted); font-weight:700; margin-top:4px}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:9px 12px; border-radius:12px;
+    border:1px solid var(--border); background:#fff;
+    text-decoration:none; font-weight:900; color:var(--text);
+    box-shadow:0 6px 16px rgba(2,6,23,.06);
+    transition:.15s;
+  }
+  .btn:hover{transform:translateY(-1px); border-color:#cbd5e1}
+  .btn-primary{
+    background:linear-gradient(135deg, var(--brand), var(--brand2));
+    border-color:transparent; color:#fff;
+  }
+
+  .bar{
+    border:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(15,23,42,.02), rgba(15,23,42,0));
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:10px;
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  .ctrl{
+    display:flex; gap:8px; align-items:center;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:8px 10px;
+  }
+  .ctrl label{font-size:12px; font-weight:950; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+  .ctrl select,.ctrl input{
+    border:none; outline:none; font-weight:800; color:var(--text);
+    background:transparent;
+  }
+  .ctrl input{min-width:140px}
+  .spacer{flex:1}
+
+  .layout{
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:12px;
+    margin-top:12px;
+    align-items:start;
+  }
+  @media (max-width:1100px){ .layout{grid-template-columns:1fr} }
+
+  .kpis{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(200px, 1fr));
+    gap:10px;
+    margin-bottom:12px;
+  }
+  @media (max-width:1200px){ .kpis{grid-template-columns:repeat(2, minmax(200px, 1fr));} }
+
+  .kpi{
+    border-radius:16px;
+    padding:12px;
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff;
+    box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    overflow:hidden;
+    position:relative;
+  }
+  .kpi .big{font-size:22px; font-weight:1000; line-height:1}
+  .kpi .lbl{font-size:12px; font-weight:950; opacity:.92}
+  .kpi .ico{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.18)}
+  .kpi.green{background:linear-gradient(135deg, #0f766e, #22c55e)}
+  .kpi.red{background:linear-gradient(135deg, #b91c1c, #fb7185)}
+  .kpi.orange{background:linear-gradient(135deg, #b45309, #f59e0b)}
+  .kpi.blue{background:linear-gradient(135deg, #1d4ed8, #60a5fa)}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card-h{
+    padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+  }
+  .card-h .t{font-weight:1000; color:var(--text); display:flex; align-items:center; gap:10px}
+  .card-h .meta{color:var(--muted); font-weight:800; font-size:13px}
+
+  table{width:100%; border-collapse:separate; border-spacing:0}
+  th,td{padding:10px 10px; border-bottom:1px solid var(--border); font-size:13px}
+  th{background:#f8fafc; color:#475569; font-weight:1000; text-transform:uppercase; letter-spacing:.04em; font-size:11px}
+  td{color:var(--text); font-weight:700}
+  tr:hover td{background:#fbfdff}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px; font-weight:950; font-size:12px;
+    border:1px solid transparent;
+  }
+  .b-ok{background:rgba(5,150,105,.10); color:#047857; border-color:rgba(5,150,105,.18)}
+  .b-nc{background:rgba(220,38,38,.10); color:#b91c1c; border-color:rgba(220,38,38,.18)}
+  .b-na{background:rgba(100,116,139,.10); color:#334155; border-color:rgba(100,116,139,.18)}
+
+  .side{
+    position:sticky; top:90px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .mini{
+    padding:12px;
+  }
+  .mini .line{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed var(--border)}
+  .mini .line:last-child{border-bottom:none}
+  .mini .k{color:var(--muted); font-weight:950}
+  .mini .v{font-weight:1000}
+
+  .actions{
+    display:flex; gap:10px; flex-wrap:wrap; padding:12px;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <div class="title"><i class="fa-solid fa-table-list" style="color:var(--brand)"></i> Registre des Contrôles Incendie & Prévention</div>
+      <div class="subtitle">Vue globale (RIA, extincteurs, systèmes, exercices) avec filtres.</div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn" href="{% url 'incendie:dashboard' %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour dashboard
+      </a>
+      <a class="btn btn-primary" href="{% url 'incendie:extincteurs_list' %}">
+        <i class="fa-solid fa-fire-extinguisher"></i> Ouvrir extincteurs
+      </a>
+    </div>
+  </div>
+
+  <form method="get" class="bar">
+    <div class="ctrl">
+      <label>Site</label>
+      <select name="site">
+        <option value="">Tous</option>
+        {% for s in sites %}
+          <option value="{{ s.id }}" {% if site_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="ctrl">
+      <label>Zone</label>
+      <select name="zone">
+        <option value="">Toutes</option>
+        {% for z in zones %}
+          <option value="{{ z.id }}" {% if zone_id|stringformat:"s" == z.id|stringformat:"s" %}selected{% endif %}>
+            {{ z.site.nom }} — {{ z.nom }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="ctrl">
+      <label>Du</label>
+      <input type="date" name="date_debut" value="{{ date_debut }}">
+    </div>
+    <div class="ctrl">
+      <label>Au</label>
+      <input type="date" name="date_fin" value="{{ date_fin }}">
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="btn btn-primary" type="submit">
+      <i class="fa-solid fa-filter"></i> Filtrer
+    </button>
+
+    <a class="btn" href="{% url 'incendie:registre_controles' %}">
+      <i class="fa-solid fa-rotate-right"></i> Réinitialiser
+    </a>
+  </form>
+
+  <div class="layout">
+    <div>
+
+      <div class="kpis">
+        <div class="kpi green">
+          <div>
+            <div class="big">{{ pct_conformite }}%</div>
+            <div class="lbl">Contrôles conformes</div>
+          </div>
+          <div class="ico"><i class="fa-solid fa-shield-check"></i></div>
+        </div>
+
+        <div class="kpi red">
+          <div>
+            <div class="big">{{ kpi_ria_nc }}</div>
+            <div class="lbl">RIA non conformes</div>
+          </div>
+          <div class="ico"><i class="fa-solid fa-hose-reel"></i></div>
+        </div>
+
+        <div class="kpi orange">
+          <div>
+            <div class="big">{{ kpi_ext_nc }}</div>
+            <div class="lbl">Extincteurs à recontrôler</div>
+          </div>
+          <div class="ico"><i class="fa-solid fa-fire-extinguisher"></i></div>
+        </div>
+
+        <div class="kpi blue">
+          <div>
+            <div class="big">{{ kpi_alarm_nc }}</div>
+            <div class="lbl">Alarmes / systèmes en anomalie</div>
+          </div>
+          <div class="ico"><i class="fa-solid fa-bell"></i></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <div class="t"><i class="fa-solid fa-clipboard-list" style="color:var(--brand)"></i> Registre des contrôles</div>
+          <div class="meta">{{ total }} contrôle(s) — {{ conformes }} conforme(s)</div>
+        </div>
+
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>N° contrôle</th>
+                <th>Type</th>
+                <th>Équipement</th>
+                <th>Site</th>
+                <th>Zone / Bâtiment</th>
+                <th>Date</th>
+                <th>Contrôleur</th>
+                <th>Résultat</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in rows %}
+                <tr>
+                  <td style="white-space:nowrap">{{ r.numero }}</td>
+                  <td>{{ r.type }}</td>
+                  <td style="white-space:nowrap">{{ r.equipement }}</td>
+                  <td>{{ r.site }}</td>
+                  <td>{{ r.zone }}</td>
+                  <td style="white-space:nowrap">{{ r.date|date:"d/m/Y" }}</td>
+                  <td>{{ r.controleur }}</td>
+                  <td>{{ r.resultat }}</td>
+                  <td>
+                    {% if r.statut == "conforme" %}
+                      <span class="badge b-ok"><i class="fa-solid fa-check"></i> Conforme</span>
+                    {% elif r.statut == "nc" %}
+                      <span class="badge b-nc"><i class="fa-solid fa-triangle-exclamation"></i> Non conforme</span>
+                    {% else %}
+                      <span class="badge b-na"><i class="fa-solid fa-ban"></i> NA</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="9" style="color:var(--muted); font-weight:900; padding:16px;">Aucun contrôle trouvé sur cette période.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="side">
+      <div class="card mini">
+        <div class="t" style="font-weight:1000; margin-bottom:6px;">
+          <i class="fa-solid fa-gauge" style="color:var(--brand)"></i> Résumé
+        </div>
+        <div class="line"><span class="k">Total</span><span class="v">{{ total }}</span></div>
+        <div class="line"><span class="k">Conformes</span><span class="v">{{ conformes }}</span></div>
+        <div class="line"><span class="k">Taux</span><span class="v">{{ pct_conformite }}%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <div class="t"><i class="fa-solid fa-bolt" style="color:var(--brand)"></i> Actions rapides</div>
+        </div>
+        <div class="actions">
+          <a class="btn" href="{% url 'incendie:ria_list' %}"><i class="fa-solid fa-hose-reel"></i> RIA</a>
+          <a class="btn" href="{% url 'incendie:extincteurs_list' %}"><i class="fa-solid fa-fire-extinguisher"></i> Extincteurs</a>
+          <a class="btn" href="{% url 'incendie:systemes_list' %}"><i class="fa-solid fa-bell"></i> Systèmes</a>
+          <a class="btn" href="{% url 'incendie:exercices_list' %}"><i class="fa-solid fa-person-running"></i> Exercices</a>
+          <a class="btn" href="{% url 'incendie:rapports_list' %}"><i class="fa-solid fa-file-lines"></i> Rapports</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

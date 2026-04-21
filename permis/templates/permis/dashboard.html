@@ -1,0 +1,740 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Permis & Interventions{% endblock %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+
+    --bg:#eef2f7;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --info:#3b82f6;
+
+    --shadow:0 12px 30px rgba(2,6,23,.08);
+    --shadow-soft:0 8px 22px rgba(15,23,42,.06);
+    --radius:16px;
+  }
+
+  body{ background:var(--bg); }
+
+  .container{
+    width:100%;
+    max-width:1600px;
+    margin:0 auto;
+    padding:18px 18px 28px;
+    font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+
+  /* Top Header */
+  .page-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+  }
+
+  .page-title{
+    font-size:26px;
+    font-weight:900;
+    color:var(--text);
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  .crumbs{
+    margin-top:6px;
+    color:var(--muted);
+    font-weight:700;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .crumb{
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .btn{
+    padding:11px 14px;
+    border-radius:12px;
+    border:1px solid transparent;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 6px 18px rgba(2,6,23,.06);
+  }
+
+  .btn-primary{ background:var(--brand); color:#fff; }
+  .btn-ghost{ background:#fff; color:var(--brand); border-color:var(--border); box-shadow:none; }
+  .btn-success{ background:var(--ok); color:#fff; }
+  .btn-dark{ background:#334155; color:#fff; }
+
+  /* Export dropdown */
+  .drop{
+    position:relative;
+    display:inline-block;
+  }
+  .drop-btn{
+    background:linear-gradient(180deg, #214f85, #0b3a6a);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:11px 14px;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 10px 25px rgba(2,6,23,.12);
+  }
+  .drop-menu{
+    position:absolute;
+    right:0;
+    top:46px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    min-width:220px;
+    overflow:hidden;
+    display:none;
+    z-index:30;
+  }
+  .drop:hover .drop-menu{ display:block; }
+  .drop-menu a{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:12px 12px;
+    text-decoration:none;
+    color:var(--text);
+    font-weight:800;
+    border-bottom:1px solid var(--border);
+  }
+  .drop-menu a:last-child{ border-bottom:none; }
+  .drop-menu a:hover{ background:#f8fafc; }
+
+  /* Filter Bar */
+  .filter-bar{
+    background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.65));
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:12px;
+    box-shadow:var(--shadow-soft);
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .filter{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#fff;
+  }
+  .filter label{
+    font-size:12px;
+    font-weight:900;
+    color:var(--muted);
+    margin:0;
+    white-space:nowrap;
+  }
+  .filter select, .filter input{
+    border:none;
+    outline:none;
+    font-weight:900;
+    color:var(--text);
+    background:transparent;
+    min-width:140px;
+  }
+  .filter input{ min-width:220px; }
+
+  /* Main layout */
+  .layout{
+    display:grid;
+    grid-template-columns: 1.35fr .65fr;
+    gap:14px;
+  }
+  @media(max-width: 1200px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* KPI cards row */
+  .kpi-row{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(210px, 1fr));
+    gap:12px;
+    margin-bottom:14px;
+  }
+  @media(max-width: 1200px){
+    .kpi-row{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media(max-width: 700px){
+    .kpi-row{ grid-template-columns: 1fr; }
+  }
+
+  .kpi{
+    border-radius:18px;
+    padding:16px 16px;
+    box-shadow:var(--shadow-soft);
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.22);
+  }
+  .kpi::after{
+    content:"";
+    position:absolute;
+    inset:auto -30px -30px auto;
+    width:140px;
+    height:140px;
+    border-radius:999px;
+    background:rgba(255,255,255,.18);
+    transform: rotate(25deg);
+  }
+  .kpi .top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .kpi .icon{
+    width:44px; height:44px;
+    border-radius:14px;
+    background:rgba(255,255,255,.22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:900;
+  }
+  .kpi .value{
+    font-size:28px;
+    font-weight:950;
+    margin-top:8px;
+    line-height:1;
+  }
+  .kpi .label{
+    font-size:13px;
+    font-weight:900;
+    margin-top:6px;
+    opacity:.92;
+  }
+  .kpi .chip{
+    position:absolute;
+    top:14px;
+    right:14px;
+    font-weight:950;
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(0,0,0,.18);
+    border:1px solid rgba(255,255,255,.22);
+  }
+
+  .kpi-green{ background:linear-gradient(135deg, #22c55e, #0f766e); }
+  .kpi-red{ background:linear-gradient(135deg, #ef4444, #b91c1c); }
+  .kpi-orange{ background:linear-gradient(135deg, #f59e0b, #ea580c); }
+  .kpi-blue{ background:linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+  /* Cards */
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .card-head{
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, #ffffff, #fbfdff);
+  }
+  .card-title{
+    font-size:16px;
+    font-weight:950;
+    color:var(--text);
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .card-body{ padding:0; }
+
+  /* Table */
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  thead th{
+    background:#f1f5f9;
+    padding:12px 12px;
+    text-align:left;
+    font-size:12px;
+    font-weight:950;
+    color:#0f172a;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    vertical-align:top;
+  }
+  tbody tr:hover{ background:#f8fafc; }
+
+  .muted{ color:var(--muted); font-weight:800; font-size:12px; }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:950;
+    border:1px solid var(--border);
+    background:#fff;
+  }
+  .b-ok{ background:#dcfce7; color:#166534; border-color:#bbf7d0; }
+  .b-warn{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
+  .b-bad{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+  .b-info{ background:#dbeafe; color:#1e40af; border-color:#bfdbfe; }
+
+  .link{
+    text-decoration:none;
+    color:var(--brand);
+    font-weight:950;
+  }
+  .link:hover{ text-decoration:underline; }
+
+  .row-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .mini{
+    width:34px; height:34px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    color:#0f172a;
+    font-weight:950;
+  }
+  .mini:hover{ background:#f1f5f9; }
+
+  /* Sidebar blocks */
+  .side-stack{ display:flex; flex-direction:column; gap:14px; }
+  .side-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .side-head{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    font-weight:950;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(180deg, #ffffff, #fbfdff);
+  }
+  .side-body{ padding:14px 16px; }
+
+  .quick{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:10px;
+  }
+  .quick a{
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:#fff;
+    text-decoration:none;
+    color:var(--text);
+    font-weight:950;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .quick a:hover{ background:#f8fafc; }
+  .count{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:950;
+    border:1px solid var(--border);
+    background:#f8fafc;
+  }
+
+  .progress{
+    height:10px;
+    background:#e5e7eb;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .bar{
+    height:100%;
+    background:linear-gradient(90deg, #22c55e, #f59e0b);
+    width:60%;
+  }
+
+</style>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="page-head">
+    <div>
+      <div class="page-title">🪪 Permis & Interventions</div>
+      <div class="crumbs">
+        <span class="crumb">🏠 Dashboard</span>
+        <span class="crumb">📌 Registre Permis</span>
+        <span class="crumb">🛠️ Interventions</span>
+      </div>
+    </div>
+
+    <div class="actions">
+
+      <a href="{% url 'permis:type_permis_liste' %}" class="btn btn-ghost">📑 Types permis</a>
+      <a href="{% url 'permis:intervention_creer' %}" class="btn btn-success">➕ Nouvelle intervention</a>
+      <a href="{% url 'permis:registre_permis_travail' %}" class="btn btn-success">Registre des permis de travail</a>
+
+      <div class="drop">
+        <button class="drop-btn">⬇️ Exporter ▾</button>
+        <div class="drop-menu">
+          <a href="#">📄 Export PDF (à brancher)</a>
+          <a href="#">📊 Export Excel (à brancher)</a>
+          <a href="#">🧾 Export CSV (à brancher)</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FILTER BAR (style image) -->
+  <div class="filter-bar">
+    <div class="filter">
+      <label>Site</label>
+      <select>
+        <option>Tout Site</option>
+      </select>
+    </div>
+
+    <div class="filter">
+      <label>Zone</label>
+      <select>
+        <option>Toutes Zones</option>
+      </select>
+    </div>
+
+    <div class="filter">
+      <label>Statut</label>
+      <select>
+        <option>Tous</option>
+        <option>Planifiée</option>
+        <option>En cours</option>
+        <option>Terminée</option>
+        <option>Annulée</option>
+      </select>
+    </div>
+
+    <div class="filter">
+      <label>Période</label>
+      <input type="text" value="01/04/2024 — 11/06/2024" />
+    </div>
+
+    <a href="#" class="btn btn-primary" style="box-shadow:none;">🔎 Filtrer</a>
+    <a href="#" class="btn btn-ghost" style="box-shadow:none;">↻ Réinitialiser</a>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- LEFT -->
+    <div>
+
+      <!-- KPI ROW like the image -->
+      <div class="kpi-row">
+        <div class="kpi kpi-green">
+          <div class="chip">Total</div>
+          <div class="top">
+            <div class="icon">📋</div>
+          </div>
+          <div class="value">{{ kpi.total_interventions }}</div>
+          <div class="label">Interventions</div>
+        </div>
+
+        <div class="kpi kpi-blue">
+          <div class="chip">Actives</div>
+          <div class="top">
+            <div class="icon">🟢</div>
+          </div>
+          <div class="value">{{ kpi.interventions_actives }}</div>
+          <div class="label">Interventions en cours</div>
+        </div>
+
+        <div class="kpi kpi-orange">
+          <div class="chip">Permis</div>
+          <div class="top">
+            <div class="icon">🪪</div>
+          </div>
+          <div class="value">{{ kpi.total_permis }}</div>
+          <div class="label">Permis délivrés</div>
+        </div>
+
+        <div class="kpi kpi-red">
+          <div class="chip">Actifs</div>
+          <div class="top">
+            <div class="icon">✅</div>
+          </div>
+          <div class="value">{{ kpi.permis_actifs }}</div>
+          <div class="label">Permis actifs</div>
+        </div>
+      </div>
+
+      <!-- TABLE 1 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📋 Registre des interventions</div>
+          <div class="actions" style="gap:8px;">
+            <span class="badge b-info">Dernières</span>
+            <a href="{% url 'permis:intervention_creer' %}" class="btn btn-primary" style="padding:9px 12px; border-radius:12px; box-shadow:none;">➕ Créer</a>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Date</th>
+                <th>Lieu</th>
+                <th>Statut</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for i in interventions %}
+              <tr>
+                <td>
+                  <a class="link" href="{% url 'permis:intervention_detail' i.id %}">{{ i.titre }}</a>
+                  {% if i.description %}
+                    <div class="muted">{{ i.description|truncatechars:60 }}</div>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {{ i.date_debut|date:"d/m/Y H:i" }}
+                  {% if i.date_fin %}
+                    <div class="muted">→ {{ i.date_fin|date:"d/m/Y H:i" }}</div>
+                  {% endif %}
+                </td>
+
+                <td>{{ i.lieu|default:"—" }}</td>
+
+                <td>
+                  {% if i.statut == "planifiee" %}
+                    <span class="badge b-warn">⏳ Planifiée</span>
+                  {% elif i.statut == "encours" %}
+                    <span class="badge b-ok">🟢 En cours</span>
+                  {% elif i.statut == "terminee" %}
+                    <span class="badge b-info">🏁 Terminée</span>
+                  {% else %}
+                    <span class="badge b-bad">⛔ Annulée</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  <div class="row-actions">
+                    <a class="mini" title="Voir" href="{% url 'permis:intervention_detail' i.id %}">👁</a>
+                    <a class="mini" title="Permis" href="{% url 'permis:intervention_detail' i.id %}#permis">🪪</a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" style="padding:16px;">
+                  <span class="muted">Aucune intervention enregistrée.</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLE 2 -->
+      <div class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <div class="card-title">🪪 Derniers permis délivrés</div>
+          <div class="actions" style="gap:8px;">
+            <span class="badge b-info">Récents</span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Permis</th>
+                <th>Intervention</th>
+                <th>Date</th>
+                <th style="text-align:right;">Ouvrir</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for p in permis_recents %}
+              <tr>
+                <td>
+                  <b>{{ p.agent.nom }} {{ p.agent.prenom }}</b>
+                  <div class="muted">Prestataire : {{ p.agent.prestataire.nom }}</div>
+                </td>
+                <td>{{ p.type_permis.nom }}</td>
+                <td>{{ p.intervention.titre }}</td>
+                <td>{{ p.date_delivrance|date:"d/m/Y" }}</td>
+                <td style="text-align:right;">
+                  <a class="mini" href="{% url 'permis:permis_detail' p.id %}" title="Ouvrir le permis">↗</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" style="padding:16px;">
+                  <span class="muted">Aucun permis délivré.</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="side-stack">
+
+      <div class="side-card">
+        <div class="side-head">✅ Résumé conformité</div>
+        <div class="side-body">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div>
+              <div style="font-size:28px; font-weight:950; color:var(--ok);">92%</div>
+              <div class="muted">Permis validés / total</div>
+            </div>
+            <div class="count">{{ kpi.total_permis }}</div>
+          </div>
+          <div class="progress"><div class="bar" style="width:92%"></div></div>
+          <div class="muted" style="margin-top:10px;">
+            (Tu peux remplacer 92% par un KPI réel côté view)
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-head">📌 Actions rapides</div>
+        <div class="side-body">
+          <div class="quick">
+            <a href="{% url 'permis:intervention_creer' %}">
+              <span>➕ Créer une intervention</span>
+              <span class="count">New</span>
+            </a>
+            <a href="{% url 'permis:type_permis_liste' %}">
+              <span>📑 Gérer les types de permis</span>
+              <span class="count">{{ kpi.types_permis }}</span>
+            </a>
+            <a href="{% url 'permis:dashboard_permis_interventions' %}">
+              <span>📊 Rafraîchir le registre</span>
+              <span class="count">↻</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-head">🧾 Indicateurs</div>
+        <div class="side-body">
+          <div style="display:grid; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="badge b-ok">👷 Agents habilités</span>
+              <span class="count">{{ kpi.agents_habilites }}</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="badge b-info">📑 <a href="{% url 'permis:type_permis_liste' %}" class="btn btn-ghost">📑 Types permis</a></span>
+              <span class="count">{{ kpi.types_permis }}</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="badge b-warn">🟠 Interventions actives</span>
+              <span class="count">{{ kpi.interventions_actives }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

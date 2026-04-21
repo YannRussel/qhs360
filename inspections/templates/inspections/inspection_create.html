@@ -1,0 +1,146 @@
+{% extends "core/base.html" %}
+{% block title %}Inspections — Nouvelle{% endblock %}
+{% block content %}
+<style>
+  .wrap{max-width:1400px;margin:22px auto;padding:0 18px;}
+  .panel{background:#fff;border:1px solid #e6ebf2;border-radius:18px;box-shadow:0 10px 28px rgba(2,6,23,.08);}
+  .p{padding:16px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  label{font-weight:900;display:block;margin-bottom:6px;}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid #e6ebf2;border-radius:12px;}
+  .btn{background:#1f6aa5;color:#fff;padding:11px 14px;border-radius:12px;border:0;font-weight:900;cursor:pointer;}
+  .btn2{background:#0b3a6a;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
+  @media(max-width:1100px){.grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="wrap">
+  {% if messages %}
+    <div class="panel p" style="margin-bottom:12px;">
+      {% for message in messages %}
+        <div style="padding:10px 12px;border:1px solid #e6ebf2;border-radius:12px;margin-bottom:8px;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if no_org %}
+    <div class="panel p"><b>Ton compte n’est lié à aucune organisation.</b></div>
+  {% else %}
+    <div class="panel p" style="margin-bottom:12px;">
+      <div style="font-size:18px;font-weight:900;">➕ Créer une inspection</div>
+      <div style="color:#64748b;">Choisis un template ou un type libre, puis le site/zone/prestataire.</div>
+    </div>
+
+    <form method="post" class="panel p">
+      {% csrf_token %}
+
+      <div class="grid">
+        <div>
+          <label>Template</label>
+          <select name="template">
+            <option value="">— Aucun —</option>
+            {% for t in templates %}
+              <option value="{{ t.id }}" {% if data.template|default:"" == t.id|stringformat:"s" %}selected{% endif %}>
+                {{ t.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Type libre (si pas de template)</label>
+          <input name="type_libre" placeholder="Ex: Inspection ATEX spéciale..." value="{{ data.type_libre|default:'' }}">
+        </div>
+
+        <div>
+          <label>Statut</label>
+          <select name="status">
+            <option value="open" {% if data.status == "open" %}selected{% endif %}>Ouvert</option>
+            <option value="draft" {% if data.status == "draft" %}selected{% endif %}>Brouillon</option>
+            <option value="closed" {% if data.status == "closed" %}selected{% endif %}>Clos</option>
+            <option value="cancelled" {% if data.status == "cancelled" %}selected{% endif %}>Annulé</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Site</label>
+          <select name="site" id="siteSelect" required>
+            <option value="">— Choisir —</option>
+            {% for s in sites %}
+              <option value="{{ s.id }}" {% if data.site|default:"" == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.nom }}
+              </option>
+            {% endfor %}
+          </select>
+          <div style="color:#64748b;font-size:12px;margin-top:6px;">
+            (Quand tu changes de site/zone, la page se recharge pour filtrer zones/prestataires.)
+          </div>
+        </div>
+
+        <div>
+          <label>Zone</label>
+          <select name="zone" id="zoneSelect">
+            <option value="">— Optionnel —</option>
+            {% for z in zones %}
+              <option value="{{ z.id }}" {% if data.zone|default:"" == z.id|stringformat:"s" %}selected{% endif %}>
+                {{ z.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Prestataire</label>
+          <select name="prestataire" id="prestataireSelect">
+            <option value="">— Optionnel —</option>
+            {% for p in prestataires %}
+              <option value="{{ p.id }}" {% if data.prestataire|default:"" == p.id|stringformat:"s" %}selected{% endif %}>
+                {{ p.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label>Date</label>
+          <input type="datetime-local" name="date" value="{{ data.date|default:'' }}">
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label>Notes</label>
+          <textarea name="notes" rows="3" placeholder="Notes...">{{ data.notes|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn" type="submit">Créer → Remplir</button>
+        <a class="btn btn2" href="{% url 'inspections:dashboard_inspections' %}">Retour</a>
+      </div>
+    </form>
+
+    <script>
+      // Recharge la page pour que Django renvoie zones/prestataires filtrés
+      (function(){
+        const site = document.getElementById("siteSelect");
+        const zone = document.getElementById("zoneSelect");
+
+        function reload(){
+          const url = new URL(window.location.href);
+
+          if(site && site.value) url.searchParams.set("site", site.value);
+          else url.searchParams.delete("site");
+
+          if(zone && zone.value) url.searchParams.set("zone", zone.value);
+          else url.searchParams.delete("zone");
+
+          window.location.href = url.toString();
+        }
+
+        if(site) site.addEventListener("change", reload);
+        if(zone) zone.addEventListener("change", reload);
+      })();
+    </script>
+  {% endif %}
+</div>
+{% endblock %}

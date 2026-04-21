@@ -1,0 +1,186 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Nouvelle action CAPA — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:16px; --shadow:0 12px 30px rgba(2,6,23,.08);
+    --danger:#b91c1c;
+  }
+  .wrap{ max-width:1200px; margin:0 auto; padding:26px; font-family:Poppins,system-ui; }
+  .top{ display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+  h2{ margin:0; color:var(--brand); font-weight:900; }
+  .sub{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+        border:1px solid var(--border); background:#fff; text-decoration:none; color:var(--text); font-weight:800; cursor:pointer; }
+  .btn-primary{ background:linear-gradient(135deg, var(--brand), var(--accent)); border:none; color:#fff; }
+  .btn-danger{ background:linear-gradient(135deg, #b91c1c, #ef4444); border:none; color:#fff; }
+  .card{ margin-top:16px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+         box-shadow:var(--shadow); padding:16px; }
+  .grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
+  label{ display:block; font-weight:900; margin:10px 0 6px; color:var(--text); }
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border);
+    outline:none; font-family:inherit; background:#fff;
+  }
+  textarea{ min-height:110px; resize:vertical; }
+  .span2{ grid-column:1/-1; }
+  .muted{ color:var(--muted); }
+  .footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
+  .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+  .req{ color:var(--danger); font-weight:900; }
+  .sep{ height:1px; background:var(--border); margin:14px 0; }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h2><i class="fa-solid fa-list-check"></i> Nouvelle action CAPA</h2>
+      <div class="sub">Création globale d’une action (sans passer par la fiche dossier)</div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn" href="{% url 'evenements:actions_suivi' %}">
+        <i class="fa-solid fa-arrow-left"></i> Retour au suivi
+      </a>
+      <a class="btn" href="{% url 'evenements:dashboard_evenement' %}">
+        <i class="fa-solid fa-house"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="grid">
+        <!-- Dossier / événement -->
+        <div class="span2">
+          <label for="evenement">Dossier (événement) <span class="req">*</span></label>
+          <select name="evenement" id="evenement" required>
+            <option value="">— Sélectionner un dossier —</option>
+            {% for e in events %}
+              <option value="{{ e.id }}">
+                {% if e.reference %}{{ e.reference }}{% else %}EVT-{{ e.id }}{% endif %}
+                — {{ e.get_type_evenement_display }}
+                — {{ e.site.nom }}
+                — {{ e.date_evenement }}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="hint">Obligatoire : ta vue refuse l’enregistrement si aucun dossier n’est choisi.</div>
+        </div>
+
+        <!-- Numéro -->
+        <div>
+          <label for="numero">N° Action</label>
+          <input type="number" name="numero" id="numero" min="1" placeholder="Auto si vide" />
+          <div class="hint">Si tu laisses vide, la vue calcule un numéro automatique.</div>
+        </div>
+
+        <!-- Type action -->
+        <div>
+          <label for="type_action">Type action <span class="req">*</span></label>
+          <select name="type_action" id="type_action" required>
+            <option value="">— Choisir —</option>
+            <option value="corrective">Corrective</option>
+            <option value="preventive">Préventive</option>
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="span2">
+          <label for="description_action">Description de l’action <span class="req">*</span></label>
+          <textarea name="description_action" id="description_action" required placeholder="Décris l’action à réaliser…"></textarea>
+        </div>
+
+        <!-- Cause racine -->
+        <div class="span2">
+          <label for="cause_racine">Cause racine</label>
+          <input type="text" name="cause_racine" id="cause_racine" placeholder="Ex: procédure non appliquée…" />
+        </div>
+
+        <!-- Responsable -->
+        <div>
+          <label for="responsable">Responsable</label>
+          <input type="text" name="responsable" id="responsable" placeholder="Nom / fonction" />
+        </div>
+
+        <!-- Service / société -->
+        <div>
+          <label for="service_societe">Service / Société</label>
+          <input type="text" name="service_societe" id="service_societe" placeholder="Ex: Maintenance / Prestataire X" />
+        </div>
+
+        <!-- Délai -->
+        <div>
+          <label for="delai">Délai</label>
+          <input type="date" name="delai" id="delai" />
+        </div>
+
+        <!-- Statut -->
+        <div>
+          <label for="statut">Statut</label>
+          <select name="statut" id="statut">
+            <option value="a_faire">À faire</option>
+            <option value="en_cours">En cours</option>
+            <option value="realisee">Réalisée</option>
+            <option value="retard">Retard</option>
+            <option value="annulee">Annulée</option>
+          </select>
+        </div>
+
+        <!-- Priorité -->
+        <div>
+          <label for="priorite">Priorité</label>
+          <select name="priorite" id="priorite">
+            <option value="">—</option>
+            <option value="basse">Basse</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="haute">Haute</option>
+            <option value="critique">Critique</option>
+          </select>
+        </div>
+
+        <!-- Date réalisation -->
+        <div>
+          <label for="date_realisation">Date réalisation</label>
+          <input type="date" name="date_realisation" id="date_realisation" />
+        </div>
+
+        <!-- Preuve -->
+        <div class="span2">
+          <label for="preuve">Preuve (fichier)</label>
+          <input type="file" name="preuve" id="preuve" />
+          <div class="hint">Optionnel — enregistré dans <code>evenements/preuves/</code>.</div>
+        </div>
+
+        <!-- Commentaires -->
+        <div class="span2">
+          <label for="commentaires">Commentaires</label>
+          <input type="text" name="commentaires" id="commentaires" placeholder="Observation / note…" />
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="footer">
+        <a class="btn" href="{% url 'evenements:actions_suivi' %}">
+          Annuler
+        </a>
+        <button class="btn btn-primary" type="submit">
+          <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

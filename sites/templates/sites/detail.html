@@ -1,0 +1,88 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ site.nom }} — Site{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>🏢 {{ site.nom }}</h2>
+    <p>{{ site.adresse|default:"Adresse non renseignée" }}</p>
+  </div>
+
+  <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="{% url 'sites:liste' %}">← Retour</a>
+    <a class="btn btn-soft" href="{% url 'sites:zone_liste' site_pk=site.id %}">Zones</a>
+    <a class="btn btn-primary" href="{% url 'sites:affectations' site_pk=site.id %}">🧩 Affectations</a>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-weight:900;">Statut du site</div>
+    {% if site.actif %}
+      <span class="badge badge-success">Actif</span>
+    {% else %}
+      <span class="badge badge-muted">Inactif</span>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+  <!-- ZONES -->
+  <div class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div style="font-weight:900;">Zones</div>
+      <a class="btn btn-soft" href="{% url 'sites:zone_creer' site_pk=site.id %}">+ Nouvelle zone</a>
+    </div>
+
+    {% if zones %}
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        {% for z in zones %}
+          <span class="badge">📍 {{ z.nom }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="help">Aucune zone pour ce site.</div>
+    {% endif %}
+  </div>
+
+  <!-- AFFECTATIONS -->
+  <div class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div style="font-weight:900;">Affectations</div>
+      <a class="btn btn-primary" href="{% url 'sites:affectations' site_pk=site.id %}">Gérer</a>
+    </div>
+
+    {% if affectations %}
+      <div style="display:grid; gap:10px;">
+        {% for a in affectations %}
+          <div style="border:1px solid var(--border); border-radius:12px; padding:10px;">
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+              <div style="font-weight:900;">👷 {{ a.prestataire.nom }}</div>
+              {% if a.actif %}
+                <span class="badge badge-success">Actif</span>
+              {% else %}
+                <span class="badge badge-muted">Inactif</span>
+              {% endif %}
+            </div>
+
+            <div class="help" style="margin-top:6px;">
+              {% if a.zones.count %}
+                {% for z in a.zones.all %}
+                  <span class="badge" style="margin-right:6px;">📍 {{ z.nom }}</span>
+                {% endfor %}
+              {% else %}
+                Zones : <b>Tout le site</b>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="help">Aucune affectation pour ce site.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+    <div>
+      <h2 style="margin:0; font-weight:900;">📌 Session : {{ session.formation.nom }}</h2>
+      <div class="help">
+        <b>Début :</b> {{ session.date_debut|date:"d/m/Y H:i" }} —
+        <b>Durée :</b> {{ session.duree_minutes }} min —
+        <b>Statut :</b> {{ session.get_statut_display }}
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-soft" href="{% url 'permis:session_liste' %}">↩ Registre sessions</a>
+      <a class="btn btn-ghost" href="{% url 'permis:session_participants' session.id %}">👥 Participants</a>
+
+      {% if session.statut != "terminee" %}
+        <form method="post" action="{% url 'permis:session_terminer' session.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-primary" type="submit"
+            onclick="return confirm('Terminer la session ? Cela va générer les habilitations pour les participants VALIDÉS.');">
+            ✅ Terminer & Générer habilitations
+          </button>
+        </form>
+      {% else %}
+        <span class="badge badge-success">✅ Déjà terminée</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:14px;">
+  <div style="font-weight:900; margin-bottom:10px;">Intervenants</div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    {% for i in session.intervenants.all %}
+      <span class="badge badge-info">👤 {{ i }}</span>
+    {% empty %}
+      <span class="badge badge-muted">— Aucun</span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="panel" style="margin-top:14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-weight:900;">Participants</div>
+    <span class="badge badge-muted">{{ participants|length }}</span>
+  </div>
+
+  {% if participants %}
+    <table class="table" style="margin-top:10px;">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Présent</th>
+          <th>Validé</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in participants %}
+          <tr>
+            <td style="font-weight:800;">{{ p.agent }}</td>
+            <td>{% if p.present %}✅{% else %}—{% endif %}</td>
+            <td>{% if p.valide %}✅{% else %}❌{% endif %}</td>
+            <td>{{ p.note|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="help" style="margin-top:8px;">
+      👉 Les habilitations ne sont générées que pour les participants <b>VALIDÉS</b> au moment où tu termines la session.
+    </div>
+  {% else %}
+    <div class="notice" style="margin-top:10px;">Aucun participant. Clique sur “Participants”.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "core/base.html" %}
+
+{% block title %}Créer une zone{% endblock %}
+
+{% block content %}
+
+<div class="header-section">
+
+  <h2>
+    Créer une zone pour
+    <span style="color:var(--brand)">
+      {{ site.nom }}
+    </span>
+  </h2>
+
+  <p>
+    Organisation : <b>{{ organisation.nom }}</b>
+  </p>
+
+</div>
+
+
+<div class="panel" style="max-width:700px; margin:auto;">
+
+<form method="post">
+
+{% csrf_token %}
+
+<div class="field">
+
+<label>Nom de la zone *</label>
+
+<input
+type="text"
+name="nom"
+class="input"
+value="{{ data.nom }}"
+placeholder="Ex: Hall principal, Parking, Bureau 1"
+required
+>
+
+</div>
+
+
+<div class="field">
+
+<label>Statut</label>
+
+<label style="
+display:flex;
+gap:10px;
+align-items:center;
+margin-top:8px;
+">
+
+<input
+type="checkbox"
+name="actif"
+{% if data.actif %}checked{% endif %}
+>
+
+Actif
+
+</label>
+
+</div>
+
+
+<div class="actions" style="margin-top:20px">
+
+<a class="btn btn-ghost"
+href="#">
+
+Annuler
+
+</a>
+
+<button class="btn btn-primary">
+
+Créer la zone
+
+</button>
+
+</div>
+
+
+</form>
+
+</div>
+
+{% endblock %}

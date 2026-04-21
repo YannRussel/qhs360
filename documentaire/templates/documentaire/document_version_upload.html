@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+{% block title %}Ajouter version — {{ doc.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{ background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow-soft); padding:14px; }
+  label{ font-size:12px; font-weight: 1000; color: var(--muted); display:block; margin-bottom:6px; }
+  .control{ width:100%; border:1px solid var(--border); border-radius:14px; padding: 10px; background:#fff; outline:none; }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); display:inline-flex; gap:8px; align-items:center; }
+  .btn-primary{ background: var(--brand); color:#fff; border-color: rgba(11,58,106,.2); }
+  .row{ display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 style="margin:0; font-weight:1000;">Ajouter une version — {{ doc.code }}</h2>
+  <div style="color:var(--muted); font-weight:800; margin-top:6px;">
+    Si le document est approuvé, une nouvelle version le repasse en brouillon (règle ISO).
+  </div>
+
+  <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+    {% csrf_token %}
+    <label>Version *</label>
+    <input class="control" name="version" placeholder="Ex: 1.1" required>
+
+    <label style="margin-top:10px;">Fichier *</label>
+    <input class="control" type="file" name="fichier" required>
+
+    <label style="margin-top:10px;">Commentaire</label>
+    <textarea class="control" name="commentaire" rows="4" placeholder="Note de version / raison du changement..."></textarea>
+
+    <div class="row">
+      <a class="btn" href="{% url 'documentaire:versions' doc.id %}">Annuler</a>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-check"></i> Ajouter</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

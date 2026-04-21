@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% block title %}Modifier — {{ doc.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{ background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow-soft); padding:14px; }
+  .grid{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media(max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+  label{ font-size:12px; font-weight: 1000; color: var(--muted); display:block; margin-bottom:6px; }
+  .control{ width:100%; border:1px solid var(--border); border-radius:14px; padding: 10px; background:#fff; outline:none; }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); }
+  .btn-primary{ background: var(--brand); color:#fff; border-color: rgba(11,58,106,.2); }
+  .row{ display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 style="margin:0; font-weight:1000;">Modifier la fiche — {{ doc.code }}</h2>
+  <div style="color:var(--muted); font-weight:800; margin-top:6px;">Aucune Django Form utilisée.</div>
+
+  <form method="post" style="margin-top:12px;">
+    {% csrf_token %}
+    <div class="grid">
+      <div>
+        <label>Titre</label>
+        <input class="control" name="titre" value="{{ doc.titre }}" required>
+      </div>
+
+      <div>
+        <label>Type de document</label>
+        <select class="control" name="type_document" required>
+          {% for t in types %}
+            <option value="{{ t.id }}" {% if doc.type_document_id == t.id %}selected{% endif %}>{{ t.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Processus</label>
+        <select class="control" name="processus">
+          <option value="">—</option>
+          {% for p in processus %}
+            <option value="{{ p.id }}" {% if doc.processus_id == p.id %}selected{% endif %}>{{ p.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Site</label>
+        <select class="control" name="site">
+          <option value="">—</option>
+          {% for s in sites %}
+            <option value="{{ s.id }}" {% if doc.site_id == s.id %}selected{% endif %}>{{ s.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label>Mots-clés</label>
+        <input class="control" name="mots_cles" value="{{ doc.mots_cles }}">
+      </div>
+
+      <div>
+        <label>Date prochaine révision</label>
+        <input class="control" type="date" name="date_prochaine_revision" value="{% if doc.date_prochaine_revision %}{{ doc.date_prochaine_revision|date:'Y-m-d' }}{% endif %}">
+      </div>
+
+      <div style="grid-column:1 / -1;">
+        <label>Confidentiel</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="checkbox" name="confidentialite" id="conf" {% if doc.confidentialite %}checked{% endif %}>
+          <label for="conf" style="margin:0; font-size:13px; font-weight:900; color:var(--text);">Restreindre la diffusion</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <a class="btn" href="{% url 'documentaire:detail' doc.id %}">Annuler</a>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

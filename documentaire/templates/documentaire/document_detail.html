@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+{% block title %}{{ doc.code }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .wrap{ display:grid; grid-template-columns: 1.3fr .7fr; gap:12px; }
+  @media(max-width: 1000px){ .wrap{ grid-template-columns: 1fr; } }
+  .card{ background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow-soft); padding:14px; }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); display:inline-flex; gap:8px; align-items:center; }
+  .btn-primary{ background: var(--brand); color:#fff; border-color: rgba(11,58,106,.2); }
+  .btn-danger{ background: rgba(239,68,68,.10); color: var(--danger); border-color: rgba(239,68,68,.25); }
+  .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight: 1000; border:1px solid var(--border); background: rgba(15,23,42,.03); }
+  .pill.ok{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: var(--success); }
+  .pill.warn{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); color: var(--warning); }
+  .pill.bad{ background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.20); color: var(--danger); }
+  .kv{ display:grid; grid-template-columns: 160px 1fr; gap:8px; margin-top: 10px; }
+  .kv div{ padding:8px 0; border-bottom:1px dashed var(--border); }
+  .muted{ color: var(--muted); }
+  label{ font-size:12px; font-weight:1000; color: var(--muted); display:block; margin-bottom:6px; }
+  .control{ width:100%; border:1px solid var(--border); border-radius:14px; padding:10px; background:#fff; outline:none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div>
+        <div class="muted" style="font-weight:1000;">{{ doc.code }}</div>
+        <h2 style="margin:2px 0 0; font-weight:1000;">{{ doc.titre }}</h2>
+        <div class="muted" style="margin-top:6px;">
+          Version courante : <span class="pill">{{ doc.version_label }}</span>
+          {% if doc.confidentialite %}<span class="pill warn"><i class="fa-solid fa-lock"></i> Confidentiel</span>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
+        <a class="btn" href="{% url 'documentaire:list' %}"><i class="fa-solid fa-arrow-left"></i> Retour</a>
+        <a class="btn" href="{% url 'documentaire:edit_meta' doc.id %}"><i class="fa-solid fa-pen-to-square"></i> Modifier</a>
+        <a class="btn" href="{% url 'documentaire:versions' doc.id %}"><i class="fa-solid fa-clock-rotate-left"></i> Versions</a>
+        <a class="btn btn-primary" href="{% url 'documentaire:add_version' doc.id %}"><i class="fa-solid fa-plus"></i> Nouvelle version</a>
+        {% if doc.version_courante %}
+          <a class="btn" href="{% url 'documentaire:download_version' doc.version_courante.id %}">
+            <i class="fa-solid fa-download"></i> Télécharger
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="muted" style="font-weight:1000;">Type</div>
+      <div>{{ doc.type_document.nom }}</div>
+
+      <div class="muted" style="font-weight:1000;">Processus</div>
+      <div>{% if doc.processus %}{{ doc.processus.nom }}{% else %}—{% endif %}</div>
+
+      <div class="muted" style="font-weight:1000;">Site</div>
+      <div>{% if doc.site %}{{ doc.site.nom }}{% else %}—{% endif %}</div>
+
+      <div class="muted" style="font-weight:1000;">Statut</div>
+      <div>
+        {% if doc.statut == "approuve" %}
+          <span class="pill ok"><i class="fa-solid fa-circle-check"></i> Approuvé</span>
+        {% elif doc.statut == "validation" %}
+          <span class="pill warn"><i class="fa-solid fa-hourglass-half"></i> Validation</span>
+        {% elif doc.statut == "obsolete" %}
+          <span class="pill bad"><i class="fa-solid fa-box-archive"></i> Obsolète</span>
+        {% else %}
+          <span class="pill"><i class="fa-solid fa-pen"></i> Brouillon</span>
+        {% endif %}
+      </div>
+
+      <div class="muted" style="font-weight:1000;">Prochaine révision</div>
+      <div>
+        {% if doc.date_prochaine_revision %}
+          {{ doc.date_prochaine_revision }}
+          {% if doc.est_en_retard_revision %}<span class="pill bad" style="margin-left:8px;"><i class="fa-solid fa-triangle-exclamation"></i> En retard</span>{% endif %}
+        {% else %}
+          —
+        {% endif %}
+      </div>
+
+      <div class="muted" style="font-weight:1000;">Dernière MAJ</div>
+      <div>{{ doc.modifie_le|date:"d/m/Y H:i" }}</div>
+
+      <div class="muted" style="font-weight:1000;">Propriétaire</div>
+      <div>{{ doc.proprietaire }}</div>
+
+      <div class="muted" style="font-weight:1000;">Mots-clés</div>
+      <div>{% if doc.mots_cles %}{{ doc.mots_cles }}{% else %}—{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px; font-weight:1000;">Actions ISO</h3>
+
+    <form method="post" action="{% url 'documentaire:change_status' doc.id %}" style="margin-bottom:12px;">
+      {% csrf_token %}
+      <label>Changer le statut</label>
+      <select class="control" name="statut">
+        {% for k,v in statuts %}
+          <option value="{{ k }}" {% if doc.statut == k %}selected{% endif %}>{{ v }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit" style="margin-top:10px; width:100%; justify-content:center;">
+        <i class="fa-solid fa-arrows-rotate"></i> Mettre à jour
+      </button>
+    </form>
+
+    <form method="post" action="{% url 'documentaire:archive' doc.id %}">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit" style="width:100%; justify-content:center;">
+        <i class="fa-solid fa-box-archive"></i> Archiver (Obsolète)
+      </button>
+    </form>
+
+    <hr style="border:none; border-top:1px solid var(--border); margin:14px 0;">
+
+    <h3 style="margin:0 0 10px; font-weight:1000;">Journal (10 derniers)</h3>
+    <div style="display:grid; gap:8px;">
+      {% for l in logs %}
+        <div style="border:1px solid var(--border); border-radius:14px; padding:10px;">
+          <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div style="font-weight:1000;">{{ l.get_action_display }}</div>
+            <div class="muted" style="font-weight:900;">{{ l.cree_le|date:"d/m/Y H:i" }}</div>
+          </div>
+          <div class="muted" style="margin-top:6px;">
+            {% if l.user %}{{ l.user }}{% else %}—{% endif %}
+            {% if l.details %} • {{ l.details }}{% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="muted">Aucun log.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

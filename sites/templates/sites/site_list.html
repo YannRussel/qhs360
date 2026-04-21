@@ -1,0 +1,94 @@
+{% extends "core/base.html" %}
+
+{% block title %}Sites — QHSE360{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>Gestion des sites</h2>
+    <p>
+      {% if organisation %}
+        Organisation : <b>{{ organisation.nom }}</b> — gérer vos sites, zones et prestataires.
+      {% else %}
+        Gestion des sites — sélectionnez une organisation.
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="actions">
+    <a class="btn btn-ghost" href="{% url 'sites:liste' %}">↻ Actualiser</a>
+    <a class="btn btn-primary" href="{% url 'sites:creer_site' %}">+ Nouveau site</a>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:16px;">
+  <form method="get" class="grid-2">
+    <div class="field">
+      <label>Recherche</label>
+      <input class="input" type="text" name="q" value="{{ q|default:'' }}"
+             placeholder="Nom / adresse…">
+      <div class="help">Astuce : tape une partie du nom du site.</div>
+    </div>
+
+    <div class="field">
+      <label>Statut</label>
+      <select name="actif">
+        <option value="" {% if actif is None %}selected{% endif %}>Tous</option>
+        <option value="1" {% if actif == '1' %}selected{% endif %}>Actifs</option>
+        <option value="0" {% if actif == '0' %}selected{% endif %}>Inactifs</option>
+      </select>
+      <div class="help">Filtre selon l’état du site.</div>
+    </div>
+
+    <div class="actions" style="justify-content:flex-start;">
+      <button class="btn btn-soft" type="submit">Filtrer</button>
+      <a class="btn btn-ghost" href="{% url 'sites:liste' %}">Réinitialiser</a>
+    </div>
+  </form>
+</div>
+
+<div class="cards">
+  {% for s in sites %}
+  <div class="card" onclick="window.location.href='#'">
+    <div class="card-top">
+      <div class="icon">🏢</div>
+      <div style="min-width:0;">
+        <h4 class="truncate">{{ s.nom }}</h4>
+        <p class="truncate">{{ s.adresse|default:"Adresse non renseignée" }}</p>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div>
+        {% if s.actif %}
+          <span class="badge badge-success">Actif</span>
+        {% else %}
+          <span class="badge badge-muted">Inactif</span>
+        {% endif %}
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+        <a class="btn btn-soft" href="{% url 'sites:zone_liste' s.id %}" onclick="event.stopPropagation();">Zones</a>
+<a class="btn btn-soft"
+   href="{% url 'sites:affectations' site_pk=s.id %}"
+   onclick="event.stopPropagation();">
+  🧩 Affectations
+</a>
+
+
+
+        <a class="btn btn-soft" href="#" onclick="event.stopPropagation();">Prestataires</a>
+        <a class="btn btn-ghost" href="#" onclick="event.stopPropagation();">Modifier</a>
+        <a class="btn btn-danger" href="#" onclick="event.stopPropagation();">Supprimer</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <div class="notice" style="grid-column:1/-1;">
+      Aucun site trouvé. Clique sur <b>+ Nouveau site</b> pour commencer.
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

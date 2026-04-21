@@ -1,0 +1,165 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-shell{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:18px;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .form-head{
+    padding:14px 16px;
+    background:linear-gradient(180deg,#ffffff,#f6f8fc);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .form-head h2{ margin:0; font-weight:900; font-size:18px; display:flex; align-items:center; gap:10px; }
+  .icon-badge{
+    width:40px;height:40px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(11,58,106,.12);
+    border:1px solid rgba(11,58,106,.18);
+    font-size:22px;
+  }
+
+  .form-body{ padding:16px; }
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+  @media(max-width:900px){ .grid{ grid-template-columns:1fr; } }
+
+  .field label{ display:block; font-weight:900; font-size:13px; margin-bottom:8px; }
+  .ctrl{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 12px;
+    font-family:inherit;
+    background:#fff;
+    outline:none;
+    font-weight:700;
+  }
+  .ctrl:focus{ border-color:#b6c6da; box-shadow:0 0 0 4px rgba(31,106,165,.12); }
+  .help{ font-size:12.5px; color:var(--muted); margin-top:6px; }
+
+  .form-foot{
+    padding:14px 16px;
+    border-top:1px solid var(--border);
+    background:#f8fafc;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  /* multi select nice */
+  select[multiple].ctrl{ min-height:260px; padding:10px; }
+  .opt{ padding:6px 8px; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="form-shell">
+  <div class="form-head">
+    <div>
+      <h2><span class="icon-badge">🗓️</span>{{ titre }}</h2>
+      <div class="help">Organisation : <b>{{ organisation.nom }}</b></div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-ghost" href="{% url 'permis:formation_dashboard' %}">↩ Retour</a>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-body">
+      <div class="grid">
+        <div class="field">
+          <label>Formation</label>
+          <select class="ctrl" name="formation_id" required>
+            <option value="">— Choisir —</option>
+            {% for f in formations %}
+              <option value="{{ f.id }}" {% if values.formation_id|stringformat:"s" == f.id|stringformat:"s" %}selected{% endif %}>
+                {{ f.nom }}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="help">La session est toujours rattachée à une formation.</div>
+        </div>
+
+        <div class="field">
+          <label>Titre (optionnel)</label>
+          <input class="ctrl" type="text" name="titre" value="{{ values.titre }}">
+          <div class="help">Ex: “Session Mars — niveau 1”.</div>
+        </div>
+
+        <div class="field">
+          <label>Date début</label>
+          <input class="ctrl" type="datetime-local" name="date_debut" value="{{ values.date_debut }}" required>
+        </div>
+
+        <div class="field">
+          <label>Date fin (optionnel)</label>
+          <input class="ctrl" type="datetime-local" name="date_fin" value="{{ values.date_fin }}">
+          <div class="help">Si la durée est vide/0, elle sera calculée à partir de début/fin.</div>
+        </div>
+
+        <div class="field">
+          <label>Durée (minutes)</label>
+          <input class="ctrl" type="number" min="0" name="duree_minutes" value="{{ values.duree_minutes }}">
+        </div>
+
+        <div class="field">
+          <label>Lieu</label>
+          <input class="ctrl" type="text" name="lieu" value="{{ values.lieu }}">
+        </div>
+
+        <div class="field">
+          <label>Statut</label>
+          <select class="ctrl" name="statut">
+            {% for key,label in statuts %}
+              <option value="{{ key }}" {% if values.statut == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Intervenants (agents prestataires)</label>
+          <select class="ctrl" name="intervenants_ids" multiple>
+            {% for a in agents %}
+              <option class="opt" value="{{ a.id }}"
+                {% if a.id|stringformat:"s" in values.intervenants_ids %}selected{% endif %}>
+                {{ a }}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="help">Maintiens CTRL pour sélectionner plusieurs intervenants.</div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label>Notes</label>
+        <textarea class="ctrl" name="notes" rows="4">{{ values.notes }}</textarea>
+      </div>
+    </div>
+
+    <div class="form-foot">
+      <a class="btn btn-ghost" href="{% url 'permis:formation_dashboard' %}">Annuler</a>
+      <button class="btn btn-primary" type="submit">✅ Créer la session</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

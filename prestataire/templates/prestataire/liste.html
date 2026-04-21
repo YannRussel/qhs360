@@ -1,0 +1,452 @@
+{% extends "core/base.html" %}
+{% load dict_extras %}
+
+{% block title %}Prestataires — QHSE360{% endblock %}
+
+{% block content %}
+
+<style>
+  .filters-wrap{
+    background:#fff;
+    border:1px solid var(--border, #e5e7eb);
+    border-radius:16px;
+    box-shadow: var(--shadow-soft, 0 10px 26px rgba(2,6,23,.06));
+    padding:14px;
+    margin:16px 0;
+  }
+  .filters-grid{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    gap:12px;
+    align-items:end;
+  }
+  @media (max-width:1100px){
+    .filters-grid{ grid-template-columns:1fr 1fr; }
+  }
+  .field label{ font-weight:900; font-size:12px; color:#0f172a; display:block; margin-bottom:6px; }
+  .input, select{
+    width:100%;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid var(--border,#e5e7eb);
+    outline:none;
+    background:#fff;
+  }
+  .help{ color:#64748b; font-size:12px; margin-top:6px; font-weight:700; }
+
+  .chips{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top:12px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid var(--border,#e5e7eb);
+    background:#f8fafc;
+    font-weight:900;
+    font-size:12px;
+    color:#0f172a;
+  }
+  .chip b{ color:var(--brand,#0b3a6a); }
+  .chip a{
+    text-decoration:none;
+    display:inline-grid; place-items:center;
+    width:18px; height:18px; border-radius:6px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    color:#111;
+    font-weight:900;
+    line-height:1;
+  }
+
+  /* ====== TABLEAU PRO ====== */
+  .table-wrap{
+    background:#fff;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid var(--border, #e5e7eb);
+    box-shadow:0 10px 26px rgba(2,6,23,.06);
+  }
+  .table-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 18px;
+    font-weight:950;
+    background:linear-gradient(135deg, rgba(11,58,106,.06), rgba(31,106,165,.05));
+    border-bottom:1px solid #e5e7eb;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    font-weight:900;
+    font-size:12px;
+  }
+
+  .table-scroll{ overflow:auto; }
+  .minw{ min-width: 1150px; }
+
+  table.qhse{ width:100%; border-collapse:collapse; font-size:13px; }
+  thead th{
+    padding:12px 14px;
+    background:#f8fafc;
+    text-align:left;
+    font-weight:950;
+    border-bottom:1px solid #e5e7eb;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px 14px;
+    border-bottom:1px solid #eef2f7;
+    vertical-align:top;
+  }
+  tbody tr:hover{ background:rgba(31,106,165,.04); }
+
+  .cell-main{ display:flex; gap:12px; align-items:flex-start; min-width:0; }
+  .avatar{
+    width:40px; height:40px; border-radius:12px;
+    display:grid; place-items:center; font-size:18px;
+    background:linear-gradient(135deg, rgba(11,58,106,.14), rgba(31,106,165,.10));
+    border:1px solid rgba(11,58,106,.16);
+    flex:0 0 auto;
+  }
+  .name{
+    font-weight:950; color:#0f172a; line-height:1.15;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:420px;
+  }
+  .sub{
+    margin-top:4px;
+    color:#64748b;
+    display:flex; flex-wrap:wrap; gap:8px 10px;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .badge{
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid #e5e7eb;
+    background:#f8fafc;
+    white-space:nowrap;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .badge-success{background:rgba(34,197,94,.10); color:#166534; border-color:rgba(34,197,94,.25);}
+  .badge-danger{background:rgba(239,68,68,.10); color:#991b1b; border-color:rgba(239,68,68,.25);}
+  .badge-indigo{background:rgba(99,102,241,.10); color:#3730a3; border-color:rgba(99,102,241,.25);}
+  .badge-info{background:rgba(59,130,246,.10); color:#1e40af; border-color:rgba(59,130,246,.25);}
+
+  .actions-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .btn-icon{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 12px; border-radius:12px;
+    font-weight:900;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    text-decoration:none;
+    color:#0f172a;
+    user-select:none;
+  }
+  .btn-icon:hover{ transform:translateY(-1px); box-shadow:0 8px 18px rgba(2,6,23,.07); }
+  .btn-edit{ background:rgba(31,106,165,.08); border-color:rgba(31,106,165,.22); color:#0b3a6a; }
+  .btn-view{ background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.25); color:#14532d; }
+  .btn-del{ background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.25); color:#991b1b; }
+
+  /* ====== CAROUSEL ====== */
+  .inter-carousel{ display:flex; align-items:center; gap:10px; max-width:520px; }
+  .inter-btn{
+    width:32px; height:32px;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    background:#fff;
+    display:grid; place-items:center;
+    font-weight:950;
+    cursor:pointer;
+  }
+  .inter-btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .inter-viewport{ overflow:hidden; flex:1 1 auto; border-radius:12px; }
+  .inter-track{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    scroll-behavior:smooth;
+    padding:2px 2px 8px 2px;
+  }
+  .inter-track::-webkit-scrollbar{ height:8px; }
+  .inter-track::-webkit-scrollbar-thumb{ background:rgba(15,23,42,.12); border-radius:999px; }
+
+  .inter-card{
+    flex:0 0 auto;
+    width:260px;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:10px;
+    background:#fff;
+    box-shadow:0 8px 18px rgba(2,6,23,.05);
+  }
+  .inter-title{
+    display:flex; align-items:center; gap:8px;
+    font-weight:950; color:#0f172a;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .inter-zones{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; }
+  .muted-line{ color:#64748b; font-size:12px; font-weight:900; margin-top:6px; display:flex; gap:6px; align-items:center; }
+</style>
+
+<!-- ========================= HEADER ========================= -->
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2>
+      Prestataires de l'organisation
+      <span style="color:var(--brand); font-weight:900;">{{ organisation.nom }}</span>
+    </h2>
+    <p>Suivi des prestataires, statut et zones d’intervention.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">↻ Actualiser</a>
+    <a class="btn btn-primary" href="{% url 'prestataire:creer' %}">+ Nouveau prestataire</a>
+  </div>
+</div>
+
+<!-- ========================= KPI ========================= -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:18px 0;">
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #0b3a6a, #1f6aa5); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Total prestataires</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.total }}</div>
+      </div>
+      <div style="font-size:36px;">👷</div>
+    </div>
+  </div>
+
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #16a34a, #22c55e); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Actifs</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.actifs }}</div>
+      </div>
+      <div style="font-size:36px;">✅</div>
+    </div>
+  </div>
+
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #ef4444, #f87171); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Non actifs</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.inactifs }}</div>
+      </div>
+      <div style="font-size:36px;">⛔</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= FILTRES PRO ========================= -->
+<div class="filters-wrap">
+  <form method="get" class="filters-grid">
+    <div class="field">
+      <label>Recherche</label>
+      <input class="input" type="text" name="q" value="{{ q|default:'' }}" placeholder="Nom, téléphone, email…">
+      <div class="help">Recherche rapide sur les informations du prestataire.</div>
+    </div>
+
+    <div class="field">
+      <label>Statut</label>
+      <select name="statut">
+        <option value="" {% if not statut %}selected{% endif %}>Tous</option>
+        <option value="actif" {% if statut == "actif" %}selected{% endif %}>Actifs</option>
+        <option value="inactif" {% if statut == "inactif" %}selected{% endif %}>Non actifs</option>
+      </select>
+      <div class="help">Filtrer par état.</div>
+    </div>
+
+    <div class="field">
+      <label>Domaine</label>
+      <select name="domaine">
+        <option value="" {% if not domaine_id %}selected{% endif %}>Tous</option>
+        {% for d in domaines %}
+          <option value="{{ d.id }}" {% if domaine_id|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>
+            {{ d.nom }}
+          </option>
+        {% endfor %}
+      </select>
+      <div class="help">Filtrer par domaine.</div>
+    </div>
+
+    <div class="field">
+      <label>Site</label>
+      <select name="site">
+        <option value="" {% if not site_id %}selected{% endif %}>Tous</option>
+        {% for s in sites %}
+          <option value="{{ s.id }}" {% if site_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+            {{ s.nom }}
+          </option>
+        {% endfor %}
+      </select>
+      <div class="help">Prestataires affectés à un site.</div>
+    </div>
+
+    <div class="field">
+      <label>Trier</label>
+      <select name="sort">
+        <option value="nom" {% if sort == "nom" or not sort %}selected{% endif %}>Nom (A→Z)</option>
+        <option value="-nom" {% if sort == "-nom" %}selected{% endif %}>Nom (Z→A)</option>
+        <option value="statut" {% if sort == "statut" %}selected{% endif %}>Statut</option>
+      </select>
+      <div class="help">Ordre d’affichage.</div>
+    </div>
+
+    <div class="field" style="display:flex; gap:10px;">
+      <button class="btn btn-soft" type="submit" style="height:42px; align-self:end;">🔎 Filtrer</button>
+      <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}" style="height:42px; align-self:end;">↺ Reset</a>
+    </div>
+  </form>
+
+  <!-- chips filtres actifs -->
+  <div class="chips">
+    {% if q %}<span class="chip">🔎 Recherche: <b>{{ q }}</b></span>{% endif %}
+    {% if statut %}<span class="chip">📌 Statut: <b>{{ statut }}</b></span>{% endif %}
+    {% if domaine_id %}<span class="chip">🧩 Domaine: <b>#{{ domaine_id }}</b></span>{% endif %}
+    {% if site_id %}<span class="chip">🏢 Site: <b>#{{ site_id }}</b></span>{% endif %}
+    {% if sort %}<span class="chip">↕️ Tri: <b>{{ sort }}</b></span>{% endif %}
+  </div>
+</div>
+
+<!-- ========================= TABLEAU ========================= -->
+<div class="table-wrap">
+  <div class="table-head">
+    <div>📋 Registre détaillé des prestataires</div>
+    <div class="pill">👷 {{ kpi.total }} prestataire(s)</div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="qhse minw">
+      <thead>
+        <tr>
+          <th>Prestataire</th>
+          <th>Statut</th>
+          <th>Domaine</th>
+          <th>Interventions (carrousel)</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for p in prestataire %}
+        <tr>
+          <td>
+            <div class="cell-main">
+              <div class="avatar">👷</div>
+              <div style="min-width:0;">
+                <div class="name">{{ p.nom }}</div>
+                <div class="sub">
+                  {% if p.telephone %}<span>📞 <b>{{ p.telephone }}</b></span>{% endif %}
+                  {% if p.email %}<span>✉️ <b>{{ p.email }}</b></span>{% endif %}
+                  {% if not p.telephone and not p.email %}<span>ℹ️ <b>Aucun contact</b></span>{% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            {% if p.actif %}
+              <span class="badge badge-success">✅ Actif</span>
+            {% else %}
+              <span class="badge badge-danger">⛔ Non actif</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if p.domaine %}
+              <span class="badge badge-indigo">🧩 {{ p.domaine.nom }}</span>
+            {% else %}
+              <span class="badge">—</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% with inter=interventions|get_item:p.id %}
+              {% if inter %}
+                <div class="inter-carousel" data-carousel>
+                  <button class="inter-btn" type="button" data-prev title="Précédent">◀</button>
+
+                  <div class="inter-viewport">
+                    <div class="inter-track" data-track>
+                      {% for item in inter %}
+                        <div class="inter-card">
+                          <div class="inter-title">🏢 {{ item.site }}</div>
+
+                          {% if item.zones %}
+                            <div class="muted-line">📍 Zones :</div>
+                            <div class="inter-zones">
+                              {% for z in item.zones %}
+                                <span class="badge">📍 {{ z }}</span>
+                              {% endfor %}
+                            </div>
+                          {% else %}
+                            <div class="muted-line">📍 Toutes zones du site</div>
+                          {% endif %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <button class="inter-btn" type="button" data-next title="Suivant">▶</button>
+                </div>
+              {% else %}
+                <span class="badge">ℹ️ Non affecté</span>
+              {% endif %}
+            {% endwith %}
+          </td>
+
+          <td style="text-align:right;">
+            <div class="actions-row">
+              <a class="btn-icon btn-view" href="{% url 'prestataire:detail' p.id %}">👁️ Voir</a>
+              <a class="btn-icon btn-edit" href="{% url 'prestataire:modifier' p.id %}">✏️ Modifier</a>
+              <a class="btn-icon btn-del" href="{% url 'prestataire:supprimer' p.id %}">🗑️ Supprimer</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="padding:18px;">
+            <div class="notice">Aucun prestataire trouvé.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll('[data-carousel]').forEach((c) => {
+    const track = c.querySelector('[data-track]');
+    const prev = c.querySelector('[data-prev]');
+    const next = c.querySelector('[data-next]');
+
+    function step(){
+      const card = track.querySelector('.inter-card');
+      if(!card) return 280;
+      return card.getBoundingClientRect().width + 10;
+    }
+    function updateButtons(){
+      const max = track.scrollWidth - track.clientWidth;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= (max - 2);
+    }
+
+    prev.addEventListener('click', () => { track.scrollBy({ left: -step(), behavior: 'smooth' }); setTimeout(updateButtons, 200); });
+    next.addEventListener('click', () => { track.scrollBy({ left:  step(), behavior: 'smooth' }); setTimeout(updateButtons, 200); });
+    track.addEventListener('scroll', () => window.requestAnimationFrame(updateButtons));
+    window.addEventListener('resize', updateButtons);
+    updateButtons();
+  });
+})();
+</script>
+
+{% endblock %}

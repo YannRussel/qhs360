@@ -1,0 +1,53 @@
+{% extends "core/base.html" %}
+{% block title %}Versions — {{ doc.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{ background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow-soft); padding:14px; }
+  .row{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); display:inline-flex; gap:8px; align-items:center; }
+  .btn-primary{ background: var(--brand); color:#fff; border-color: rgba(11,58,106,.2); }
+  .item{ border:1px solid var(--border); border-radius:16px; padding:12px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+  .muted{ color: var(--muted); }
+  .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-weight: 1000; border:1px solid var(--border); background: rgba(15,23,42,.03); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="row">
+    <div>
+      <div class="muted" style="font-weight:1000;">{{ doc.code }}</div>
+      <h2 style="margin:2px 0 0; font-weight:1000;">Historique des versions</h2>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a class="btn" href="{% url 'documentaire:detail' doc.id %}"><i class="fa-solid fa-arrow-left"></i> Fiche</a>
+      <a class="btn btn-primary" href="{% url 'documentaire:add_version' doc.id %}"><i class="fa-solid fa-plus"></i> Ajouter</a>
+    </div>
+  </div>
+
+  <div style="display:grid; gap:10px; margin-top:12px;">
+    {% for v in versions %}
+      <div class="item">
+        <div>
+          <div style="font-weight:1000;">
+            Version <span class="pill">{{ v.version }}</span>
+            {% if doc.version_courante_id == v.id %}<span class="pill" style="margin-left:6px;">Courante</span>{% endif %}
+          </div>
+          <div class="muted" style="margin-top:6px;">
+            Créée par {{ v.cree_par }} • {{ v.cree_le|date:"d/m/Y H:i" }} • Statut snapshot : {{ v.get_statut_snapshot_display }}
+          </div>
+          {% if v.commentaire %}
+            <div style="margin-top:8px;">{{ v.commentaire }}</div>
+          {% endif %}
+        </div>
+        <div>
+          <a class="btn" href="{% url 'documentaire:download_version' v.id %}"><i class="fa-solid fa-download"></i> Télécharger</a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="muted">Aucune version.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "core/base.html" %}
+
+{% block title %}Prestataire — {{ prestataire.nom }}{% endblock %}
+
+{% block content %}
+
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+  <div>
+    <h2 style="margin:0;">
+      Détail prestataire :
+      <span style="color:var(--brand); font-weight:900;">{{ prestataire.nom }}</span>
+    </h2>
+    <p style="margin-top:6px;">
+      Domaine :
+      <b>{% if prestataire.domaine %}{{ prestataire.domaine.nom }}{% else %}—{% endif %}</b>
+      • Organisation : <b>{{ organisation.nom }}</b>
+    </p>
+  </div>
+
+  <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="{% url 'prestataire:liste' %}">← Retour</a>
+    <a class="btn btn-ghost" href="{% url 'prestataire:modifier' prestataire.id %}">✏️ Modifier</a>
+    <a class="btn btn-primary" href="{% url 'sites:liste' %}">🏢 Sites</a>
+  </div>
+</div>
+
+{# Messages #}
+{% if messages %}
+  <div style="margin-bottom:14px;">
+    {% for message in messages %}
+      <div class="notice" style="margin-bottom:10px; {% if message.tags == 'error' %}border-color:#fecaca;background:#fff1f2;color:#991b1b;{% elif message.tags == 'success' %}border-color:#bbf7d0;background:#f0fdf4;color:#166534;{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- KPI -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px;">
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #0b3a6a, #1f6aa5); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Documents</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.docs }}</div>
+      </div>
+      <div style="font-size:34px;">📄</div>
+    </div>
+  </div>
+
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #16a34a, #22c55e); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Agents</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.agents }}</div>
+      </div>
+      <div style="font-size:34px;">👥</div>
+    </div>
+  </div>
+
+  <div class="panel" style="border:none; color:#fff; background:linear-gradient(135deg, #f59e0b, #fb923c); box-shadow:var(--shadow-strong);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; opacity:.92;">Affectations</div>
+        <div style="font-size:34px; font-weight:900;">{{ kpi.affectations }}</div>
+      </div>
+      <div style="font-size:34px;">🧩</div>
+    </div>
+  </div>
+</div>
+
+<!-- INFOS PRESTATAIRE -->
+<div class="panel" style="margin-bottom:16px;">
+  <div style="font-weight:900; margin-bottom:10px;">📌 Informations</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div class="field">
+      <label>Statut</label>
+      {% if prestataire.actif %}
+        <div><span class="badge badge-success">Actif</span></div>
+      {% else %}
+        <div><span class="badge badge-muted">Inactif</span></div>
+      {% endif %}
+    </div>
+
+    <div class="field">
+      <label>Date de création</label>
+      <div class="help" style="font-weight:800; color:#0f172a;">
+        {{ prestataire.date_creation|date:"d/m/Y H:i" }}
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Téléphone</label>
+      <div class="help" style="font-weight:800; color:#0f172a;">
+        {{ prestataire.telephone|default:"—" }}
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <div class="help" style="font-weight:800; color:#0f172a;">
+        {{ prestataire.email|default:"—" }}
+      </div>
+    </div>
+
+    <div class="field" style="grid-column:1/-1;">
+      <label>Adresse</label>
+      <div class="help" style="font-weight:800; color:#0f172a;">
+        {{ prestataire.adresse|default:"—" }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AFFECTATIONS -->
+<div class="panel" style="margin-bottom:16px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+    <div style="font-weight:900;">🧩 Affectations (Sites / Zones)</div>
+    <div class="help">Zones vides = tout le site</div>
+  </div>
+
+  {% if affectations %}
+    <div style="overflow:auto;">
+      <table class="table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--border);">
+            <th style="padding:10px;">Site</th>
+            <th style="padding:10px;">Zones</th>
+            <th style="padding:10px;">Statut</th>
+            <th style="padding:10px;">Créée le</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in affectations %}
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px; font-weight:900;">🏢 {{ a.site.nom }}</td>
+              <td style="padding:10px;">
+                {% if a.zones.count %}
+                  {% for z in a.zones.all %}
+                    <span class="badge" style="margin-right:6px;">📍 {{ z.nom }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="badge badge-info">Tout le site</span>
+                {% endif %}
+              </td>
+              <td style="padding:10px;">
+                {% if a.actif %}
+                  <span class="badge badge-success">Actif</span>
+                {% else %}
+                  <span class="badge badge-muted">Inactif</span>
+                {% endif %}
+              </td>
+              <td style="padding:10px;">{{ a.cree_le|date:"d/m/Y H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="notice">Aucune affectation pour ce prestataire.</div>
+  {% endif %}
+</div>
+
+<!-- AGENTS -->
+<div class="panel" style="margin-bottom:16px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+    <div style="font-weight:900;">👥 Agents du prestataire</div>
+    <a class="btn btn-ghost" href="{% url 'prestataire:modifier' prestataire.id %}">+ Ajouter / Modifier</a>
+  </div>
+
+  {% if agents %}
+    <div style="overflow:auto;">
+      <table class="table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--border);">
+            <th style="padding:10px;">Nom</th>
+            <th style="padding:10px;">Téléphone</th>
+            <th style="padding:10px;">Email</th>
+            <th style="padding:10px;">Fonction</th>
+            <th style="padding:10px;">Matricule</th>
+            <th style="padding:10px;">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in agents %}
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px; font-weight:900;">{{ a.nom }} {{ a.prenom }}</td>
+              <td style="padding:10px;">{{ a.telephone|default:"—" }}</td>
+              <td style="padding:10px;">{{ a.email|default:"—" }}</td>
+              <td style="padding:10px;">{{ a.fonction|default:"—" }}</td>
+              <td style="padding:10px;">{{ a.matricule|default:"—" }}</td>
+              <td style="padding:10px;">
+                {% if a.actif %}
+                  <span class="badge badge-success">Actif</span>
+                {% else %}
+                  <span class="badge badge-muted">Inactif</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="notice">Aucun agent enregistré pour ce prestataire.</div>
+  {% endif %}
+</div>
+
+<!-- DOCUMENTS -->
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+    <div style="font-weight:900;">📄 Documents</div>
+    <a class="btn btn-ghost" href="{% url 'prestataire:modifier' prestataire.id %}">+ Ajouter / Modifier</a>
+  </div>
+
+  {% if documents %}
+    <div style="display:grid; gap:12px;">
+      {% for doc in documents %}
+        <div class="panel" style="border:1px solid var(--border); box-shadow:none;">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+            <div style="min-width:0;">
+              <div style="font-weight:900;">
+                {% if doc.type_document == "immatriculation" %}📄 Immatriculation{% endif %}
+                {% if doc.type_document == "niu" %}🧾 NIU{% endif %}
+                {% if doc.type_document == "autre" %}📎 {{ doc.titre|default:"Autre" }}{% endif %}
+              </div>
+              <div class="help">
+                Émission : <b>{{ doc.date_emission|date:"d/m/Y"|default:"—" }}</b>
+                • Expiration : <b>{{ doc.date_expiration|date:"d/m/Y"|default:"—" }}</b>
+              </div>
+              {% if doc.description %}
+                <div class="help" style="margin-top:4px;">{{ doc.description }}</div>
+              {% endif %}
+            </div>
+
+            <div style="text-align:right;">
+              {% if doc.actif %}
+                <span class="badge badge-success">Actif</span>
+              {% else %}
+                <span class="badge badge-muted">Inactif</span>
+              {% endif %}
+              <div class="help" style="margin-top:6px;">
+                Upload : {{ doc.date_upload|date:"d/m/Y H:i" }}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="notice">Aucun document enregistré.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,411 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Suivi des actions — QHSE360{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --accent:#1f6aa5;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e6ebf2;
+    --text:#0f172a;
+    --muted:#64748b;
+
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --info:#3b82f6;
+
+    --shadow:0 12px 30px rgba(2,6,23,.08);
+    --shadow-soft:0 8px 22px rgba(15,23,42,.06);
+    --radius:16px;
+  }
+
+  *{ box-sizing:border-box; }
+  body{ font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+  .wrap{ max-width:1500px; margin:0 auto; padding:18px 18px 34px; }
+
+  .breadcrumb{
+    font-size:12px; color:var(--muted); margin-bottom:8px;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .breadcrumb a{ color:var(--brand); text-decoration:none; font-weight:800; }
+  .breadcrumb .sep{ opacity:.6; }
+
+  .header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    gap:14px; flex-wrap:wrap; margin-bottom:12px;
+  }
+  .header h1{
+    margin:0; font-size:28px; font-weight:900; color:var(--text);
+    letter-spacing:-.2px;
+  }
+
+  .tabs{
+    display:flex; gap:10px; flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+    padding-bottom:10px;
+    margin-bottom:14px;
+  }
+  .tab{
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-bottom-color:transparent;
+    border-radius:12px 12px 12px 12px;
+    background:#fff;
+    font-weight:900;
+    font-size:13px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  .tab.active{
+    color:var(--text);
+    background:rgba(31,106,165,.06);
+    border-color:rgba(31,106,165,.25);
+  }
+
+  .filters{
+    display:flex; gap:10px; flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .select, .input{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    box-shadow:var(--shadow-soft);
+    min-width:170px;
+  }
+  .select select, .input input{
+    border:none; outline:none;
+    background:transparent;
+    font-family:inherit;
+    width:100%;
+    font-size:13px;
+  }
+
+  .btn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:900;
+    color:var(--text);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:var(--shadow-soft);
+  }
+  .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.green{ background:#5b7d3b; border-color:#5b7d3b; color:#fff; }
+  .btn.danger{ background:#b94a4a; border-color:#b94a4a; color:#fff; }
+  .btn.ghost{ background:transparent; box-shadow:none; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  thead th{
+    text-align:left;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:900;
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(11,58,106,.05), transparent);
+  }
+  tbody td{
+    padding:12px 12px;
+    border-bottom:1px solid rgba(230,235,242,.9);
+    vertical-align:middle;
+    font-size:13px;
+    color:var(--text);
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .badge.type.corrective{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.25); color:#925a00; }
+  .badge.type.preventive{ background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.25); color:#1d4ed8; }
+
+  .badge.status.a_faire{ background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.25); color:#1d4ed8; }
+  .badge.status.en_cours{ background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.25); color:#925a00; }
+  .badge.status.realisee{ background:rgba(22,163,74,.12); border-color:rgba(22,163,74,.25); color:#166534; }
+  .badge.status.retard{ background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.25); color:#b91c1c; }
+  .badge.status.annulee{ background:rgba(100,116,139,.10); border-color:rgba(100,116,139,.25); color:#334155; }
+
+  .avatar{
+    width:26px; height:26px; border-radius:999px;
+    background:rgba(11,58,106,.12);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:900; color:var(--brand);
+    margin-right:8px;
+  }
+  .resp{
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .muted{ color:var(--muted); font-size:12px; }
+  .nowrap{ white-space:nowrap; }
+
+  .proof{
+    display:flex; align-items:center; gap:10px; justify-content:space-between;
+  }
+  .proof .left{
+    display:flex; gap:10px; align-items:center;
+    min-width:0;
+  }
+  .proof .left .txt{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:320px;
+  }
+  .iconbtn{
+    width:34px; height:34px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+
+  .pager{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:10px; flex-wrap:wrap;
+    padding:12px 12px;
+  }
+  .pager .left, .pager .right{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .pager select{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 10px;
+    background:#fff;
+    font-weight:800;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="breadcrumb">
+    <a href="#"><i class="fa-solid fa-star"></i></a>
+    <span>Accidents du Travail & Incidents</span>
+    <span class="sep">›</span>
+    <b style="color:var(--brand)">Suivi des actions</b>
+  </div>
+
+  <div class="header">
+    <h1>Suivi des actions correctives &amp; préventives</h1>
+  </div>
+
+  <div class="tabs">
+    <a class="tab {% if active_tab == 'ai' %}active{% endif %}" href="?tab=ai">Accidents / Incidents</a>
+    <a class="tab {% if active_tab == 'audit' %}active{% endif %}" href="?tab=audit">Audits</a>
+    <a class="tab {% if active_tab == 'inspection' %}active{% endif %}" href="?tab=inspection">Inspections</a>
+    <a class="tab {% if active_tab == 'autre' %}active{% endif %}" href="?tab=autre">Autres</a>
+    <a class="tab {% if active_tab == 'tb' %}active{% endif %}" href="?tab=tb">Tableau de bord</a>
+  </div>
+
+  <form class="filters" method="get">
+    <input type="hidden" name="tab" value="{{ active_tab }}">
+
+    <div class="select">
+      <i class="fa-solid fa-bullseye"></i>
+      <select name="origine">
+        <option value="">Origine</option>
+        {% for o in origines %}
+          <option value="{{ o }}" {% if filters.origine == o %}selected{% endif %}>{{ o }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="select">
+      <i class="fa-solid fa-tag"></i>
+      <select name="type_action">
+        <option value="">Type</option>
+        <option value="corrective" {% if filters.type_action == 'corrective' %}selected{% endif %}>Corrective</option>
+        <option value="preventive" {% if filters.type_action == 'preventive' %}selected{% endif %}>Préventive</option>
+      </select>
+    </div>
+
+    <div class="select">
+      <i class="fa-solid fa-user"></i>
+      <select name="responsable">
+        <option value="">Responsable</option>
+        {% for r in responsables %}
+          <option value="{{ r }}" {% if filters.responsable == r %}selected{% endif %}>{{ r }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="select">
+      <i class="fa-solid fa-circle-dot"></i>
+      <select name="statut">
+        <option value="">Statut</option>
+        <option value="a_faire" {% if filters.statut == 'a_faire' %}selected{% endif %}>À faire</option>
+        <option value="en_cours" {% if filters.statut == 'en_cours' %}selected{% endif %}>En cours</option>
+        <option value="realisee" {% if filters.statut == 'realisee' %}selected{% endif %}>Réalisée</option>
+        <option value="retard" {% if filters.statut == 'retard' %}selected{% endif %}>Retard</option>
+        <option value="annulee" {% if filters.statut == 'annulee' %}selected{% endif %}>Annulée</option>
+      </select>
+    </div>
+
+    <div class="select">
+      <i class="fa-regular fa-calendar"></i>
+      <select name="delai">
+        <option value="">Délai (jusqu’au)</option>
+        <option value="7" {% if filters.delai == '7' %}selected{% endif %}>7 jours</option>
+        <option value="30" {% if filters.delai == '30' %}selected{% endif %}>30 jours</option>
+        <option value="90" {% if filters.delai == '90' %}selected{% endif %}>90 jours</option>
+      </select>
+    </div>
+
+    <button class="btn" type="submit"><i class="fa-solid fa-filter"></i> Filtres</button>
+
+    <a class="btn danger" href="?tab={{ active_tab }}&retard=1"><i class="fa-solid fa-triangle-exclamation"></i> Actions en retard</a>
+
+    <a class="btn green" href="{% url 'evenements:action_create_global' %}">
+      <i class="fa-solid fa-plus"></i> Nouvelle action
+    </a>
+  </form>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th class="nowrap">#</th>
+          <th>Origine</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Responsable</th>
+          <th>Service</th>
+          <th class="nowrap">Délai</th>
+          <th>Statut</th>
+          <th>Preuve / Commentaires</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in actions %}
+        <tr>
+          <td class="nowrap"><b>{{ a.numero }}</b></td>
+
+          <td>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <a style="text-decoration:none; font-weight:900; color:var(--brand);"
+                 href="{% url 'evenements:suivi_cloture' a.evenement.id %}">
+                {{ a.evenement.reference|default:"EVT-" }}{{ a.evenement.id }}
+              </a>
+              <div class="muted">{{ a.evenement.get_type_evenement_display }}</div>
+            </div>
+          </td>
+
+          <td>
+            <span class="badge type {{ a.type_action }}">
+              {% if a.type_action == 'corrective' %}<i class="fa-solid fa-check"></i> Corrective{% else %}<i class="fa-solid fa-shield"></i> Préventive{% endif %}
+            </span>
+          </td>
+
+          <td>{{ a.description_action|truncatechars:70 }}</td>
+
+          <td>
+            <div class="resp">
+              <span class="avatar">{{ a.responsable|default:"?"|slice:":1"|upper }}</span>
+              <div>
+                <div style="font-weight:900;">{{ a.responsable|default:"—" }}</div>
+                <div class="muted">—</div>
+              </div>
+            </div>
+          </td>
+
+          <td>{{ a.service_societe|default:"—" }}</td>
+
+          <td class="nowrap">
+            {% if a.delai %}{{ a.delai|date:"d/m/Y" }}{% else %}—{% endif %}
+          </td>
+
+          <td>
+            <span class="badge status {{ a.statut }}">
+              {% if a.statut == 'a_faire' %}À faire{% elif a.statut == 'en_cours' %}En cours{% elif a.statut == 'realisee' %}Réalisée{% elif a.statut == 'retard' %}Retard{% else %}Annulée{% endif %}
+            </span>
+          </td>
+
+          <td>
+            <div class="proof">
+              <div class="left">
+                <i class="fa-regular fa-comment-dots" style="color:var(--muted)"></i>
+                <div class="txt">
+                  {% if a.preuve %}
+                    <a style="text-decoration:none; font-weight:900; color:var(--brand)" href="{{ a.preuve.url }}" target="_blank">
+                      {{ a.preuve.name|cut:"evenements/preuves/" }}
+                    </a>
+                  {% else %}
+                    {{ a.commentaires|default:"—" }}
+                  {% endif %}
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <a class="iconbtn" href="{% url 'evenements:action_edit' a.id %}" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                <a class="iconbtn" href="{% url 'evenements:suivi_cloture' a.evenement.id %}" title="Ouvrir dossier"><i class="fa-solid fa-folder-open"></i></a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="muted" style="padding:18px;">Aucune action trouvée.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <div class="left">
+        <select onchange="location.href=this.value;">
+          {% for s in page_sizes %}
+            <option value="?tab={{ active_tab }}&page_size={{ s }}" {% if page_size == s %}selected{% endif %}>{{ s }} lignes par page</option>
+          {% endfor %}
+        </select>
+        <span class="muted">{{ page_info }}</span>
+      </div>
+
+      <div class="right">
+        <span class="muted">Total actions: {{ total_actions }}</span>
+        <a class="btn ghost" href="?tab={{ active_tab }}&page={{ prev_page }}">&laquo; Précédent</a>
+        <a class="btn ghost" href="?tab={{ active_tab }}&page={{ next_page }}">Suivant &raquo;</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

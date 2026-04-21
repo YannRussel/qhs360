@@ -1,0 +1,568 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Registre des Inspections{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  :root{
+    --brand:#0b3a6a; --accent:#1f6aa5;
+    --bg:#f4f6f9; --card:#fff; --border:#e6ebf2;
+    --text:#0f172a; --muted:#64748b;
+    --radius:14px; --shadow:0 10px 28px rgba(2,6,23,.08);
+  }
+  body{ font-family:Poppins,system-ui; background:var(--bg); color:var(--text); }
+  .wrap{ max-width:1400px; margin:18px auto; padding:0 16px; }
+
+  /* =========================
+     FILTER BAR PRO (comme ton modèle)
+     ========================= */
+  .filterbar{
+    background:linear-gradient(180deg,#ffffff 0%, #f7faff 100%);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:0 10px 28px rgba(2,6,23,.06);
+    padding:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .seg{
+    display:flex;
+    align-items:center;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    flex: 1 1 760px;
+    min-width: 320px;
+  }
+  .seg-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 10px;
+    height:38px;
+    border-right:1px solid var(--border);
+    background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+    min-width: 150px;
+  }
+  .seg-item:last-child{ border-right:none; }
+
+  .seg-icon{
+    width:26px; height:26px;
+    border-radius:10px;
+    display:grid; place-items:center;
+    background:#f1f5f9;
+    border:1px solid var(--border);
+    color:#334155;
+    font-size:12px;
+    flex: 0 0 auto;
+  }
+
+  .fsel{
+    border:none;
+    background:transparent;
+    font-weight:900;
+    font-size:12px;
+    color:var(--text);
+    outline:none;
+    padding-right:12px;
+    max-width:190px;
+  }
+  .fsel:focus{ outline:none; }
+  .seg-label{
+    font-size:11px;
+    font-weight:900;
+    color:var(--muted);
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    margin-right:6px;
+    white-space:nowrap;
+  }
+
+  .daterange{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    height:38px;
+    padding:0 10px;
+    flex: 0 0 auto;
+  }
+  .daterange input{
+    border:none;
+    background:transparent;
+    font-weight:900;
+    font-size:12px;
+    color:var(--text);
+    outline:none;
+    min-width: 130px;
+  }
+  .daterange .sep{
+    color:var(--muted);
+    font-weight:900;
+  }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    border:none; cursor:pointer;
+    padding:0 12px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12px;
+    text-decoration:none;
+    color:#fff;
+    background:linear-gradient(135deg,var(--brand),var(--accent));
+    box-shadow:0 12px 24px rgba(11,58,106,.18);
+    white-space:nowrap;
+    height:38px;
+  }
+  .btn.light{
+    background:#fff; color:var(--brand);
+    border:1px solid rgba(31,106,165,.22);
+    box-shadow:none;
+  }
+
+  .spacer{ flex:1; min-width:10px; }
+
+  .dropdown{ position:relative; }
+  .dropbtn{
+    display:inline-flex; align-items:center; gap:8px;
+    height:38px;
+    padding:0 12px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:12px;
+    cursor:pointer;
+    border:1px solid rgba(2,6,23,.10);
+    background:linear-gradient(180deg,#ffffff 0%, #f6faff 100%);
+    color:var(--text);
+  }
+  .menu{
+    position:absolute; right:0; top:44px;
+    width:190px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:0 18px 40px rgba(2,6,23,.12);
+    overflow:hidden;
+    display:none;
+    z-index:50;
+  }
+  .menu a{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    text-decoration:none;
+    color:var(--text);
+    font-weight:800;
+    font-size:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .menu a:last-child{ border-bottom:none; }
+  .menu a:hover{ background:#f8fbff; }
+  .dropdown.open .menu{ display:block; }
+
+  /* KPI cards */
+  .kpi-grid{
+    margin-top:12px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 190px));
+    gap:10px;
+    justify-content:start;
+  }
+  .kpi{
+    border-radius:14px;
+    padding:10px 11px;
+    color:#fff;
+    box-shadow:0 10px 22px rgba(2,6,23,.10);
+    min-height:86px;
+  }
+  .k-blue{ background:linear-gradient(135deg,#1d4ed8,#3b82f6); }
+  .k-green{ background:linear-gradient(135deg,#15803d,#22c55e); }
+  .k-orange{ background:linear-gradient(135deg,#c2410c,#fb923c); }
+  .k-red{ background:linear-gradient(135deg,#b91c1c,#ef4444); }
+  .kpi .icon{
+    width:30px; height:30px;
+    border-radius:12px;
+    display:grid; place-items:center;
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.22);
+    font-size:14px;
+    margin-bottom:8px;
+  }
+  .kpi .val{ font-size:19px; font-weight:900; line-height:1; }
+  .kpi .lab{ margin-top:5px; font-size:11px; font-weight:900; opacity:.95; line-height:1.15; }
+
+  /* Panel + table */
+  .panel{
+    margin-top:12px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .panel-h{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    flex-wrap:wrap;
+  }
+  .panel-h .ttl{ font-weight:900; }
+  .panel-h .mini{ color:#64748b; font-weight:800; font-size:12px; }
+
+  .table-wrap{ overflow:auto; }
+  table{ width:100%; border-collapse:separate; border-spacing:0; min-width:1250px; }
+  thead th{
+    position:sticky; top:0; z-index:1;
+    background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+    border-bottom:1px solid var(--border);
+    padding:12px;
+    font-size:11px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    font-weight:900;
+    color:#64748b;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    vertical-align:middle;
+    background:#fff;
+  }
+  tbody tr:hover td{ background:#fbfdff; }
+
+  .ref{ display:flex; align-items:center; gap:10px; font-weight:900; }
+  .ref .pill{
+    width:34px; height:34px; border-radius:12px;
+    display:grid; place-items:center;
+    background:rgba(31,106,165,.10);
+    border:1px solid rgba(31,106,165,.18);
+  }
+
+  .typepill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    background:#f1f5f9;
+    border:1px solid var(--border);
+    white-space:nowrap;
+    max-width:320px;
+  }
+  .typepill .txt{
+    display:inline-block;
+    max-width:260px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:11px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .b-open{ background:rgba(34,197,94,.12); color:#15803d; border-color:rgba(34,197,94,.18); }
+  .b-closed{ background:rgba(59,130,246,.12); color:#1d4ed8; border-color:rgba(59,130,246,.18); }
+  .b-draft{ background:rgba(234,179,8,.14); color:#92400e; border-color:rgba(234,179,8,.22); }
+  .b-cancel{ background:rgba(239,68,68,.12); color:#b91c1c; border-color:rgba(239,68,68,.20); }
+
+  .score{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px;
+    background:#f1f5f9;
+    border:1px solid var(--border);
+    white-space:nowrap;
+  }
+
+  .act{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 12px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:900;
+    font-size:12px;
+    color:#fff;
+    background:linear-gradient(135deg,var(--brand),var(--accent));
+    white-space:nowrap;
+  }
+
+  @media(max-width:860px){
+    .seg{ width:100%; }
+    .seg-item{ flex:1; min-width:0; }
+    .fsel{ max-width:100%; width:100%; }
+    .daterange{ width:100%; justify-content:space-between; }
+    .spacer{ display:none; }
+  }
+</style>
+
+<div class="wrap">
+  {% if no_org %}
+    <div class="panel" style="padding:16px"><b>Ton compte n’est lié à aucune organisation.</b></div>
+  {% else %}
+
+  <!-- BARRE FILTRES PRO -->
+  <form class="filterbar" method="get">
+    <div class="seg">
+      <div class="seg-item">
+        <span class="seg-icon"><i class="fa-solid fa-layer-group"></i></span>
+        <span class="seg-label">Type</span>
+        <select class="fsel" name="type">
+          <option value="">Tous types</option>
+          {% for t in filter_types %}
+            <option value="{{ t.value }}" {% if filters.type == t.value %}selected{% endif %}>{{ t.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="seg-item">
+        <span class="seg-icon"><i class="fa-solid fa-industry"></i></span>
+        <span class="seg-label">Site</span>
+        <select class="fsel" name="site">
+          <option value="">Tout site</option>
+          {% for s in filter_sites %}
+            <option value="{{ s.id }}" {% if filters.site|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="seg-item">
+        <span class="seg-icon"><i class="fa-solid fa-location-dot"></i></span>
+        <span class="seg-label">Zones</span>
+        <select class="fsel" name="zone">
+          <option value="">Toutes zones</option>
+          {% for z in filter_zones %}
+            <option value="{{ z.id }}" {% if filters.zone|stringformat:"s" == z.id|stringformat:"s" %}selected{% endif %}>{{ z.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="seg-item">
+        <span class="seg-icon"><i class="fa-solid fa-user-check"></i></span>
+        <span class="seg-label">Inspecteur</span>
+        <select class="fsel" name="inspecteur">
+          <option value="">Tout inspecteur</option>
+          {% for u in filter_inspecteurs %}
+            <option value="{{ u.inspector_id }}"
+              {% if filters.inspecteur|stringformat:"s" == u.inspector_id|stringformat:"s" %}selected{% endif %}>
+              {% if u.inspector__first_name or u.inspector__last_name %}
+                {{ u.inspector__first_name }} {{ u.inspector__last_name }}
+              {% elif u.inspector__email %}
+                {{ u.inspector__email }}
+              {% else %}
+                {{ u.inspector__phone_number }}
+              {% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="seg-item">
+        <span class="seg-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
+        <span class="seg-label">Statut</span>
+        <select class="fsel" name="status">
+          <option value="">Tous statuts</option>
+          <option value="open" {% if filters.status == "open" %}selected{% endif %}>Ouvert</option>
+          <option value="closed" {% if filters.status == "closed" %}selected{% endif %}>Clos</option>
+          <option value="draft" {% if filters.status == "draft" %}selected{% endif %}>Brouillon</option>
+          <option value="cancelled" {% if filters.status == "cancelled" %}selected{% endif %}>Annulé</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="daterange">
+      <span class="seg-icon"><i class="fa-regular fa-calendar"></i></span>
+      <input type="date" name="start" value="{{ filters.start }}">
+      <span class="sep">—</span>
+      <input type="date" name="end" value="{{ filters.end }}">
+    </div>
+
+    <button class="btn" type="submit"><i class="fa-solid fa-filter"></i> Filtrer</button>
+    <a class="btn light" href="?" title="Réinitialiser"><i class="fa-solid fa-rotate-right"></i></a>
+
+    <div class="spacer"></div>
+
+    <div class="dropdown" id="exportDrop">
+      <button class="dropbtn" type="button" onclick="toggleExport()">
+        <i class="fa-solid fa-file-export"></i> Exporter <i class="fa-solid fa-chevron-down" style="opacity:.7"></i>
+      </button>
+      <div class="menu">
+        {# Mets tes vraies urls d’export #}
+        <a href="#"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+        <a href="#"><i class="fa-solid fa-file-excel"></i> Excel</a>
+        <a href="#"><i class="fa-solid fa-file-csv"></i> CSV</a>
+      </div>
+    </div>
+  </form>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi k-blue">
+      <div class="icon"><i class="fa-solid fa-clipboard-check"></i></div>
+      <div class="val">{{ stats.total|default:0 }}</div>
+      <div class="lab">Inspections réalisées</div>
+    </div>
+
+    <div class="kpi k-green">
+      <div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="val">{{ stats.nc|default:0 }}</div>
+      <div class="lab">Non-conformités détectées</div>
+    </div>
+
+    <div class="kpi k-orange">
+      <div class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+      <div class="val">{{ stats.actions_open|default:0 }}</div>
+      <div class="lab">Actions ouvertes</div>
+    </div>
+
+    <div class="kpi k-red">
+      <div class="icon"><i class="fa-solid fa-clock"></i></div>
+      <div class="val">{{ stats.overdue|default:0 }}</div>
+      <div class="lab">Inspections en retard</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="panel">
+    <div class="panel-h">
+      <div>
+        <div class="ttl">Registre des inspections</div>
+        <div class="mini">Résultats filtrés : <b>{{ inspections|length }}</b></div>
+      </div>
+      <div class="mini"><i class="fa-solid fa-circle-info"></i> Cliquer “Ouvrir” pour voir le détail</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>N° Inspection</th>
+            <th>Type d’inspection</th>
+            <th>Date</th>
+            <th>Site</th>
+            <th>Zone</th>
+            <th>Inspecteur</th>
+            <th>Prestataire</th>
+            <th>Actions</th>
+            <th>Statut</th>
+            <th>Score</th>
+            <th style="text-align:right">Ouvrir</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in inspections %}
+          <tr>
+            <td>
+              <div class="ref">
+                <span class="pill"><i class="fa-solid fa-file-lines"></i></span>
+                <span>{{ it.reference }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="typepill">
+                <i class="fa-solid fa-layer-group"></i>
+                <span class="txt">
+                  {% if it.template %}{{ it.template.nom }}{% else %}{{ it.type_libre|default:"—" }}{% endif %}
+                </span>
+              </span>
+            </td>
+
+            <td class="mini"><i class="fa-regular fa-calendar"></i> {{ it.date|date:"d/m/Y" }}</td>
+            <td class="mini"><i class="fa-solid fa-industry"></i> {{ it.site.nom }}</td>
+            <td class="mini"><i class="fa-solid fa-location-dot"></i> {% if it.zone %}{{ it.zone.nom }}{% else %}—{% endif %}</td>
+
+            <td class="mini">
+              <i class="fa-solid fa-user-check"></i>
+              {% if it.inspector %}
+                {% if it.inspector.first_name or it.inspector.last_name %}
+                  {{ it.inspector.first_name }} {{ it.inspector.last_name }}
+                {% elif it.inspector.email %}
+                  {{ it.inspector.email }}
+                {% else %}
+                  {{ it.inspector.phone_number }}
+                {% endif %}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+
+            <td class="mini"><i class="fa-solid fa-helmet-safety"></i> {% if it.prestataire %}{{ it.prestataire.nom }}{% else %}—{% endif %}</td>
+
+            <td>
+              <span class="badge b-closed">
+                <i class="fa-solid fa-screwdriver-wrench"></i> {{ it.actions_count|default:0 }}
+              </span>
+            </td>
+
+            <td>
+              {% if it.status == 'open' %}
+                <span class="badge b-open"><i class="fa-solid fa-circle-play"></i> Ouvert</span>
+              {% elif it.status == 'closed' %}
+                <span class="badge b-closed"><i class="fa-solid fa-circle-check"></i> Clos</span>
+              {% elif it.status == 'draft' %}
+                <span class="badge b-draft"><i class="fa-solid fa-pen-to-square"></i> Brouillon</span>
+              {% else %}
+                <span class="badge b-cancel"><i class="fa-solid fa-ban"></i> Annulé</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if it.score %}
+                <span class="score"><i class="fa-solid fa-gauge-high"></i> {{ it.score|floatformat:1 }}%</span>
+              {% else %}
+                <span class="score"><i class="fa-regular fa-hourglass-half"></i> —</span>
+              {% endif %}
+            </td>
+
+            <td style="text-align:right;">
+              <a class="act" href="{% url 'inspections:inspection_detail' it.pk %}">
+                <i class="fa-solid fa-up-right-from-square"></i> Ouvrir
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="11" class="mini" style="padding:16px;color:#64748b;font-weight:900;">
+              Aucune inspection pour ces filtres.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<script>
+  function toggleExport(){
+    const d = document.getElementById("exportDrop");
+    d.classList.toggle("open");
+  }
+  document.addEventListener("click", function(e){
+    const d = document.getElementById("exportDrop");
+    if(!d) return;
+    if(!d.contains(e.target)) d.classList.remove("open");
+  });
+</script>
+{% endblock %}

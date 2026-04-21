@@ -1,0 +1,46 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card{ background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow-soft); padding:14px; }
+  .item{ border:1px solid var(--border); border-radius:16px; padding:12px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+  .muted{ color: var(--muted); }
+  .btn{ border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:14px; font-weight: 900; cursor:pointer; text-decoration:none; color: var(--text); box-shadow: var(--shadow-soft); display:inline-flex; gap:8px; align-items:center; }
+  .pill{ display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-weight:1000; border:1px solid var(--border); background: rgba(15,23,42,.03); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+    <div>
+      <h2 style="margin:0; font-weight:1000;">Notifications</h2>
+      <div class="muted" style="margin-top:6px;">Validation, révision, changements de statut.</div>
+    </div>
+    <a class="btn" href="{% url 'documentaire:list' %}"><i class="fa-solid fa-arrow-left"></i> Bibliothèque</a>
+  </div>
+
+  <div style="display:grid; gap:10px; margin-top:12px;">
+    {% for n in notifs %}
+      <div class="item">
+        <div>
+          <div style="font-weight:1000;">
+            {% if n.lu %}<span class="pill">Lu</span>{% else %}<span class="pill" style="background: rgba(11,58,106,.10); border-color: rgba(11,58,106,.18); color: var(--brand);">Nouveau</span>{% endif %}
+            <span style="margin-left:8px;">{{ n.message }}</span>
+          </div>
+          <div class="muted" style="margin-top:6px;">
+            {{ n.cree_le|date:"d/m/Y H:i" }} • Document :
+            <a href="{% url 'documentaire:detail' n.document.id %}">{{ n.document.code }}</a>
+          </div>
+        </div>
+        {% if not n.lu %}
+          <a class="btn" href="{% url 'documentaire:notif_read' n.id %}"><i class="fa-solid fa-check"></i> Marquer lue</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="muted">Aucune notification.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer une intervention{% endblock %}
+
+{% block content %}
+<style>
+  :root{
+    --brand:#0b3a6a;
+    --brand2:#1f6aa5;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --text:#0f172a;
+    --muted:#64748b;
+    --shadow:0 10px 28px rgba(2,6,23,.08);
+    --radius:16px;
+  }
+  .wrap{ max-width:1500px; margin:18px auto; padding:22px; }
+  .page-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .title{ font-size:26px; font-weight:800; color:var(--brand); display:flex; align-items:center; gap:10px; }
+  .subtitle{ color:var(--muted); margin-top:4px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 16px; border-radius:12px; border:1px solid transparent;
+    font-weight:800; text-decoration:none; cursor:pointer;
+  }
+  .btn-primary{ background:var(--brand); color:#fff; }
+  .btn-secondary{ background:#334155; color:#fff; }
+  .btn-ghost{ background:#fff; color:var(--brand); border-color:var(--border); }
+  .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+  @media (max-width: 1100px){ .grid{ grid-template-columns: 1fr; } }
+
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;
+  }
+  .card h3{ margin:0 0 12px 0; font-size:18px; font-weight:900; color:var(--text); display:flex; gap:10px; align-items:center; }
+  .hr{ height:1px; background:var(--border); margin:14px 0; }
+
+  .form-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;
+  }
+  @media (max-width: 700px){ .form-grid{ grid-template-columns: 1fr; } }
+
+  .field label{ display:block; font-size:12px; font-weight:800; color:var(--muted); margin-bottom:6px; }
+  .field input, .field textarea, .field select{
+    width:100%; padding:12px 12px; border-radius:12px;
+    border:1px solid var(--border); background:#fff; outline:none;
+    font-weight:600; color:var(--text);
+  }
+  .field textarea{ min-height:92px; resize:vertical; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 10px; border-radius:999px; font-size:12px; font-weight:900;
+    background:#f1f5f9; color:#0f172a; border:1px solid var(--border);
+  }
+
+  /* Multi select list */
+  .list{
+    border:1px solid var(--border); border-radius:14px; overflow:hidden;
+    background:#fff;
+  }
+  .list-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 12px; background:#f8fafc; border-bottom:1px solid var(--border);
+  }
+  .list-head b{ font-size:13px; }
+  .list-body{ max-height:360px; overflow:auto; }
+  .row{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:12px 12px; border-bottom:1px solid var(--border);
+  }
+  .row:last-child{ border-bottom:none; }
+  .row:hover{ background:#f9fafb; }
+  .row .meta{ flex:1; }
+  .row .meta .name{ font-weight:900; }
+  .row .meta .desc{ color:var(--muted); font-size:12px; margin-top:2px; }
+  .check{
+    width:18px; height:18px; margin-top:2px;
+    accent-color: var(--brand);
+  }
+
+  .kpi-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; }
+  .kpi{
+    border:1px solid var(--border); border-radius:14px; padding:12px;
+    background:#fbfdff;
+  }
+  .kpi .v{ font-size:22px; font-weight:900; color:var(--brand); }
+  .kpi .l{ font-size:12px; color:var(--muted); font-weight:800; }
+
+  .help{
+    font-size:12px; color:var(--muted);
+    background:#f8fafc; border:1px dashed var(--border);
+    padding:10px 12px; border-radius:14px;
+  }
+
+  .footer-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+  /* messages django */
+  .msg{ border-radius:14px; padding:12px 14px; margin-bottom:12px; font-weight:700; }
+  .msg-error{ background:#fff1f2; border:1px solid #fecdd3; color:#991b1b; }
+  .msg-success{ background:#ecfdf5; border:1px solid #bbf7d0; color:#166534; }
+
+</style>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div>
+      <div class="title">🛠️ Créer une intervention</div>
+      <div class="subtitle">Sélectionne les agents + permis requis. Le système générera automatiquement les permis (Option A : questionnaires vides à remplir ensuite).</div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-ghost" href="{% url 'permis:dashboard_permis_interventions' %}">⬅ Retour</a>
+      <a class="btn btn-secondary" href="{% url 'permis:type_permis_liste' %}">📑 Types de permis</a>
+    </div>
+  </div>
+
+  {# Messages Django (si ton base ne les affiche pas déjà) #}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="msg {% if message.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="grid">
+
+      <!-- Colonne gauche : infos + sélections -->
+      <div class="card">
+
+        <h3>🧾 Informations générales</h3>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Titre *</label>
+            <input type="text" name="titre" value="{{ values.titre }}" placeholder="Ex: Intervention maintenance / soudure..." required>
+          </div>
+
+          <div class="field">
+            <label>Statut</label>
+            <select name="statut">
+              {% for key,label in statuts %}
+                <option value="{{ key }}" {% if values.statut == key %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Date début *</label>
+            <input type="datetime-local" name="date_debut" value="{{ values.date_debut }}" required>
+          </div>
+
+          <div class="field">
+            <label>Date fin (optionnel)</label>
+            <input type="datetime-local" name="date_fin" value="{{ values.date_fin }}">
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Lieu (optionnel)</label>
+            <input type="text" name="lieu" value="{{ values.lieu }}" placeholder="Ex: Zone A / Brazza Mall / Ateliers...">
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Description (optionnel)</label>
+            <textarea name="description" placeholder="Décris l'intervention, les risques, consignes...">{{ values.description }}</textarea>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>🪪 Permis requis</h3>
+        <div class="help">
+          ✅ Coche les permis nécessaires. Après création, le système générera automatiquement les permis par agent (si agent éligible), avec questionnaire à remplir puis validation.
+        </div>
+
+        <div style="margin-top:10px" class="list">
+          <div class="list-head">
+            <b>Permis disponibles</b>
+            <span class="pill">📑 {{ types_permis|length }}</span>
+          </div>
+          <div class="list-body">
+            {% for p in types_permis %}
+              <label class="row">
+                <input class="check" type="checkbox" name="permis_ids" value="{{ p.id }}"
+                  {% if p.id|stringformat:"s" in values.permis_ids %}checked{% endif %}>
+                <div class="meta">
+                  <div class="name">{{ p.nom }}</div>
+                  {% if p.description %}
+                    <div class="desc">{{ p.description }}</div>
+                  {% endif %}
+                </div>
+              </label>
+            {% empty %}
+              <div style="padding:12px; color:var(--muted);">Aucun type de permis. Crée d’abord un type de permis.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>👷 Agents participants</h3>
+        <div class="help">
+          ✅ Coche les agents qui participent. Les permis seront générés automatiquement pour eux après création.
+        </div>
+
+        <div style="margin-top:10px" class="list">
+          <div class="list-head">
+            <b>Agents prestataires</b>
+            <span class="pill">👷 {{ agents|length }}</span>
+          </div>
+          <div class="list-body">
+            {% for a in agents %}
+              <label class="row">
+                <input class="check" type="checkbox" name="agents_ids" value="{{ a.id }}"
+                  {% if a.id|stringformat:"s" in values.agents_ids %}checked{% endif %}>
+                <div class="meta">
+                  <div class="name">{{ a.nom }} {{ a.prenom }}</div>
+                  <div class="desc">Prestataire : {{ a.prestataire.nom }}</div>
+                </div>
+              </label>
+            {% empty %}
+              <div style="padding:12px; color:var(--muted);">Aucun agent trouvé.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button type="submit" class="btn btn-primary">✅ Créer l’intervention</button>
+          <a class="btn btn-ghost" href="{% url 'permis:dashboard_permis_interventions' %}">Annuler</a>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : résumé -->
+      <div class="card">
+        <h3>📌 Résumé</h3>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="v">{{ types_permis|length }}</div>
+            <div class="l">Types de permis disponibles</div>
+          </div>
+          <div class="kpi">
+            <div class="v">{{ agents|length }}</div>
+            <div class="l">Agents disponibles</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="help">
+          <b>Ce qui se passe après création (Option A)</b><br>
+          1) Création intervention + M2M (agents / permis requis)<br>
+          2) Génération automatique <b>PermisDelivre</b> pour chaque agent×permis<br>
+          3) Création automatique des <b>ReponsePermis</b> (questionnaire) <b>VIDES</b><br>
+          4) L’utilisateur remplit, puis valide → PDF final
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="help">
+          <b>Conseil</b> : avant de créer une intervention, configure les questionnaires (QuestionsPermis) sur chaque TypePermis.
+        </div>
+
+      </div>
+
+    </div>
+  </form>
+
+</div>
+
+{% endblock %}

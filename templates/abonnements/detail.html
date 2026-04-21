@@ -1,0 +1,40 @@
+{% extends "core/base.html" %}
+
+{% block title %}Abonnement — QHSE360{% endblock %}
+
+{% block content %}
+<div class="header-section">
+  <h2>Mon abonnement</h2>
+  <p>Informations sur votre abonnement et votre plan.</p>
+</div>
+
+<div class="panel" style="max-width:980px; margin:auto;">
+  <div class="notice">
+    Organisation : <b>{{ request.user.organisation.nom }}</b>
+  </div>
+
+  {% if abonnement %}
+    <div style="margin-top:14px;">
+      <p style="margin:0;">
+        <b>Plan :</b>
+        {% if abonnement.plan %}{{ abonnement.plan.nom }}{% else %}—{% endif %}
+      </p>
+      <p style="margin:6px 0 0;">
+        <b>Max sites :</b>
+        {% if abonnement.plan %}{{ abonnement.plan.max_sites }}{% else %}—{% endif %}
+      </p>
+      <p style="margin:6px 0 0;">
+        <b>Statut :</b> {{ abonnement.statut|default:"—" }}
+      </p>
+    </div>
+  {% else %}
+    <div class="notice warn" style="margin-top:14px;">
+      Aucun abonnement n’est associé à votre organisation.
+    </div>
+  {% endif %}
+
+  <div class="actions" style="margin-top:18px;">
+    <a class="btn btn-ghost" href="{% url 'sites:liste' %}">Retour</a>
+  </div>
+</div>
+{% endblock %}

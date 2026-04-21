@@ -1,0 +1,495 @@
+{% extends "core/base.html" %}
+{% block title %}{{ titre }} — QHSE360{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* === Header “registre” + exporter === */
+  .page-head{
+    display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+    margin:8px 0 12px;
+  }
+  .page-head h2{ margin:0; font-weight:900; font-size:26px; }
+  .page-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  .btn-export{
+    background:linear-gradient(180deg,#3b5b84,#2d476c);
+    color:#fff; border:1px solid rgba(255,255,255,.10);
+    padding:10px 14px; border-radius:12px; font-weight:900;
+    display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+    box-shadow:0 12px 26px rgba(2,6,23,.18);
+    transition:.12s;
+  }
+  .btn-export:hover{ filter:brightness(.98); transform:translateY(-1px); }
+
+  /* === Toolbar filters (like screenshot) === */
+  .toolbar{
+    background:linear-gradient(180deg,#ffffff,#f6f8fc);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+    box-shadow:var(--shadow-soft);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    margin-bottom:12px;
+  }
+  .t-item{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:12px;
+    padding:10px 12px;
+  }
+  .t-ico{ font-size:18px; opacity:.95; }
+  .t-ctrl{
+    border:none; outline:none; background:transparent;
+    font-family:inherit; font-weight:900; color:#0f172a;
+    min-width:140px;
+  }
+  .t-ctrl::placeholder{ color:#94a3b8; font-weight:800; }
+  .t-select{
+    border:none; outline:none; background:transparent;
+    font-family:inherit; font-weight:900; color:#0f172a;
+  }
+
+  /* === KPI row === */
+  .kpi-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:12px; }
+  @media(max-width:1100px){ .kpi-row{ grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:650px){ .kpi-row{ grid-template-columns:1fr;} }
+
+  .kpi{
+    border-radius:16px;
+    color:#fff;
+    padding:14px 14px;
+    box-shadow:var(--shadow-strong);
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .kpi .t{ font-weight:900; opacity:.92; }
+  .kpi .v{ font-weight:900; font-size:30px; margin-top:6px; }
+  .kpi .ico{ font-size:40px; line-height:1; filter: drop-shadow(0 10px 14px rgba(2,6,23,.18)); }
+
+  /* === Big register panel FULL WIDTH === */
+  .panelX{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:18px;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .panelX-head{
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#fff,#f6f8fc);
+    display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .panelX-title{
+    font-weight:900;
+    display:flex; align-items:center; gap:10px;
+  }
+  .sq{
+    width:38px;height:38px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900; color:#fff;
+    box-shadow:0 12px 18px rgba(2,6,23,.12);
+  }
+  .sq-blue{ background:linear-gradient(135deg,#2563eb,#60a5fa); }
+  .sq-green{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+  .sq-amber{ background:linear-gradient(135deg,#f59e0b,#fb923c); }
+  .sq-red{ background:linear-gradient(135deg,#ef4444,#fb7185); }
+  .sq-slate{ background:linear-gradient(135deg,#111827,#334155); }
+  .sq-purple{ background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+
+  .muted{ color:var(--muted); font-weight:700; font-size:12.5px; }
+
+  /* === Table clean (scroll hidden) === */
+  .table-wrap{
+    max-height:72vh;
+    overflow:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .table-wrap::-webkit-scrollbar{ width:0;height:0; }
+
+  table.reg{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  table.reg thead th{
+    position:sticky; top:0; z-index:1;
+    background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+    border-bottom:1px solid var(--border);
+    padding:12px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:#334155;
+    white-space:nowrap;
+  }
+  table.reg tbody td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+    font-size:13.5px;
+  }
+  table.reg tbody tr:nth-child(even){ background:#fbfdff; }
+  table.reg tbody tr:hover{ background:#f1f7ff; }
+
+  .cell{
+    display:flex; align-items:center; gap:10px; min-width:0;
+  }
+  .name{
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:360px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:700;
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:420px;
+  }
+
+  .badge{
+    display:inline-flex; align-items:center;
+    padding:7px 11px; border-radius:12px;
+    font-weight:900; font-size:12px;
+    border:1px solid transparent;
+    white-space:nowrap;
+  }
+  .b-ok{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+  .b-soon{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .b-exp{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+  .b-off{ background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+  .b-info{ background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+
+  /* habilitations carousel */
+  .hab-wrap{ display:flex; align-items:center; gap:8px; }
+  .hab-nav{
+    width:34px;height:34px;border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff; cursor:pointer; font-weight:900;
+    display:flex;align-items:center;justify-content:center;
+    transition:.12s; user-select:none;
+  }
+  .hab-nav:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .hab-track{
+    display:flex; gap:8px; overflow:auto;
+    scroll-behavior:smooth;
+    padding:6px 2px;
+    max-width:520px;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .hab-track::-webkit-scrollbar{ width:0;height:0; }
+  .chip{
+    display:inline-flex; align-items:center;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:11.5px; font-weight:900;
+    border:1px solid var(--border);
+    background:#fff;
+    white-space:nowrap;
+  }
+  .chip-warn{ background:#fffbeb; border-color:#fed7aa; color:#92400e; }
+  .chip-muted{ background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+
+  /* row actions */
+  .row-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .icon-btn{
+    width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;
+    transition:.12s;
+  }
+  .icon-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+  .icon-btn.primary{ background:linear-gradient(135deg,#0b3a6a,#1f6aa5); color:#fff; border-color:rgba(255,255,255,.12); }
+
+  @media(max-width:980px){
+    .hide-md{ display:none; }
+    .hab-track{ max-width:340px; }
+  }
+  @media(max-width:780px){
+    .hide-sm{ display:none; }
+    .hab-track{ max-width:240px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h2>Registre des Formations</h2>
+    <div class="muted">Organisation : <b>{{ organisation.nom }}</b> — suivi complet sessions, participants, validations, habilitations.</div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-soft" href="{% url 'permis:formation_dashboard' %}">↩ Dashboard</a>
+    <a class="btn-export" href="#" onclick="alert('Exporter : à brancher (PDF/Excel)');return false;">
+      ⬇️ Exporter
+    </a>
+  </div>
+</div>
+
+<!-- Toolbar filters -->
+<form class="toolbar" method="get">
+  <div class="t-item">
+    <span class="t-ico">🔎</span>
+    <input class="t-ctrl" name="q" value="{{ filters.q }}" placeholder="Rechercher formation / titre / lieu…">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">🎓</span>
+    <select class="t-select" name="formation">
+      <option value="">Toutes formations</option>
+      {% for f in formations %}
+        <option value="{{ f.id }}" {% if filters.formation|stringformat:"s" == f.id|stringformat:"s" %}selected{% endif %}>{{ f.nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">⚑</span>
+    <select class="t-select" name="statut">
+      <option value="">Tous statuts</option>
+      <option value="planifiee" {% if filters.statut == "planifiee" %}selected{% endif %}>Planifiée</option>
+      <option value="encours" {% if filters.statut == "encours" %}selected{% endif %}>En cours</option>
+      <option value="terminee" {% if filters.statut == "terminee" %}selected{% endif %}>Terminée</option>
+      <option value="annulee" {% if filters.statut == "annulee" %}selected{% endif %}>Annulée</option>
+    </select>
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">👤</span>
+    <input class="t-ctrl" name="agent" value="{{ filters.agent }}" placeholder="Agent (participant/intervenant)…">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">📅</span>
+    <input class="t-ctrl" type="date" name="start" value="{{ filters.start|date:'Y-m-d' }}">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">→</span>
+    <input class="t-ctrl" type="date" name="end" value="{{ filters.end|date:'Y-m-d' }}">
+  </div>
+
+  <div class="t-item">
+    <span class="t-ico">Pages</span>
+    <select class="t-select" name="per_page">
+      <option value="10" {% if filters.per_page == 10 %}selected{% endif %}>10</option>
+      <option value="20" {% if filters.per_page == 20 %}selected{% endif %}>20</option>
+      <option value="50" {% if filters.per_page == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if filters.per_page == 100 %}selected{% endif %}>100</option>
+    </select>
+  </div>
+
+  <button class="btn btn-ghost" type="submit">Filtrer</button>
+</form>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi" style="background:linear-gradient(135deg,#0b3a6a,#1f6aa5);">
+    <div><div class="t">Sessions prévues</div><div class="v">{{ kpi.sessions_prevues }}</div></div>
+    <div class="ico">🗓️</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#16a34a,#22c55e);">
+    <div><div class="t">Sessions terminées</div><div class="v">{{ kpi.sessions_terminees }}</div></div>
+    <div class="ico">✅</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#f59e0b,#fb923c);">
+    <div><div class="t">Participants validés</div><div class="v">{{ kpi.participants_valides }}</div></div>
+    <div class="ico">🎯</div>
+  </div>
+  <div class="kpi" style="background:linear-gradient(135deg,#111827,#334155);">
+    <div><div class="t">Formations actives</div><div class="v">{{ kpi.formations_actives }}</div></div>
+    <div class="ico">🎓</div>
+  </div>
+</div>
+
+<!-- FULL WIDTH TABLE -->
+<div class="panelX">
+  <div class="panelX-head">
+    <div class="panelX-title">
+      <span class="sq sq-blue">📋</span>
+      <div>
+        <div style="font-weight:900;">Registre des sessions de formation</div>
+        <div class="muted">Détails complets : sessions, participants, validation, habilitations délivrées</div>
+      </div>
+    </div>
+    <div class="muted">Total : <b>{{ paginator.count }}</b></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="reg">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Formation</th>
+          <th class="hide-md">Date</th>
+          <th class="hide-md">Lieu</th>
+          <th>Interv.</th>
+          <th>Part.</th>
+          <th>Validés</th>
+          <th>Habilitations délivrées</th>
+          <th>Statut</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for s in page_obj.object_list %}
+          <tr>
+            <td>
+              <div class="cell">
+                {% if s.statut == "terminee" %}
+                  <span class="sq sq-green">✅</span>
+                {% elif s.statut == "encours" %}
+                  <span class="sq sq-amber">⏳</span>
+                {% elif s.statut == "annulee" %}
+                  <span class="sq sq-red">⛔</span>
+                {% else %}
+                  <span class="sq sq-blue">🗓️</span>
+                {% endif %}
+
+                <div style="min-width:0;">
+                  <div class="name" title="{{ s.titre|default:'Session' }}">
+                    {{ s.titre|default:"Session" }}
+                  </div>
+                  <div class="sub">ID #{{ s.id }} — Durée : {{ s.duree_minutes }} min</div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="cell">
+                {% cycle "sq-blue" "sq-purple" "sq-amber" "sq-green" "sq-slate" as fcol silent %}
+                <span class="sq {{ fcol }}">🎓</span>
+                <div style="min-width:0;">
+                  <div class="name" title="{{ s.formation.nom }}">{{ s.formation.nom }}</div>
+                  <div class="sub">Formation</div>
+                </div>
+              </div>
+            </td>
+
+            <td class="hide-md">
+              <span class="badge b-info">📅 {{ s.date_debut|date:"d/m/Y H:i" }}</span>
+            </td>
+
+            <td class="hide-md">
+              <span class="badge b-info">📍 {{ s.lieu|default:"—" }}</span>
+            </td>
+
+            <td><span class="badge b-info">👨‍🏫 {{ s.nb_intervenants }}</span></td>
+            <td><span class="badge b-info">👥 {{ s.nb_participants }}</span></td>
+
+            <td>
+              {% if s.nb_valides > 0 %}
+                <span class="badge b-ok">🎯 {{ s.nb_valides }}</span>
+              {% else %}
+                <span class="badge b-off">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if s.habilitations_delivrees and s.habilitations_delivrees|length > 0 %}
+                <div class="hab-wrap">
+                  <button class="hab-nav" type="button" data-dir="-1" data-target="habTrack_{{ s.id }}">‹</button>
+                  <div class="hab-track" id="habTrack_{{ s.id }}">
+                    {% for h in s.habilitations_delivrees %}
+                      <span class="chip chip-warn" title="{{ h.nom }}">🪪 {{ h.nom }}</span>
+                    {% endfor %}
+                  </div>
+                  <button class="hab-nav" type="button" data-dir="1" data-target="habTrack_{{ s.id }}">›</button>
+                </div>
+              {% else %}
+                <span class="chip chip-muted">— Aucune</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if s.statut == "terminee" %}
+                <span class="badge b-ok">Terminée</span>
+              {% elif s.statut == "encours" %}
+                <span class="badge b-soon">En cours</span>
+              {% elif s.statut == "annulee" %}
+                <span class="badge b-exp">Annulée</span>
+              {% else %}
+                <span class="badge b-info">Planifiée</span>
+              {% endif %}
+            </td>
+
+            <td style="text-align:right;">
+              <div class="row-actions">
+                <a class="icon-btn primary" href="{% url 'permis:session_detail' s.id %}" title="Ouvrir">👁️</a>
+                <a class="icon-btn" href="{% url 'permis:session_participants' s.id %}" title="Participants">👥</a>
+                <a class="icon-btn" href="#" onclick="alert('Exporter session : à brancher');return false;" title="Exporter">⬇️</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="10">
+              <div class="notice" style="margin:12px;">Aucune session trouvée avec ces filtres.</div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pager" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-top:1px solid var(--border); background:linear-gradient(180deg,#fff,#f8fafc);">
+    <div style="display:flex; gap:8px; align-items:center;">
+      <span class="muted">Pages</span>
+      <span class="pnum" style="min-width:40px; height:34px; border-radius:12px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:900; background:#fff; padding:0 12px;">{{ filters.per_page }}</span>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      {% if page_obj.has_previous %}
+        <a class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;"
+           href="?page=1&per_page={{ filters.per_page }}&q={{ filters.q }}&formation={{ filters.formation }}&statut={{ filters.statut }}&agent={{ filters.agent }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">«</a>
+        <a class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;"
+           href="?page={{ page_obj.previous_page_number }}&per_page={{ filters.per_page }}&q={{ filters.q }}&formation={{ filters.formation }}&statut={{ filters.statut }}&agent={{ filters.agent }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">‹</a>
+      {% else %}
+        <span class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0f172a;opacity:.45;">«</span>
+        <span class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0f172a;opacity:.45;">‹</span>
+      {% endif %}
+
+      <span class="pnum" style="min-width:40px; height:34px; border-radius:12px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:900; background:#fff; padding:0 12px;">{{ page_obj.number }}</span>
+      <span class="muted">/ {{ paginator.num_pages }}</span>
+
+      {% if page_obj.has_next %}
+        <a class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;"
+           href="?page={{ page_obj.next_page_number }}&per_page={{ filters.per_page }}&q={{ filters.q }}&formation={{ filters.formation }}&statut={{ filters.statut }}&agent={{ filters.agent }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">›</a>
+        <a class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;text-decoration:none;color:#0f172a;"
+           href="?page={{ paginator.num_pages }}&per_page={{ filters.per_page }}&q={{ filters.q }}&formation={{ filters.formation }}&statut={{ filters.statut }}&agent={{ filters.agent }}&start={{ filters.start|date:'Y-m-d' }}&end={{ filters.end|date:'Y-m-d' }}">»</a>
+      {% else %}
+        <span class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0f172a;opacity:.45;">›</span>
+        <span class="pbtn" style="width:34px;height:34px;border-radius:12px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;color:#0f172a;opacity:.45;">»</span>
+      {% endif %}
+    </div>
+
+    <div class="muted">Total : <b>{{ paginator.count }}</b></div>
+  </div>
+</div>
+
+<script>
+  // carrousel habilitations
+  (function(){
+    document.querySelectorAll(".hab-nav").forEach(btn => {
+      btn.addEventListener("click", function(){
+        const dir = parseInt(this.dataset.dir || "1", 10);
+        const targetId = this.dataset.target;
+        const track = document.getElementById(targetId);
+        if(!track) return;
+        track.scrollBy({ left: dir * 240, behavior: "smooth" });
+      });
+    });
+  })();
+</script>
+
+{% endblock %}
